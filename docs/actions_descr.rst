@@ -44,7 +44,7 @@ parent's, so its values are reached as ``ret['child_graph']['value']``.
 
 .. code-block:: python
 
-        from simnexus.dyna_actions import DynaAnalysis
+        from kunene.dyna_actions import DynaAnalysis
         dyna = DynaAnalysis(name="RunSpring", input_path="spring.k")
         ret = dyna.solve( {'K': 100.} )
 
@@ -61,7 +61,7 @@ See the previous section for a description of the solve method.
 
 .. code-block:: python
 
-    from simnexus.actions import WorkAction
+    from kunene.actions import WorkAction
 
     class AdderAction(WorkAction):
         """Adds two numbers and returns the sum."""
@@ -87,9 +87,9 @@ To use a WorkFlow to evaluate actions sequentially:
 
 .. code-block:: python
 
-    from simnexus.d3plot_actions import d3plot_File
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.graph_actions import WorkFlow
+    from kunene.d3plot_actions import d3plot_File
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.graph_actions import WorkFlow
 
     wf = WorkFlow(name="SpringWorkFlow")
     wf.add_action( DynaAnalysis(name="RunSpring", input_path="spring.k") )
@@ -109,11 +109,11 @@ waits for both:
 
 .. code-block:: python
 
-    from simnexus.actions import MathEvaluation
-    from simnexus.d3plot_actions import d3plot_File
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.graph_actions import DirectedGraph, WorkFlow, WorkArea
-    from simnexus.radioss_using_dyna_inp import RadiossUsingDynaInput
+    from kunene.actions import MathEvaluation
+    from kunene.d3plot_actions import d3plot_File
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.graph_actions import DirectedGraph, WorkFlow, WorkArea
+    from kunene.radioss_using_dyna_inp import RadiossUsingDynaInput
 
     dg = DirectedGraph( name='MDO', asynch=True )
 

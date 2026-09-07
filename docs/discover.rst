@@ -19,9 +19,9 @@ Using ``WorkArea``:
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, WorkArea
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, WorkArea
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     wf = WorkFlow(name='SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='RunSpring', input_path='spring.k'))
@@ -35,8 +35,8 @@ Using ``SimulationIterator``:
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, SimulationIterator
-    from simnexus.dyna_actions import DynaAnalysis
+    from kunene.graph_actions import WorkFlow, SimulationIterator
+    from kunene.dyna_actions import DynaAnalysis
 
     wf = WorkFlow(name='SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='RunSpring', input_path='spring.k'))
@@ -70,9 +70,9 @@ For a ``WorkFlow`` or ``DirectedGraph`` it returns a dictionary
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, WorkArea
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, WorkArea
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     wf = WorkFlow(name='SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='RunSpring', input_path='spring.k'))
@@ -91,9 +91,9 @@ whole workflow. The tree shows each wrapper, graph, and leaf action.
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, SimulationIterator
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, SimulationIterator
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     wf = WorkFlow(name='SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='RunSpring', input_path='spring.k'))
@@ -128,13 +128,13 @@ single directory it reuses.
 .. code-block:: text
 
     results/   (results root)
-    ├── status.json   (run progress: current job, jobs done; see simnexus.progress)
+    ├── status.json   (run progress: current job, jobs done; see kunene.progress)
     ├── jobs_index.json   (job -> variable values and group labels; ...)
     ├── job_0/   (one directory per design evaluation)
     │   ├── iter_variables.json   (this design's variable values)
     │   ├── actions_output.pkl   (this design's action outputs)
     │   ├── spring.k   (copied in)
-    │   ├── status.json   (live action states; see simnexus.progress)
+    │   ├── status.json   (live action states; see kunene.progress)
     │   ├── dyna_variables.json
     │   ├── dyna_action_inp.k
     │   ├── run_file.stdout
@@ -149,8 +149,8 @@ wrappers — each child's directory appears as a nested subtree:
 
 .. code-block:: python
 
-    from simnexus.graph_actions import DirectedGraph, WorkFlow, WorkArea
-    from simnexus.dyna_actions import DynaAnalysis
+    from kunene.graph_actions import DirectedGraph, WorkFlow, WorkArea
+    from kunene.dyna_actions import DynaAnalysis
 
     def make_wa(i):
         wf = WorkFlow(name=f'WF{i}')
@@ -165,10 +165,10 @@ wrappers — each child's directory appears as a nested subtree:
 .. code-block:: text
 
     ./   (current working directory)
-    ├── status.json   (live action states; see simnexus.progress)
+    ├── status.json   (live action states; see kunene.progress)
     ├── WF1/   (work area, overwritten each run)
     │   ├── spring.k   (copied in)
-    │   ├── status.json   (live action states; see simnexus.progress)
+    │   ├── status.json   (live action states; see kunene.progress)
     │   ├── dyna_variables.json
     │   ├── dyna_action_inp.k
     │   ├── run_file.stdout

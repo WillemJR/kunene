@@ -5,18 +5,18 @@ import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from simnexus.actions import WorkAction, _display_path, _copy_path_nodes
-from simnexus.args import Cleanup
-from simnexus.cleanup import clean_run_dir
-from simnexus.errors import ActionNameError, MissingPathError, AsyncActionError
-from simnexus.progress import MultiReporter, StatusReporter
-from simnexus.util.observer import Observer
+from kunene.actions import WorkAction, _display_path, _copy_path_nodes
+from kunene.args import Cleanup
+from kunene.cleanup import clean_run_dir
+from kunene.errors import ActionNameError, MissingPathError, AsyncActionError
+from kunene.progress import MultiReporter, StatusReporter
+from kunene.util.observer import Observer
 # SimulationIterator lives in its own module (with the job index it relies
 # on) but is re-exported here: it is part of this module's public interface
-# and 'from simnexus.graph_actions import SimulationIterator' is what
+# and 'from kunene.graph_actions import SimulationIterator' is what
 # existing workflows use.
-from simnexus.simulation_iterator import SimulationIterator
-import simnexus.args
+from kunene.simulation_iterator import SimulationIterator
+import kunene.args
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class WorkArea(WorkAction):
         work_area_path (str) : Default is to ./{graph.name}
         copy_paths (list) : List of names of file to be copied to work area.
         cleanup (Cleanup) : remove bulk solver output from the work area
-            once the graph has run. See :class:`simnexus.args.Cleanup`;
+            once the graph has run. See :class:`kunene.args.Cleanup`;
             ``True`` selects the default policy, ``None`` (the default)
             keeps everything. Nothing is removed if the run raises, so a
             failed run can still be debugged. Note that the work area is
@@ -225,7 +225,7 @@ class DirectedGraph(WorkAction, Observer):
             and a child that raises, dies or returns nothing terminates its
             running siblings and raises ``AsyncActionError``. The child is
             forked where the platform has fork and spawned otherwise
-            (Windows, see ``simnexus.util.parallel``); spawning also
+            (Windows, see ``kunene.util.parallel``); spawning also
             requires the *action itself* to be picklable, with its class
             in an importable module rather than in the calling script,
             which the child does not re-import.
@@ -545,7 +545,7 @@ class DirectedGraph(WorkAction, Observer):
         work area) contribute that directory as a subtree instead."""
         if self.work_area is not None:
             return [ self.work_area._work_dir_tree( cleanup ) ]
-        entries = [ ( 'status.json   (live action states; see simnexus.progress)', [] ) ]
+        entries = [ ( 'status.json   (live action states; see kunene.progress)', [] ) ]
         seen = { entries[0][0] }
         for ch in self.child_actions.values():
             for node in ch._work_dir_entries( cleanup ):

@@ -1,7 +1,7 @@
 Remote Execution
 ================
 
-SimNexus supports executing actions on remote compute resources using gRPC.
+Kunene supports executing actions on remote compute resources using gRPC.
 This allows you to offload computations to dedicated servers or containers while orchestrating the workflow locally.
 
 Architecture
@@ -19,7 +19,7 @@ On the remote machine (or container), you need to start the `ServerAction`. You 
 
 .. code-block:: python
 
-    from simnexus.remote_actions import NamedServerAction
+    from kunene.remote_actions import NamedServerAction
     from my_project import MyHeavyWorkflow
 
     # Start the server on port 50051
@@ -59,7 +59,7 @@ If a server has pre-registered actions, you can query them from the client:
 
 .. code-block:: python
 
-    from simnexus.remote_actions import RemoteAction
+    from kunene.remote_actions import RemoteAction
 
     # no target_action_name is needed just to ask what the server offers
     remote = RemoteAction(name="query", server_address='remote-host:50051')
@@ -74,7 +74,7 @@ Using a named action reduces network overhead as the graph structure itself is a
 
 .. code-block:: python
 
-    from simnexus.remote_actions import RemoteAction
+    from kunene.remote_actions import RemoteAction
 
     # Configure the remote wrapper using a named action
     remote_task = RemoteAction(
@@ -97,7 +97,7 @@ background thread and mirrors the remote job's status into the **local**
 ``status.json``: the ``RemoteAction``'s entry shows the fraction of the
 remote action currently running and a message such as
 ``remote rad_solver: time 12.9 of 40``. A GUI watching the local results
-tree (see :mod:`simnexus.progress`) therefore shows remote progress without
+tree (see :mod:`kunene.progress`) therefore shows remote progress without
 knowing about gRPC. Polling failures are silently ignored; hard failures
 are reported by ``solve()`` itself.
 
@@ -105,7 +105,7 @@ Implementation Details
 ----------------------
 
 - **Isolation**: Each action runs in a unique temporary directory on the server. This prevents file conflicts between concurrent jobs.
-- **Dependencies**: The remote environment must have `simnexus` and all necessary dependencies installed.
+- **Dependencies**: The remote environment must have `kunene` and all necessary dependencies installed.
 - **File Transfer**: Large files (up to ~50MB) are supported by default. For very large datasets, consider using a shared file system or external storage service, passing only the paths in the `val_dict`.
 
 Site security
@@ -115,7 +115,7 @@ The main issue is that it will be
 specified by the system adminitrator at every site.
 
 .. warning::
-    **Security Notice**: The provided feature should only be used within trusted networks (e.g., internal HPC clusters, VPNs). Variable values and results are exchanged as restricted JSON (see ``simnexus/serialization.py``): only plain data types (dict, list, str, int, float, bool, None) and numeric numpy arrays are accepted, so decoding a payload cannot execute code. The channel itself is however unencrypted and unauthenticated: anyone who can reach the port can run the registered graphs and retrieve files matching the output patterns.
+    **Security Notice**: The provided feature should only be used within trusted networks (e.g., internal HPC clusters, VPNs). Variable values and results are exchanged as restricted JSON (see ``kunene/serialization.py``): only plain data types (dict, list, str, int, float, bool, None) and numeric numpy arrays are accepted, so decoding a payload cannot execute code. The channel itself is however unencrypted and unauthenticated: anyone who can reach the port can run the registered graphs and retrieve files matching the output patterns.
 
 
 

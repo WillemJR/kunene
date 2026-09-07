@@ -9,7 +9,7 @@ graph as a pickle and needs to find each action's class by module name.
 
 import time
 
-from simnexus.actions import WorkAction
+from kunene.actions import WorkAction
 
 
 class SleepySolver(WorkAction):

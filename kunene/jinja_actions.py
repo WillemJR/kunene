@@ -2,10 +2,10 @@ import jinja2
 
 from pathlib import Path
 from jinja2 import meta
-from simnexus.actions import WorkAction
-from simnexus.errors import ParameterError
-import simnexus.args
-import simnexus.variables
+from kunene.actions import WorkAction
+from kunene.errors import ParameterError
+import kunene.args
+import kunene.variables
 
 import logging
 logger = logging.getLogger(__name__)
@@ -34,14 +34,14 @@ class JinjaReplace(WorkAction):
         name (str): The name of the action.
         input_file_path (str): Path to the input file. This is the template file marked up using jinja delimiters
         output_file_path (str, optional): Path where the processed file will be written. 
-            Defaults to simnexus.args.RADIOSS_DFLT_FNAME.
+            Defaults to kunene.args.RADIOSS_DFLT_FNAME.
         val_format (str, optional): Format string for floating point values (e.g., "%10.3g"). 
             Defaults to "%10.3g".
     """
 
     @WorkAction.allow_variables_as_arguments
     def __init__( self, name, input_file_path,
-                  output_file_path=simnexus.args.RADIOSS_DFLT_FNAME, val_format="%10.3g",
+                  output_file_path=kunene.args.RADIOSS_DFLT_FNAME, val_format="%10.3g",
                   copy_paths=None, keep=None ):
         WorkAction.__init__(self, name, copy_paths=copy_paths, keep=keep)
 
@@ -91,7 +91,7 @@ class JinjaReplace(WorkAction):
         descr = f"From \'{self.input_file_path}\'"
         var_list = []
         for pn in self.par_names:
-            self._append_unique_parameter( var_list, simnexus.variables.UnknownVariable(pn, None, description=descr) )
+            self._append_unique_parameter( var_list, kunene.variables.UnknownVariable(pn, None, description=descr) )
         self._parameters_cache = var_list
         return var_list
 

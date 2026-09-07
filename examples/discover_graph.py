@@ -12,9 +12,9 @@ No simulation solver is required; the graph uses MathEvaluation actions
 so the example can be run standalone.
 """
 
-from simnexus.variables import FloatVariable, IntSetVariable
-from simnexus.actions import MathEvaluation, WorkAction
-from simnexus.graph_actions import WorkFlow, DirectedGraph
+from kunene.variables import FloatVariable, IntSetVariable
+from kunene.actions import MathEvaluation, WorkAction
+from kunene.graph_actions import WorkFlow, DirectedGraph
 
 
 # ---------------------------------------------------------------------------

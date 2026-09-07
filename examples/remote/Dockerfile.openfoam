@@ -1,6 +1,6 @@
 # Build:
-#   docker build -f examples/remote/Dockerfile.openfoam -t simnexus-openfoam .
-#   docker run --rm -p 50051:50051 simnexus-openfoam
+#   docker build -f examples/remote/Dockerfile.openfoam -t kunene-openfoam .
+#   docker run --rm -p 50051:50051 kunene-openfoam
 #
 # Base image: ESI OpenFOAM v2312 (ships icoFoam and blockMesh).
 # Swap for openfoam/openfoam12-default and adjust the source path below
@@ -15,14 +15,14 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m venv /opt/simnexus/venv && \
-    /opt/simnexus/venv/bin/pip install "simnexus[remote]" numpy pandas Jinja2 matplotlib
+RUN python3 -m venv /opt/kunene/venv && \
+    /opt/kunene/venv/bin/pip install "kunene[remote]" numpy pandas Jinja2 matplotlib
 
-COPY examples/remote/openfoam_remote_server.py /opt/simnexus/openfoam_remote_server.py
+COPY examples/remote/openfoam_remote_server.py /opt/kunene/openfoam_remote_server.py
 
 EXPOSE 50051
 
 # Override the base image entrypoint (/openfoam/run uses sh, which can't parse
 # the bash-specific OpenFOAM bashrc). Use bash explicitly.
 ENTRYPOINT ["/bin/bash", "-c", \
-    "source /usr/lib/openfoam/openfoam2312/etc/bashrc && exec /opt/simnexus/venv/bin/python3 /opt/simnexus/openfoam_remote_server.py"]
+    "source /usr/lib/openfoam/openfoam2312/etc/bashrc && exec /opt/kunene/venv/bin/python3 /opt/kunene/openfoam_remote_server.py"]

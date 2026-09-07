@@ -61,7 +61,7 @@ class Cleanup:
             * ``Cleanup.ALL`` (``'*'``) -- everything in the run
               directories except the protected files and ``keep``. A job
               directory also holds files nothing declared (copied-in
-              inputs, solver scratch), so this deletes more than simnexus
+              inputs, solver scratch), so this deletes more than kunene
               knows about; use it deliberately.
             * a list of glob patterns (or a single pattern string) --
               exactly those, in every run directory.
@@ -144,7 +144,7 @@ class Cleanup:
 DYNA_DFLT_CMD  = 'ls-dyna'
 DYNA_BASE_FILE_NAME = 'dyna_action_inp'
 
-RADIOSS_DFLT_FNAME = 'radioss_simnexus_file.k'
+RADIOSS_DFLT_FNAME = 'radioss_kunene_file.k'
 RADIOSS_ROOT_NAME = 'rad_run_file'
 RADIOSS_BASE_F_NAME = 'rad_run_file_0000'
 RADIOSS_ENGINE_F_NAME = 'rad_run_file_0001'

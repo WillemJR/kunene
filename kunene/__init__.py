@@ -1,7 +1,7 @@
 __version__ = '1.3.0'
 
-from simnexus.errors import (
-    SimNexusError,
+from kunene.errors import (
+    KuneneError,
     ActionNameError,
     ParameterError,
     EvaluationError,
@@ -13,7 +13,7 @@ from simnexus.errors import (
     SpawnError,
 )
 
-from simnexus.args import Cleanup
+from kunene.args import Cleanup
 
 import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())

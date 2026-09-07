@@ -9,12 +9,12 @@ from typing import List, Tuple, Optional
 import logging
 logger = logging.getLogger(__name__)
 
-from simnexus.args import Location, JobType, EvalType
-from simnexus.actions import WorkAction
-from simnexus.progress import FileProgressTail
-from simnexus.util import solver_progress
-import simnexus.variables as simvars
-from simnexus.util.openfoam_reader import OpenFOAMFieldReader
+from kunene.args import Location, JobType, EvalType
+from kunene.actions import WorkAction
+from kunene.progress import FileProgressTail
+from kunene.util import solver_progress
+import kunene.variables as simvars
+from kunene.util.openfoam_reader import OpenFOAMFieldReader
 
 
 class OpenFOAMAnalysis( WorkAction ):
@@ -34,7 +34,7 @@ class OpenFOAMAnalysis( WorkAction ):
             'blockMesh'.
         keep (list, optional): glob patterns of this run's files that a
             work area's cleanup must never delete. See
-            :class:`simnexus.args.Cleanup`.
+            :class:`kunene.args.Cleanup`.
     """
 
     @WorkAction.allow_variables_as_arguments

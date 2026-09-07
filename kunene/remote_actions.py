@@ -10,12 +10,12 @@ from concurrent import futures
 from pathlib import Path
 import logging
 
-from simnexus.actions import WorkAction
-from simnexus.args import STATUS_PATH
-from simnexus.errors import SerializationError
-from simnexus import serialization
-from simnexus.protos import remote_actions_pb2
-from simnexus.protos import remote_actions_pb2_grpc
+from kunene.actions import WorkAction
+from kunene.args import STATUS_PATH
+from kunene.errors import SerializationError
+from kunene import serialization
+from kunene.protos import remote_actions_pb2
+from kunene.protos import remote_actions_pb2_grpc
 
 # Increase max message size to 50MB
 MAX_MESSAGE_LENGTH = 50 * 1024 * 1024
@@ -89,7 +89,7 @@ class _RemoteProgressPoller:
     def _loop(self):
         try:
             with grpc.insecure_channel(self.server_address, options=OPTIONS) as channel:
-                stub = remote_actions_pb2_grpc.SimNexusRemoteStub(channel)
+                stub = remote_actions_pb2_grpc.KuneneRemoteStub(channel)
                 request = remote_actions_pb2.ProgressRequest(job_id=self.job_id)
                 while not self._stop.wait(self.interval):
                     try:
@@ -143,7 +143,7 @@ class RemoteAction(WorkAction):
         """
         try:
             with grpc.insecure_channel(self.server_address, options=OPTIONS) as channel:
-                stub = remote_actions_pb2_grpc.SimNexusRemoteStub(channel)
+                stub = remote_actions_pb2_grpc.KuneneRemoteStub(channel)
                 resp = stub.GetAvailableActions(remote_actions_pb2.Empty())
                 return {a.name: a.description for a in resp.actions}
         except grpc.RpcError as e:
@@ -164,7 +164,7 @@ class RemoteAction(WorkAction):
         req.job_id = uuid.uuid4().hex
 
         # Restricted JSON, not pickle: unpickling network data would allow
-        # arbitrary code execution on the peer. See simnexus/serialization.py
+        # arbitrary code execution on the peer. See kunene/serialization.py
         # for the allowed types.
         req.pickled_val_dict = serialization.dumps(val_dict)
         if self.output_patterns:
@@ -195,7 +195,7 @@ class RemoteAction(WorkAction):
         poller.start()
         try:
             with grpc.insecure_channel(self.server_address, options=OPTIONS) as channel:
-                stub = remote_actions_pb2_grpc.SimNexusRemoteStub(channel)
+                stub = remote_actions_pb2_grpc.KuneneRemoteStub(channel)
                 logger.info(f"Sending action '{self.name}' to {self.server_address}...")
                 resp = stub.RunAction(req)
         except grpc.RpcError as e:
@@ -214,7 +214,7 @@ class RemoteAction(WorkAction):
         # Save output files
         for f_msg in resp.output_files:
             # We save them in the current directory (or we could specify a dir)
-            # Assuming current working directory for now as per simnexus conventions
+            # Assuming current working directory for now as per kunene conventions
             with open(f_msg.name, 'wb') as f:
                 f.write(f_msg.content)
             logger.info(f"Received file: {f_msg.name}")
@@ -222,7 +222,7 @@ class RemoteAction(WorkAction):
         return result
 
 
-class SimNexusService(remote_actions_pb2_grpc.SimNexusRemoteServicer):
+class KuneneService(remote_actions_pb2_grpc.KuneneRemoteServicer):
     def __init__(self, actions_registry=None):
         self.actions_registry = actions_registry or {}
         # running jobs by client-chosen id, so GetProgress can find the
@@ -270,7 +270,7 @@ class SimNexusService(remote_actions_pb2_grpc.SimNexusRemoteServicer):
 
     def RunAction(self, request, context):
         resp = remote_actions_pb2.ActionResponse()
-        tmp_dir = tempfile.mkdtemp(prefix=f"simnexus_remote_{request.action_name}_")
+        tmp_dir = tempfile.mkdtemp(prefix=f"kunene_remote_{request.action_name}_")
         original_cwd = os.getcwd()
 
         if request.job_id:
@@ -376,8 +376,8 @@ class ServerAction:
             futures.ThreadPoolExecutor(max_workers=self.max_workers),
             options=OPTIONS
         )
-        remote_actions_pb2_grpc.add_SimNexusRemoteServicer_to_server(
-            SimNexusService(self.actions_registry),
+        remote_actions_pb2_grpc.add_KuneneRemoteServicer_to_server(
+            KuneneService(self.actions_registry),
             self.server
         )
         self.server.add_insecure_port(f'[::]:{self.port}')

@@ -5,12 +5,12 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to path to ensure simnexus is found
+# Add project root to path to ensure kunene is found
 sys.path.append( str(Path(__file__).parent.parent) )
 
-from simnexus.radioss_actions import RadiossAnalysis 
-from simnexus.d3plot_actions import d3plot_File
-from simnexus.graph_actions import WorkFlow, WorkArea
+from kunene.radioss_actions import RadiossAnalysis 
+from kunene.d3plot_actions import d3plot_File
+from kunene.graph_actions import WorkFlow, WorkArea
 
 def main():
     # Paths

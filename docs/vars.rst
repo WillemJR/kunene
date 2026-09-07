@@ -40,7 +40,7 @@ and on assignment with an ``AssertionError``:
 
 .. code-block:: python
 
-    from simnexus.variables import FloatVariable
+    from kunene.variables import FloatVariable
 
     t = FloatVariable('T', 75., lower_bound=10., upper_bound=200.)
     t.value = 80.                                 # fine
@@ -60,7 +60,7 @@ add:
 
 .. code-block:: python
 
-    from simnexus.variables import IntSetVariable, StrSetVariable
+    from kunene.variables import IntSetVariable, StrSetVariable
 
     n = IntSetVariable('N', 2, [1, 2, 3])
     n.allowable                        # {1, 2, 3} — the list became a set
@@ -94,7 +94,7 @@ subdirectory of the results root.  The originals are never modified.
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkArea, SimulationIterator
+    from kunene.graph_actions import WorkArea, SimulationIterator
 
     wa = WorkArea(wf, copy_paths=['path/to/spring.k'])
     for v in wa.parameters():
@@ -115,9 +115,9 @@ First, you have to define the variable, then you can use it to control actions.
 
 .. code-block:: python
 
-        from simnexus.args import Location
-        from simnexus.variables import FloatVariable
-        from simnexus.openfoam_actions import OpenFOAM_Field
+        from kunene.args import Location
+        from kunene.variables import FloatVariable
+        from kunene.openfoam_actions import OpenFOAM_Field
 
         # define variable
         etime = FloatVariable( 'ET', 40. )

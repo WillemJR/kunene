@@ -3,7 +3,7 @@ requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "simnexus"
+name = "kunene"
 version = "1.3.0"
 description = "A Python module for modelling complex simulation workflows."
 readme = "README.md"
@@ -28,7 +28,7 @@ dependencies = [
 
 
 [project.urls]
-Homepage = "https://github.com/WillemJR/simnexus"
+Homepage = "https://github.com/WillemJR/kunene"
 
 
 [project.optional-dependencies]
@@ -52,4 +52,4 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["simnexus*"]
+include = ["kunene*"]

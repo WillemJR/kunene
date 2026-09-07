@@ -10,22 +10,22 @@ import shutil
 
 from pathlib import Path
 
-from simnexus.actions import WorkAction
-from simnexus.errors import SimNexusError, MissingPathError, SolverError
-from simnexus.progress import FileProgressTail
-from simnexus.util import solver_progress
-from simnexus.rare import HistoryEvaluation
-from simnexus.util.openradios_reader import OpenRadiosKeywordReader
-import simnexus.variables as simvars
+from kunene.actions import WorkAction
+from kunene.errors import KuneneError, MissingPathError, SolverError
+from kunene.progress import FileProgressTail
+from kunene.util import solver_progress
+from kunene.rare import HistoryEvaluation
+from kunene.util.openradios_reader import OpenRadiosKeywordReader
+import kunene.variables as simvars
 
-import simnexus.args
+import kunene.args
 
 import logging
 logger = logging.getLogger(__name__)
 
-from simnexus.args import RADIOSS_ROOT_NAME
-from simnexus.args import RADIOSS_BASE_F_NAME # _0000
-from simnexus.args import RADIOSS_ENGINE_F_NAME # _0001
+from kunene.args import RADIOSS_ROOT_NAME
+from kunene.args import RADIOSS_BASE_F_NAME # _0000
+from kunene.args import RADIOSS_ENGINE_F_NAME # _0001
 
 
 class RadiossCSVHistory(HistoryEvaluation):
@@ -173,7 +173,7 @@ class RadiossAnalysisBase:
         try:
             from vortex_radioss.animtod3plot.Anim_to_D3plot import readAndConvert
         except ImportError as err:
-            raise SimNexusError( 'Install vortex_radioss.animtod3plot from \'https://www.vortex-cae.com/vortex-radioss\'.' ) from err
+            raise KuneneError( 'Install vortex_radioss.animtod3plot from \'https://www.vortex-cae.com/vortex-radioss\'.' ) from err
 
         try:
             # readAndConvert prints its progress; keep it out of the
@@ -216,12 +216,12 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
                             vortex_radioss.animtod3plot.Anim_to_D3plot
             keep (list): glob patterns of this run's files that a work
                 area's cleanup must never delete. See
-                :class:`simnexus.args.Cleanup`.
+                :class:`kunene.args.Cleanup`.
     """
 
     def __init__( self, name,
                   starter_cmd='openradioss_starter',
-                  starter_input_path=simnexus.args.RADIOSS_DFLT_FNAME,
+                  starter_input_path=kunene.args.RADIOSS_DFLT_FNAME,
                   engine_cmd='openradioss_engine',
                   engine_input_path=None,
                   create_d3plot=False,

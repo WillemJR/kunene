@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 import pytest
 
-from simnexus import serialization
-from simnexus.errors import SerializationError
+from kunene import serialization
+from kunene.errors import SerializationError
 
 
 def test_roundtrip_scalars_and_containers():

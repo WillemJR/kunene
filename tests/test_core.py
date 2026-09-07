@@ -1,4 +1,4 @@
-import simnexus
+import kunene
 
 def test_version():
-    assert simnexus.__version__ == '1.3.0'
+    assert kunene.__version__ == '1.3.0'

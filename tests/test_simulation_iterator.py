@@ -2,10 +2,10 @@ import sys, os, shutil
 from pathlib import Path
 import pytest
 
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.simulation_iterator import SimulationIterator, JobIndex
-from simnexus.actions import MathEvaluation
-from simnexus.errors import SimNexusError, DataNotFoundError
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.simulation_iterator import SimulationIterator, JobIndex
+from kunene.actions import MathEvaluation
+from kunene.errors import KuneneError, DataNotFoundError
 
 def test_work_area_custom_path():
     print("Testing WorkArea with custom path...")
@@ -27,9 +27,9 @@ def test_work_area_custom_path():
         wa.rm_rundir()
 
 @pytest.mark.parametrize("path_template", [
-    "/tmp/simnexus_WA_test",
-    "~/tmp/simnexus_WA_test",
-    "$HOME/tmp/simnexus_WA_test"
+    "/tmp/kunene_WA_test",
+    "~/tmp/kunene_WA_test",
+    "$HOME/tmp/kunene_WA_test"
 ])
 def test_simulation_iterator_special_paths(path_template):
     print(f"Testing SimulationIterator with path: {path_template}")
@@ -81,7 +81,7 @@ def study_path(tmp_path):
 def test_simulation_iterator_still_importable_from_graph_actions():
     """SimulationIterator moved to its own module; workflows import it
     from graph_actions and must keep working."""
-    from simnexus.graph_actions import SimulationIterator as FromGraphActions
+    from kunene.graph_actions import SimulationIterator as FromGraphActions
     assert FromGraphActions is SimulationIterator
 
 
@@ -254,7 +254,7 @@ def test_gather_outputs_skips_a_failed_job(study_path):
     wf.add_action(MathEvaluation("energy", "K * T"))
     itr = SimulationIterator(wf, work_area_path=str(study_path))
     itr.solve({'K': 0.2, 'T': 75})
-    with pytest.raises(SimNexusError):
+    with pytest.raises(KuneneError):
         itr.solve({'K': 0.3})                    # no T: the graph fails
     itr.solve({'K': 0.4, 'T': 75})
 
@@ -267,7 +267,7 @@ def test_failed_job_is_not_reused(study_path):
     wf = WorkFlow("Study")
     wf.add_action(MathEvaluation("energy", "K * missing_name"))
     itr = SimulationIterator(wf, work_area_path=str(study_path))
-    with pytest.raises(SimNexusError):
+    with pytest.raises(KuneneError):
         itr.solve({'K': 0.2})
 
     rec = itr.job_index().find(state=None)[0]

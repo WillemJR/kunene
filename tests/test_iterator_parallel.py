@@ -5,11 +5,11 @@ import time
 
 import pytest
 
-from simnexus.actions import MathEvaluation, WorkAction
-from simnexus.args import JOB_LOG_PATH, JOBS_INDEX_PATH, STATUS_PATH
-from simnexus.errors import AsyncActionError, ParameterError
-from simnexus.graph_actions import WorkFlow
-from simnexus.simulation_iterator import SimulationIterator
+from kunene.actions import MathEvaluation, WorkAction
+from kunene.args import JOB_LOG_PATH, JOBS_INDEX_PATH, STATUS_PATH
+from kunene.errors import AsyncActionError, ParameterError
+from kunene.graph_actions import WorkFlow
+from kunene.simulation_iterator import SimulationIterator
 
 
 class Sleeper(WorkAction):

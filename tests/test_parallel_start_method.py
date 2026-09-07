@@ -23,13 +23,13 @@ import time
 
 import pytest
 
-from simnexus.actions import MathEvaluation, WorkAction
-from simnexus.args import JOBS_INDEX_PATH, JOB_LOG_PATH, STATUS_PATH
-from simnexus.errors import AsyncActionError
-from simnexus.graph_actions import DirectedGraph, WorkFlow
-from simnexus.progress import StatusReporter
-from simnexus.simulation_iterator import SimulationIterator
-from simnexus.util import parallel
+from kunene.actions import MathEvaluation, WorkAction
+from kunene.args import JOBS_INDEX_PATH, JOB_LOG_PATH, STATUS_PATH
+from kunene.errors import AsyncActionError
+from kunene.graph_actions import DirectedGraph, WorkFlow
+from kunene.progress import StatusReporter
+from kunene.simulation_iterator import SimulationIterator
+from kunene.util import parallel
 
 
 # Actions a spawned child has to be able to unpickle, so they live at
@@ -55,7 +55,7 @@ class Adder(WorkAction):
 
 @pytest.fixture
 def spawned(monkeypatch):
-    """Make simnexus start its child processes the way Windows must."""
+    """Make kunene start its child processes the way Windows must."""
     monkeypatch.setattr(parallel, 'START_METHOD', 'spawn')
     monkeypatch.delenv(parallel.ENV_VAR, raising=False)
     assert parallel.get_context().get_start_method() == 'spawn'
@@ -234,7 +234,7 @@ def test_a_spawned_job_that_fails_aborts_the_sweep(spawned, tmp_path, monkeypatc
 
 
 def test_asynch_graph_works_without_fork(spawned, tmp_path, monkeypatch):
-    """The other place simnexus forks: an asynch graph's actions."""
+    """The other place kunene forks: an asynch graph's actions."""
     monkeypatch.chdir(tmp_path)
 
     graph = DirectedGraph('Async', asynch=True)
@@ -263,9 +263,9 @@ def test_asynch_failure_without_fork(spawned, tmp_path, monkeypatch):
 REPO_ROOT = str(pathlib.Path(__file__).resolve().parents[1])
 
 UNGUARDED_SCRIPT = """
-from simnexus.actions import MathEvaluation
-from simnexus.graph_actions import DirectedGraph, WorkFlow
-from simnexus.simulation_iterator import SimulationIterator
+from kunene.actions import MathEvaluation
+from kunene.graph_actions import DirectedGraph, WorkFlow
+from kunene.simulation_iterator import SimulationIterator
 
 # a bare script: no entry-point guard anywhere
 wf = WorkFlow('Bare', actions=[MathEvaluation('calc', 'x * 10')])
@@ -280,9 +280,9 @@ print('asynch', dg.solve({'x': 1})['a'], dg.solve({'x': 1})['b'])
 """
 
 SCRIPT_WITH_ITS_OWN_ACTION = """
-from simnexus.actions import WorkAction
-from simnexus.graph_actions import WorkFlow
-from simnexus.simulation_iterator import SimulationIterator
+from kunene.actions import WorkAction
+from kunene.graph_actions import WorkFlow
+from kunene.simulation_iterator import SimulationIterator
 
 class Local(WorkAction):
     def solve(self, val_dict=None):
@@ -302,7 +302,7 @@ print('sweep', out['calc'])
 def _run_script(tmp_path, source, **env_extra):
     script = tmp_path / 'study.py'
     script.write_text(source)
-    env = dict(os.environ, PYTHONPATH=REPO_ROOT, SIMNEXUS_START_METHOD='spawn')
+    env = dict(os.environ, PYTHONPATH=REPO_ROOT, KUNENE_START_METHOD='spawn')
     env.pop(parallel.IMPORT_MAIN_ENV_VAR, None)
     env.update(env_extra)
     return subprocess.run([sys.executable, str(script)], cwd=tmp_path, env=env,
@@ -325,7 +325,7 @@ def test_an_action_defined_in_the_script_is_refused_clearly(tmp_path):
     assert res.returncode != 0
     assert 'SpawnError' in res.stderr
     assert 'Local' in res.stderr
-    assert 'SIMNEXUS_SPAWN_IMPORTS_MAIN' in res.stderr
+    assert 'KUNENE_SPAWN_IMPORTS_MAIN' in res.stderr
 
 
 def test_import_main_restores_the_guarded_behaviour(tmp_path):
@@ -334,7 +334,7 @@ def test_import_main_restores_the_guarded_behaviour(tmp_path):
     guarded = SCRIPT_WITH_ITS_OWN_ACTION % (
         "if __name__ == '__main__':\n"
         + textwrap.indent(RUN_LOCAL, '    '))
-    res = _run_script(tmp_path, guarded, SIMNEXUS_SPAWN_IMPORTS_MAIN='1')
+    res = _run_script(tmp_path, guarded, KUNENE_SPAWN_IMPORTS_MAIN='1')
     assert res.returncode == 0, res.stderr
     assert 'sweep [10, 20]' in res.stdout
 
@@ -366,6 +366,6 @@ def test_start_process_refuses_a_main_object_under_spawn(spawned):
             return 1
     Pretender.__module__ = '__main__'
 
-    from simnexus.errors import SpawnError
+    from kunene.errors import SpawnError
     with pytest.raises(SpawnError, match='Pretender'):
         parallel.start_process(parallel.get_context(), print, args=(Pretender('p'),))

@@ -7,22 +7,22 @@ logging.basicConfig(level=logging.WARN)
 import numpy as np
 from pathlib import Path
 
-import simnexus.actions, simnexus.radioss_actions
-from simnexus.variables import FloatVariable
-from simnexus.jinja_actions import JinjaReplace
-from simnexus.graph_actions import WorkFlow, WorkArea, SimulationIterator
-from simnexus.dyna_actions import DynaAnalysis
-from simnexus.radioss_actions import RadiossAnalysis
-from simnexus.d3plot_actions import d3plot_File
-from simnexus.graph_actions import DirectedGraph
+import kunene.actions, kunene.radioss_actions
+from kunene.variables import FloatVariable
+from kunene.jinja_actions import JinjaReplace
+from kunene.graph_actions import WorkFlow, WorkArea, SimulationIterator
+from kunene.dyna_actions import DynaAnalysis
+from kunene.radioss_actions import RadiossAnalysis
+from kunene.d3plot_actions import d3plot_File
+from kunene.graph_actions import DirectedGraph
 
 #from meta_opt.optimizer import Optimizer
-#from simnexus.curve_similarity import CurveSimilarity
+#from kunene.curve_similarity import CurveSimilarity
 
 import logging
 logging.basicConfig(filename='eval.log', filemode='w', level=logging.INFO )
 
-from simnexus.args import DYNA_BASE_FILE_NAME
+from kunene.args import DYNA_BASE_FILE_NAME
 
 def create_wa( wa_id='' ):
     starter_deck = Path(__file__).parent.parent / 'models' / 'cube_TYPE7_0000.rad'

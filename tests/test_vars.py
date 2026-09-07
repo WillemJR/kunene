@@ -1,29 +1,29 @@
 
 from pathlib import Path
 
-import simnexus.variables
-from simnexus.jinja_actions import JinjaReplace
-from simnexus.graph_actions import WorkFlow, SimulationIterator, DirectedGraph
-from simnexus.dyna_actions import DynaAnalysis
-from simnexus.radioss_actions import RadiossAnalysis
+import kunene.variables
+from kunene.jinja_actions import JinjaReplace
+from kunene.graph_actions import WorkFlow, SimulationIterator, DirectedGraph
+from kunene.dyna_actions import DynaAnalysis
+from kunene.radioss_actions import RadiossAnalysis
 
 input_path = Path(__file__).parent.parent / "tests" / "spring.k"
 radioss_starter = Path(__file__).parent.parent / "models" / "cube_TYPE7_0000.rad"
 
 def test_float():
-    fv = simnexus.variables.FloatVariable( 'F', 1.0 )
+    fv = kunene.variables.FloatVariable( 'F', 1.0 )
     fv.value = 1.23
 
-    fv = simnexus.variables.FloatVariable( 'F', 4.0, upper_bound=5., lower_bound=4. )
+    fv = kunene.variables.FloatVariable( 'F', 4.0, upper_bound=5., lower_bound=4. )
     fv.value = 4.3
 
 def test_intset():
-    iv = simnexus.variables.IntSetVariable( 'I', 1, [1,2,7] )
+    iv = kunene.variables.IntSetVariable( 'I', 1, [1,2,7] )
 
     iv.value = 7
 
 def test_strset():
-    iv = simnexus.variables.StrSetVariable( 'I', 'foo', ['foo','fam'] )
+    iv = kunene.variables.StrSetVariable( 'I', 'foo', ['foo','fam'] )
 
     iv.value = 'fam'
 
