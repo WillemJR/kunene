@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from simnexus.actions import WorkAction
-from simnexus.args import STATUS_PATH
-from simnexus.errors import SimNexusError, AsyncActionError
-from simnexus.graph_actions import WorkFlow, DirectedGraph, WorkArea, SimulationIterator
-from simnexus import progress
+from kunene.actions import WorkAction
+from kunene.args import STATUS_PATH
+from kunene.errors import KuneneError, AsyncActionError
+from kunene.graph_actions import WorkFlow, DirectedGraph, WorkArea, SimulationIterator
+from kunene import progress
 
 
 class PlusOne(WorkAction):
@@ -484,8 +484,8 @@ class AsyncFakeSolver(WorkAction):
     and a class defined inside a function cannot be pickled.
     """
     def solve(self, val_dict=None):
-        from simnexus.progress import FileProgressTail
-        from simnexus.util import solver_progress
+        from kunene.progress import FileProgressTail
+        from kunene.util import solver_progress
 
         log = Path(f'{self.name}.stdout')
         tail = FileProgressTail(self._progress_reporter, self.name, log,

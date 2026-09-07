@@ -5,12 +5,12 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to path to ensure simnexus is found
+# Add project root to path to ensure kunene is found
 sys.path.append( str(Path(__file__).parent.parent) )
 
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.jinja_actions import JinjaReplace
-from simnexus.radioss_using_dyna_inp import RadiossUsingDynaInput
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.jinja_actions import JinjaReplace
+from kunene.radioss_using_dyna_inp import RadiossUsingDynaInput
 
 def main():
     # Paths

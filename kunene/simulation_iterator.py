@@ -50,16 +50,16 @@ from itertools import product
 
 import numpy as np
 
-from simnexus.actions import WorkAction, _display_path, _copy_path_nodes
-from simnexus.args import ( ACTIONS_OUTPUT_PATH, ITER_VARIABLES_PATH,
+from kunene.actions import WorkAction, _display_path, _copy_path_nodes
+from kunene.args import ( ACTIONS_OUTPUT_PATH, ITER_VARIABLES_PATH,
                            JOBS_INDEX_PATH, JOB_LOG_PATH, STATUS_PATH, Cleanup )
-from simnexus.cleanup import clean_run_dir
-from simnexus.errors import ( ActionNameError, AsyncActionError, ParameterError,
+from kunene.cleanup import clean_run_dir
+from kunene.errors import ( ActionNameError, AsyncActionError, ParameterError,
                               MissingPathError, DataNotFoundError )
-from simnexus.progress import ( StatusReporter, StatusWatcher, job_fraction,
+from kunene.progress import ( StatusReporter, StatusWatcher, job_fraction,
                                 mark_failed )
-from simnexus.util import parallel
-import simnexus.args
+from kunene.util import parallel
+import kunene.args
 
 import logging
 logger = logging.getLogger(__name__)
@@ -192,7 +192,7 @@ class _JobBar:
     with its actions, and with a solver's percent-complete while one runs.
     Job bars come and go as jobs start and finish; the batch bar stays.
 
-    tqdm is optional (``pip install simnexus[progress]``) and bars on a
+    tqdm is optional (``pip install kunene[progress]``) and bars on a
     redirected stream are just noise in a log file, so they are created only
     when they can be seen; every method is a no-op otherwise. This is the
     *terminal* channel and is independent of ``status.json``, which is
@@ -219,7 +219,7 @@ class _JobBar:
         except ImportError:
             if enabled:
                 logger.warning( 'progress_bar=True but tqdm is not installed; '
-                                'install it with "pip install simnexus[progress]".' )
+                                'install it with "pip install kunene[progress]".' )
             return
         if enabled is None and not sys.stderr.isatty():
             return          # nobody is watching a redirected stream
@@ -714,7 +714,7 @@ class SimulationIterator(WorkAction):
         cleanup (Cleanup) : remove bulk solver output from each job
             directory once that job's graph has run, so a long study does
             not fill the disk with field output. See
-            :class:`simnexus.args.Cleanup`; ``True`` selects the default
+            :class:`kunene.args.Cleanup`; ``True`` selects the default
             policy, ``None`` (the default) keeps every file. A job that
             failed is never cleaned -- its deck and solver log are what you
             debug it with -- and neither are ``actions_output.pkl``,
@@ -734,7 +734,7 @@ class SimulationIterator(WorkAction):
         max_workers (int) : how many jobs of a sweep may run at the same
             time, each in a child process of its own (forked where the
             platform has fork, spawned on Windows -- see
-            ``simnexus.util.parallel``). The default 1 runs
+            ``kunene.util.parallel``). The default 1 runs
             them one after the other. Only the sweep methods
             (``collect_for_expdes``, ``collect_for_varrange``) fan out;
             ``solve`` is one design point and always runs here. This
@@ -898,8 +898,8 @@ class SimulationIterator(WorkAction):
         job_children += _copy_path_nodes( self.copy_paths )
         job_children += self.graph._work_dir_entries( cleanup )
         children = [
-            ( 'status.json   (run progress: current job, jobs done; see simnexus.progress)', [] ),
-            ( 'jobs_index.json   (job -> variable values and group labels; see simnexus.simulation_iterator)', [] ),
+            ( 'status.json   (run progress: current job, jobs done; see kunene.progress)', [] ),
+            ( 'jobs_index.json   (job -> variable values and group labels; see kunene.simulation_iterator)', [] ),
             ( f'{self.JNAME}0/   (one directory per design evaluation)', job_children ),
             ( f'{self.JNAME}1/ … {self.JNAME}N/', [] ),
         ]
@@ -926,14 +926,14 @@ class SimulationIterator(WorkAction):
         """
         Called in run subdirectory.
         """
-        with open(simnexus.args.ACTIONS_OUTPUT_PATH, 'wb') as f:
+        with open(kunene.args.ACTIONS_OUTPUT_PATH, 'wb') as f:
             pickle.dump(evals, f)
 
     def read_outputs( self ):
         """
         Called in run subdirectory.
         """
-        with open(simnexus.args.ACTIONS_OUTPUT_PATH, 'rb') as f:
+        with open(kunene.args.ACTIONS_OUTPUT_PATH, 'rb') as f:
             ret = pickle.load(f)
         return ret
 
@@ -953,9 +953,9 @@ class SimulationIterator(WorkAction):
         idx = self.job_index()
         ret = []
         for rec in idx.find( state='done' ):
-            if not ( idx.job_path( rec ) / simnexus.args.ACTIONS_OUTPUT_PATH ).exists():
+            if not ( idx.job_path( rec ) / kunene.args.ACTIONS_OUTPUT_PATH ).exists():
                 # stale index entry: the directory was removed by hand
-                logger.warning( f'Skipping {rec["job"]}: no {simnexus.args.ACTIONS_OUTPUT_PATH}.' )
+                logger.warning( f'Skipping {rec["job"]}: no {kunene.args.ACTIONS_OUTPUT_PATH}.' )
                 continue
             ret.append( idx.read_outputs( rec ) )
         return ret
@@ -1105,7 +1105,7 @@ class SimulationIterator(WorkAction):
             ret = self._index.read_outputs( job_name )
         except DataNotFoundError:
             # index says done but the outputs are gone: run it again
-            logger.warning( f'Job {job_name} has no {simnexus.args.ACTIONS_OUTPUT_PATH}; re-running.' )
+            logger.warning( f'Job {job_name} has no {kunene.args.ACTIONS_OUTPUT_PATH}; re-running.' )
             self._index.set_state( job_name, 'unknown' )
             return None
 
@@ -1178,7 +1178,7 @@ class SimulationIterator(WorkAction):
         os.chdir( job_dir )
         logger.debug( f'Running in directory {job_dir}' )
         try:
-            with open( simnexus.args.ITER_VARIABLES_PATH,'w' ) as vf:
+            with open( kunene.args.ITER_VARIABLES_PATH,'w' ) as vf:
                 json.dump( as_jsonable( val_dict ), vf )
 
             ret = self.graph.solve( val_dict )
@@ -1287,7 +1287,7 @@ class SimulationIterator(WorkAction):
         with ``reuse_existing=True``.
 
         The children are forked where the platform has fork and spawned
-        otherwise (Windows); ``simnexus.util.parallel`` chooses. Spawning
+        otherwise (Windows); ``kunene.util.parallel`` chooses. Spawning
         costs the graph having to be picklable -- with its action classes
         in an importable module, since the child does not re-import the
         calling script -- but the sweep is otherwise the same either way.

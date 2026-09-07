@@ -28,9 +28,9 @@ the run.
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, WorkArea
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, WorkArea
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     wf = WorkFlow('SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='run', input_path='spring.k'))
@@ -71,9 +71,9 @@ Job directories
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, SimulationIterator
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, SimulationIterator
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     wf = WorkFlow('SpringWorkFlow')
     wf.add_action(DynaAnalysis(name='run', input_path='spring.k'))
@@ -89,7 +89,7 @@ The resulting directory layout is::
 
     SpringWorkFlow/
     ├── jobs_index.json
-    ├── status.json                 # run progress; see simnexus.progress
+    ├── status.json                 # run progress; see kunene.progress
     ├── variables_discovery/        # copies used to read the deck's variables
     ├── job_0/
     │   ├── iter_variables.json
@@ -325,7 +325,7 @@ Pass a ``Cleanup`` policy to have them removed once a run has finished:
 
 .. code-block:: python
 
-    from simnexus import Cleanup
+    from kunene import Cleanup
 
     itr = SimulationIterator(wf, copy_paths=['path/to/spring.k'],
                              cleanup=Cleanup(keep=['d3plot']))
@@ -355,7 +355,7 @@ policy normally names no files at all:
 ``Cleanup(remove=Cleanup.ALL)``
     Everything except the protected files and ``keep``.  A job directory
     also holds files nothing declared — copied-in inputs, solver scratch —
-    so this deletes more than simnexus knows about.  Use it deliberately,
+    so this deletes more than kunene knows about.  Use it deliberately,
     and once with ``dry_run=True`` first.
 
 **What you keep.** ``keep`` is a list of glob patterns that always wins

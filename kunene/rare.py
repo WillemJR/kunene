@@ -2,17 +2,17 @@ import os
 from abc import ABC, abstractmethod
 import numpy as np
 
-from simnexus.args import EvalType
+from kunene.args import EvalType
 
 import logging
 logger = logging.getLogger(__name__)
 
 from abc import ABC, abstractmethod
 
-from simnexus.util.observer import Subject, notify_observers
+from kunene.util.observer import Subject, notify_observers
 
-from simnexus.variables import Variable
-from simnexus.actions import WorkAction
+from kunene.variables import Variable
+from kunene.actions import WorkAction
 
 
 class HistoryEvaluation(WorkAction):

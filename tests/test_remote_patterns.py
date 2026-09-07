@@ -10,13 +10,13 @@ from pathlib import Path
 import grpc
 import numpy as np
 
-from simnexus.actions import WorkAction
-from simnexus.args import STATUS_PATH
-from simnexus.graph_actions import WorkFlow
-from simnexus.progress import FileProgressTail
-from simnexus.protos import remote_actions_pb2, remote_actions_pb2_grpc
-from simnexus.remote_actions import RemoteAction, ServerAction
-from simnexus.util import solver_progress
+from kunene.actions import WorkAction
+from kunene.args import STATUS_PATH
+from kunene.graph_actions import WorkFlow
+from kunene.progress import FileProgressTail
+from kunene.protos import remote_actions_pb2, remote_actions_pb2_grpc
+from kunene.remote_actions import RemoteAction, ServerAction
+from kunene.util import solver_progress
 
 class FileGenTask(WorkAction):
     def solve(self, val_dict=None):
@@ -101,14 +101,14 @@ class TestRemotePatterns(unittest.TestCase):
         self.assertTrue(np.array_equal(result['curve'], np.array([0.0, 0.5, 1.0])))
 
     def test_unserializable_val_dict_raises(self):
-        from simnexus.errors import SerializationError
+        from kunene.errors import SerializationError
         remote = RemoteAction("rem_bad", "echo", 'localhost:50052')
         with self.assertRaises(SerializationError):
             remote.solve({'payload': object()})
 
     def test_get_progress_unknown_job(self):
         with grpc.insecure_channel('localhost:50052') as channel:
-            stub = remote_actions_pb2_grpc.SimNexusRemoteStub(channel)
+            stub = remote_actions_pb2_grpc.KuneneRemoteStub(channel)
             resp = stub.GetProgress(remote_actions_pb2.ProgressRequest(job_id='no_such_job'))
         self.assertFalse(resp.found)
 

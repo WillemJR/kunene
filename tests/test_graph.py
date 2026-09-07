@@ -1,12 +1,12 @@
 
 from pathlib import Path
 
-import simnexus
-import simnexus.radioss_actions
-import simnexus.jinja_actions
-from simnexus.variables import FloatVariable
-from simnexus.graph_actions import DirectedGraph, WorkFlow, WorkArea, SimulationIterator
-from simnexus.actions import WorkAction, MathEvaluation
+import kunene
+import kunene.radioss_actions
+import kunene.jinja_actions
+from kunene.variables import FloatVariable
+from kunene.graph_actions import DirectedGraph, WorkFlow, WorkArea, SimulationIterator
+from kunene.actions import WorkAction, MathEvaluation
 
 
 input_path = Path(__file__).parent.parent / "tests" / "spring.k"
@@ -311,7 +311,7 @@ def test_invalid_action_names():
     in MathEvaluation's eval(). Names with spaces, other punctuation, a
     leading digit, or Python keywords are rejected at construction."""
     import pytest
-    from simnexus.errors import ActionNameError
+    from kunene.errors import ActionNameError
 
     # A space breaks the eval command (the example from the request).
     with pytest.raises(ActionNameError):

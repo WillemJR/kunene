@@ -2,9 +2,9 @@
 import sys, os
 from pathlib import Path
 
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.dyna_actions import DynaAnalysis
-from simnexus.d3plot_actions import d3plot_File
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.dyna_actions import DynaAnalysis
+from kunene.d3plot_actions import d3plot_File
 
 def test_dyna_run_extract():
 

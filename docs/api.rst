@@ -2,40 +2,40 @@
 API Reference
 =============
 
-.. automodule:: simnexus.errors
+.. automodule:: kunene.errors
    :members:
 
-.. automodule:: simnexus.actions
+.. automodule:: kunene.actions
    :members:
 
-.. automodule:: simnexus.variables
+.. automodule:: kunene.variables
    :members:
 
-.. automodule:: simnexus.graph_actions
+.. automodule:: kunene.graph_actions
    :members:
 
-.. automodule:: simnexus.dyna_actions
+.. automodule:: kunene.dyna_actions
    :members:
 
-.. automodule:: simnexus.d3plot_actions
+.. automodule:: kunene.d3plot_actions
    :members:
 
-.. automodule:: simnexus.jinja_actions
+.. automodule:: kunene.jinja_actions
    :members:
 
-.. automodule:: simnexus.remote_actions
+.. automodule:: kunene.remote_actions
    :members:
 
-.. automodule:: simnexus.progress
+.. automodule:: kunene.progress
    :members:
 
-.. automodule:: simnexus.simulation_iterator
+.. automodule:: kunene.simulation_iterator
    :members:
 
-.. automodule:: simnexus.cleanup
+.. automodule:: kunene.cleanup
    :members:
 
-.. autoclass:: simnexus.args.Cleanup
+.. autoclass:: kunene.args.Cleanup
    :members:
 
 

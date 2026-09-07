@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from simnexus.protos import remote_actions_pb2 as simnexus_dot_protos_dot_remote__actions__pb2
+from kunene.protos import remote_actions_pb2 as kunene_dot_protos_dot_remote__actions__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in simnexus/protos/remote_actions_pb2_grpc.py depends on'
+        + ' but the generated code in kunene/protos/remote_actions_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class SimNexusRemoteStub(object):
+class KuneneRemoteStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -35,23 +35,23 @@ class SimNexusRemoteStub(object):
             channel: A grpc.Channel.
         """
         self.RunAction = channel.unary_unary(
-                '/simnexus.SimNexusRemote/RunAction',
-                request_serializer=simnexus_dot_protos_dot_remote__actions__pb2.ActionRequest.SerializeToString,
-                response_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.ActionResponse.FromString,
+                '/kunene.KuneneRemote/RunAction',
+                request_serializer=kunene_dot_protos_dot_remote__actions__pb2.ActionRequest.SerializeToString,
+                response_deserializer=kunene_dot_protos_dot_remote__actions__pb2.ActionResponse.FromString,
                 _registered_method=True)
         self.GetAvailableActions = channel.unary_unary(
-                '/simnexus.SimNexusRemote/GetAvailableActions',
-                request_serializer=simnexus_dot_protos_dot_remote__actions__pb2.Empty.SerializeToString,
-                response_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.FromString,
+                '/kunene.KuneneRemote/GetAvailableActions',
+                request_serializer=kunene_dot_protos_dot_remote__actions__pb2.Empty.SerializeToString,
+                response_deserializer=kunene_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.FromString,
                 _registered_method=True)
         self.GetProgress = channel.unary_unary(
-                '/simnexus.SimNexusRemote/GetProgress',
-                request_serializer=simnexus_dot_protos_dot_remote__actions__pb2.ProgressRequest.SerializeToString,
-                response_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.ProgressResponse.FromString,
+                '/kunene.KuneneRemote/GetProgress',
+                request_serializer=kunene_dot_protos_dot_remote__actions__pb2.ProgressRequest.SerializeToString,
+                response_deserializer=kunene_dot_protos_dot_remote__actions__pb2.ProgressResponse.FromString,
                 _registered_method=True)
 
 
-class SimNexusRemoteServicer(object):
+class KuneneRemoteServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def RunAction(self, request, context):
@@ -76,32 +76,32 @@ class SimNexusRemoteServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_SimNexusRemoteServicer_to_server(servicer, server):
+def add_KuneneRemoteServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'RunAction': grpc.unary_unary_rpc_method_handler(
                     servicer.RunAction,
-                    request_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.ActionRequest.FromString,
-                    response_serializer=simnexus_dot_protos_dot_remote__actions__pb2.ActionResponse.SerializeToString,
+                    request_deserializer=kunene_dot_protos_dot_remote__actions__pb2.ActionRequest.FromString,
+                    response_serializer=kunene_dot_protos_dot_remote__actions__pb2.ActionResponse.SerializeToString,
             ),
             'GetAvailableActions': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAvailableActions,
-                    request_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.Empty.FromString,
-                    response_serializer=simnexus_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.SerializeToString,
+                    request_deserializer=kunene_dot_protos_dot_remote__actions__pb2.Empty.FromString,
+                    response_serializer=kunene_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.SerializeToString,
             ),
             'GetProgress': grpc.unary_unary_rpc_method_handler(
                     servicer.GetProgress,
-                    request_deserializer=simnexus_dot_protos_dot_remote__actions__pb2.ProgressRequest.FromString,
-                    response_serializer=simnexus_dot_protos_dot_remote__actions__pb2.ProgressResponse.SerializeToString,
+                    request_deserializer=kunene_dot_protos_dot_remote__actions__pb2.ProgressRequest.FromString,
+                    response_serializer=kunene_dot_protos_dot_remote__actions__pb2.ProgressResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'simnexus.SimNexusRemote', rpc_method_handlers)
+            'kunene.KuneneRemote', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('simnexus.SimNexusRemote', rpc_method_handlers)
+    server.add_registered_method_handlers('kunene.KuneneRemote', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class SimNexusRemote(object):
+class KuneneRemote(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -118,9 +118,9 @@ class SimNexusRemote(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/simnexus.SimNexusRemote/RunAction',
-            simnexus_dot_protos_dot_remote__actions__pb2.ActionRequest.SerializeToString,
-            simnexus_dot_protos_dot_remote__actions__pb2.ActionResponse.FromString,
+            '/kunene.KuneneRemote/RunAction',
+            kunene_dot_protos_dot_remote__actions__pb2.ActionRequest.SerializeToString,
+            kunene_dot_protos_dot_remote__actions__pb2.ActionResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -145,9 +145,9 @@ class SimNexusRemote(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/simnexus.SimNexusRemote/GetAvailableActions',
-            simnexus_dot_protos_dot_remote__actions__pb2.Empty.SerializeToString,
-            simnexus_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.FromString,
+            '/kunene.KuneneRemote/GetAvailableActions',
+            kunene_dot_protos_dot_remote__actions__pb2.Empty.SerializeToString,
+            kunene_dot_protos_dot_remote__actions__pb2.AvailableActionsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -172,9 +172,9 @@ class SimNexusRemote(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/simnexus.SimNexusRemote/GetProgress',
-            simnexus_dot_protos_dot_remote__actions__pb2.ProgressRequest.SerializeToString,
-            simnexus_dot_protos_dot_remote__actions__pb2.ProgressResponse.FromString,
+            '/kunene.KuneneRemote/GetProgress',
+            kunene_dot_protos_dot_remote__actions__pb2.ProgressRequest.SerializeToString,
+            kunene_dot_protos_dot_remote__actions__pb2.ProgressResponse.FromString,
             options,
             channel_credentials,
             insecure,

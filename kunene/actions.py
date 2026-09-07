@@ -4,24 +4,24 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 import numpy as np
 
-from simnexus.args import EvalType
-from simnexus.cleanup import marks_removed
+from kunene.args import EvalType
+from kunene.cleanup import marks_removed
 
 import logging
 logger = logging.getLogger(__name__)
 
 from abc import ABC, abstractmethod
 
-from simnexus.util.observer import Subject, notify_observers
-from simnexus.util import parallel
+from kunene.util.observer import Subject, notify_observers
+from kunene.util import parallel
 
-from simnexus.variables import Variable, UnknownVariable
-from simnexus.errors import ActionNameError, ParameterError, EvaluationError
+from kunene.variables import Variable, UnknownVariable
+from kunene.errors import ActionNameError, ParameterError, EvaluationError
 
 
 # key under which a child process stores its traceback in the shared result
 # dict of an asynchronous action
-ASYNC_ERROR_KEY = '__simnexus_async_error__'
+ASYNC_ERROR_KEY = '__kunene_async_error__'
 
 
 def _async_eval_worker( action, val_dict, result_dict ):
@@ -141,14 +141,14 @@ class WorkAction(Subject):
         upper_bound (float) : Lower bound on output value during design
         keep (list) : Glob patterns of files this action produces that a
             work area's ``cleanup`` must never delete (see
-            :class:`simnexus.args.Cleanup`). E.g. ``keep=['d3plot']`` on a
+            :class:`kunene.args.Cleanup`). E.g. ``keep=['d3plot']`` on a
             solver action keeps the first plot when the state files go.
     Returns:
         Any: outcome of operation
     """
 
     # A SimulationIterator numbers and cleans its own job directories; an
-    # enclosing cleanup plan does not reach into them. See simnexus.cleanup.
+    # enclosing cleanup plan does not reach into them. See kunene.cleanup.
     _cleans_own_dirs = False
 
     # A container that only groups other actions holds no entry of its own
@@ -178,7 +178,7 @@ class WorkAction(Subject):
         self._results = None
 
         # set by the enclosing graph before solve(); solver actions report
-        # percent-complete through it (see simnexus.progress)
+        # percent-complete through it (see kunene.progress)
         self._progress_reporter = None
 
         self.data_type = data_type
@@ -322,7 +322,7 @@ class WorkAction(Subject):
         no result. The error text (with traceback) is kept on
         self._async_error for the enclosing graph to raise.
 
-        The start method comes from ``simnexus.util.parallel``: ``fork``
+        The start method comes from ``kunene.util.parallel``: ``fork``
         where the platform has it, ``spawn`` on Windows. Under ``spawn``
         this action and the values handed to it are pickled to reach the
         child, so an action holding something unpicklable can only run
@@ -592,7 +592,7 @@ class WorkAction(Subject):
         default is to declare nothing disposable.
 
         Patterns are globs relative to the action's run directory, as in
-        :meth:`_produced_files`. See :mod:`simnexus.cleanup`.
+        :meth:`_produced_files`. See :mod:`kunene.cleanup`.
 
         Returns:
             list : list of glob patterns (str).

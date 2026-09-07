@@ -3,11 +3,11 @@
 from pathlib import Path
 import pytest
 
-from simnexus.args import Cleanup
-from simnexus.actions import WorkAction, MathEvaluation
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.simulation_iterator import SimulationIterator
-from simnexus.errors import SolverError
+from kunene.args import Cleanup
+from kunene.actions import WorkAction, MathEvaluation
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.simulation_iterator import SimulationIterator
+from kunene.errors import SolverError
 
 
 class FakeSolver( WorkAction ):

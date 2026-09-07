@@ -1,5 +1,5 @@
 # Overview
-The 'simnexus' python module is for modelling of complex simulations worklows.
+The 'kunene' python module is for modelling of complex simulations worklows.
 The workflow consists of of actions assembled into a directed graph.
 The actions can be varied; e.g. a strutural evaluations, a mathematical operation, or a file edit.
 Part of the graph can be performed on remote computers. 
@@ -13,14 +13,14 @@ the execution of these actions till the required prior actions have completed.
 The project directory and core classes are given below.
 
 ```
-simnexus/
+kunene/
 ├── GEMINI.md
 ├── LICENSE
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
 ├── docs/                   # documentation maintained using sphinx
-├── simnexus/                # python code directory
+├── kunene/                # python code directory
 │   ├── GEMINI.md           # implementaion details of the classes
 │   ├── __init__.py
 │   ├── actions.py          # base class for all actions in the graph
@@ -44,7 +44,7 @@ simnexus/
 
 # The Action base class
 
-The `WorkAction` base class (defined in `simnexus/actions.py`) is the base building block for operations in a workflow. It inherits from `Subject` to support the observer pattern, allowing the workflow manager (like `DirectedGraph` or `WorkFlow`) to track execution status.
+The `WorkAction` base class (defined in `kunene/actions.py`) is the base building block for operations in a workflow. It inherits from `Subject` to support the observer pattern, allowing the workflow manager (like `DirectedGraph` or `WorkFlow`) to track execution status.
 
 Key features:
 - **`solve(self, val_dict)`**: The abstract method that performs the action's logic. It receives a dictionary `val_dict` containing the current values of variables and results from prior actions. This method returns the data computed by the class.
@@ -60,7 +60,7 @@ Subclasses of `WorkAction` implement specific tasks, such as `MathEvaluation` (p
 
 **Action names** must be valid Python identifiers (letters, digits and underscores, not starting with a digit, and not a Python keyword). Names become keys in `val_dict`, and `MathEvaluation` evaluates its expression against those names, so a name containing a space or other punctuation (e.g. `'m__case_1__TE all'`) would break the expression. Names are validated in `WorkAction.__init__` via `validate_action_name()`; an invalid name raises `ActionNameError`.
 
-**Error handling.** All errors raised by simnexus derive from `SimNexusError` (defined in `simnexus/errors.py`, re-exported from `simnexus`): `ActionNameError` (invalid/duplicate names), `ParameterError` (missing/unresolvable parameter values), `EvaluationError` (a `MathEvaluation` expression failed), `SolverError` (an external solver run failed), `MissingPathError` (required file/directory not found; also a `FileNotFoundError`), and `DataNotFoundError` (requested result data not available, e.g. a d3plot component). Catch `SimNexusError` to handle any workflow failure.
+**Error handling.** All errors raised by kunene derive from `KuneneError` (defined in `kunene/errors.py`, re-exported from `kunene`): `ActionNameError` (invalid/duplicate names), `ParameterError` (missing/unresolvable parameter values), `EvaluationError` (a `MathEvaluation` expression failed), `SolverError` (an external solver run failed), `MissingPathError` (required file/directory not found; also a `FileNotFoundError`), and `DataNotFoundError` (requested result data not available, e.g. a d3plot component). Catch `KuneneError` to handle any workflow failure.
 
 **Result structure and flattening.** A graph appends each action's output to `val_dict` under the action's name and returns it. Results are kept *structured*: a `WorkArea` (or a sub-graph) contributes its outputs as a nested dict stored under its own name, rather than flattening them into the parent. This preserves provenance and avoids name collisions between parallel branches (e.g. two solvers with same-named actions). Flattening is applied only where names must resolve textually: `MathEvaluation.solve` builds a flattened view of `val_dict` (via `_flatten_namespace`) for its `eval`, so an expression can reference an action nested inside a `WorkArea` directly by its name. Shallower names take precedence over deeper ones on a clash.
 
@@ -78,16 +78,16 @@ Asynchronous Execution: `_observed_eval_async` allows running the action in a se
 
 # Child processes and start methods
 
-Two things run work in another process: an `asynch` `DirectedGraph` (a process per action) and a `SimulationIterator` with `max_workers` > 1 (a process per job). Both get their start method from `simnexus/util/parallel.py`: `fork` where the platform has it, `spawn` where it does not (Windows always; Python 3.14 no longer defaults to fork on Linux either). `SIMNEXUS_START_METHOD=spawn` forces the Windows path anywhere, which is how the test suite exercises it on Linux.
+Two things run work in another process: an `asynch` `DirectedGraph` (a process per action) and a `SimulationIterator` with `max_workers` > 1 (a process per job). Both get their start method from `kunene/util/parallel.py`: `fork` where the platform has it, `spawn` where it does not (Windows always; Python 3.14 no longer defaults to fork on Linux either). `KUNENE_START_METHOD=spawn` forces the Windows path anywhere, which is how the test suite exercises it on Linux.
 
-`fork` gives the child a copy of the calling process, so nothing has to be picklable. `spawn` starts a fresh interpreter and pickles the target and its arguments across, so the graph and its actions must be picklable: action classes belong in an importable module (a `.py` file on `sys.path`), not in the calling script or inside a function, and open files, sockets and handles belong in `solve` rather than in an action's attributes. simnexus starts its spawned children (`parallel.start_process`, `parallel.start_manager`) without letting them re-import the calling script, so the script runs once, as written; a class or function defined in the script itself therefore cannot be found by the child, and `start_process` detects that before starting anything and raises `SpawnError` naming it. `SIMNEXUS_SPAWN_IMPORTS_MAIN=1` (or `parallel.IMPORT_MAIN = True`) makes the child re-import the script instead, as stock `multiprocessing` does. simnexus' own unpicklable state is handled for you: `WorkAction.__getstate__` drops the live `_async_proc`, `SimulationIterator.__getstate__` drops the results-root `StatusReporter` (the parent alone writes that file), and `StatusReporter.__getstate__`/`__setstate__` drop and rebuild the lock, event and heartbeat thread. Everything else — job directories, `status.json`, `job.log`, the progress bars, the index, the failure semantics — is identical on both start methods.
+`fork` gives the child a copy of the calling process, so nothing has to be picklable. `spawn` starts a fresh interpreter and pickles the target and its arguments across, so the graph and its actions must be picklable: action classes belong in an importable module (a `.py` file on `sys.path`), not in the calling script or inside a function, and open files, sockets and handles belong in `solve` rather than in an action's attributes. kunene starts its spawned children (`parallel.start_process`, `parallel.start_manager`) without letting them re-import the calling script, so the script runs once, as written; a class or function defined in the script itself therefore cannot be found by the child, and `start_process` detects that before starting anything and raises `SpawnError` naming it. `KUNENE_SPAWN_IMPORTS_MAIN=1` (or `parallel.IMPORT_MAIN = True`) makes the child re-import the script instead, as stock `multiprocessing` does. kunene' own unpicklable state is handled for you: `WorkAction.__getstate__` drops the live `_async_proc`, `SimulationIterator.__getstate__` drops the results-root `StatusReporter` (the parent alone writes that file), and `StatusReporter.__getstate__`/`__setstate__` drop and rebuild the lock, event and heartbeat thread. Everything else — job directories, `status.json`, `job.log`, the progress bars, the index, the failure semantics — is identical on both start methods.
 
 
 # Remote execution
-The `simnexus.remote_actions` module enables executing of actions on remote compute resources. It consists of the following:
+The `kunene.remote_actions` module enables executing of actions on remote compute resources. It consists of the following:
 - **`ServerAction` / `NamedServerAction` (Remote)**: A gRPC server that accepts tasks, executes them in isolated temporary directories, and returns results. It supports registering named graphs via `add_graph(name, graph, description)` to enforce a secure registry-based execution model.
 - **`RemoteAction` (Client)**: A wrapper that specifies a `target_action_name` to execute a pre-registered action on the server. It retrieves the results and generated files. Discoverability of server-side actions is provided via `available_actions()`.
-- Variable values and results cross the wire as restricted JSON (`simnexus/serialization.py`), not pickle: only plain data types and numeric numpy arrays are accepted, so decoding a payload cannot execute code. Values outside the whitelist raise `SerializationError`.
+- Variable values and results cross the wire as restricted JSON (`kunene/serialization.py`), not pickle: only plain data types and numeric numpy arrays are accepted, so decoding a payload cannot execute code. Values outside the whitelist raise `SerializationError`.
 - Remote progress: while a remote job runs, the client polls the server's `GetProgress` RPC and mirrors the remote status into the local `status.json` under the `RemoteAction`'s entry (fraction and a `remote <action>: ...` message). A GUI watching the local results tree sees remote progress without knowing about gRPC.
 
 
@@ -95,8 +95,8 @@ The `simnexus.remote_actions` module enables executing of actions on remote comp
 
 Solver field output is what fills a disk during a study, so `WorkArea` and
 `SimulationIterator` take a `cleanup` argument: a `Cleanup` policy
-(`simnexus/args.py`, re-exported from `simnexus`) applied by
-`simnexus/cleanup.py` once a run has finished. The split is deliberate — the
+(`kunene/args.py`, re-exported from `kunene`) applied by
+`kunene/cleanup.py` once a run has finished. The split is deliberate — the
 *actions* declare which of their files are bulk output (`_disposable_files()`,
 with a per-action `keep=[...]` constructor argument to subtract from it), while
 the *work areas* decide when deleting is safe: only after the whole graph has
@@ -116,7 +116,7 @@ entries cleanup removes.
 
 # Progress reporting
 
-Long runs report progress through `status.json` files (`simnexus/progress.py`), written atomically into the work directories so an external consumer (e.g. a GUI in a separate process) can poll them safely at any moment. A `DirectedGraph`/`WorkFlow` writes per-action states (`pending`/`running`/`done`/`failed`) into its run directory; a `SimulationIterator` writes job counts (`jobs_total`, `jobs_done`, `current_job`, `current_jobs`, state `running`/`idle`/`done`/`failed`) at the results root, where `current_jobs` lists the jobs running at that moment (more than one with `max_workers` > 1) and `current_job` the last one started. The counts belong to the batch being run, not to the iterator's lifetime: `collect_for_expdes`, `collect_for_varrange` and `solve_parallel` each set `jobs_total` and start `jobs_done` from zero, and each ends by writing the final state and releasing the results root, so a re-run of the same study — a new iterator on the same directory — owns the file and is the run a reader sees. A bare `solve()` is one design point and belongs to no batch, so it reports `jobs_total: null`. When a job of a parallel batch fails, the jobs terminated with it are marked failed in their own `status.json` by the parent (`progress.mark_failed`), since their processes are gone, and `current_jobs` is emptied. A heartbeat thread keeps `updated_at` fresh so a reader can tell a slow run from a dead one (`progress.is_alive`). Reader-side helpers: `StatusWatcher` (poll one file), `RunWatcher` (follow a results tree: root plus the job(s) running now; non-blocking `poll()` for GUI timers), `watch_run` (blocking generator for scripts), `format_status` (text rendering). The entries of a status file are the *actions*, never the containers holding them: a `DirectedGraph` and a `WorkArea` are pass-through (`WorkAction._progress_names`), so they hold no entry of their own and the actions inside them are registered instead. A graph nested in the same directory therefore does not write its own file at all -- it reports through the owner's reporter -- while a `WorkArea` writes its own file *and* reports into the enclosing graph's (`progress.MultiReporter`), so a job's progress follows the solver inside the work area rather than waiting for the whole area to finish. A `SimulationIterator` and a `RemoteAction` are not pass-through: they keep one entry and report their own fraction into it (jobs done, remote progress). Where more than one action runs at once (an `asynch` graph), `job_fraction` names them all: `3 of 5 running: rad_a (80%), rad_b (34%)`. Solver actions (`DynaAnalysis`, `RadiossAnalysis`, `RadiossUsingDynaInput`, `OpenFOAMAnalysis`) report percent-complete while running: a background thread (`progress.FileProgressTail`) polls the solver's redirected stdout, extracts the current simulation time (parsers in `simnexus/util/solver_progress.py`), and reports `fraction` = time/termination-time plus a `message` like `time 12.9 of 40`; the termination time is read from the input deck (`*CONTROL_TERMINATION`, `/RUN` card, or `controlDict endTime`). If the deck or output cannot be parsed, the fraction simply stays `null`. Progress also works for `asynch` graphs: an action running in a child process writes per-action sidecar files that the owning process merges into `status.json` (see `simnexus/GEMINI.md` for details).
+Long runs report progress through `status.json` files (`kunene/progress.py`), written atomically into the work directories so an external consumer (e.g. a GUI in a separate process) can poll them safely at any moment. A `DirectedGraph`/`WorkFlow` writes per-action states (`pending`/`running`/`done`/`failed`) into its run directory; a `SimulationIterator` writes job counts (`jobs_total`, `jobs_done`, `current_job`, `current_jobs`, state `running`/`idle`/`done`/`failed`) at the results root, where `current_jobs` lists the jobs running at that moment (more than one with `max_workers` > 1) and `current_job` the last one started. The counts belong to the batch being run, not to the iterator's lifetime: `collect_for_expdes`, `collect_for_varrange` and `solve_parallel` each set `jobs_total` and start `jobs_done` from zero, and each ends by writing the final state and releasing the results root, so a re-run of the same study — a new iterator on the same directory — owns the file and is the run a reader sees. A bare `solve()` is one design point and belongs to no batch, so it reports `jobs_total: null`. When a job of a parallel batch fails, the jobs terminated with it are marked failed in their own `status.json` by the parent (`progress.mark_failed`), since their processes are gone, and `current_jobs` is emptied. A heartbeat thread keeps `updated_at` fresh so a reader can tell a slow run from a dead one (`progress.is_alive`). Reader-side helpers: `StatusWatcher` (poll one file), `RunWatcher` (follow a results tree: root plus the job(s) running now; non-blocking `poll()` for GUI timers), `watch_run` (blocking generator for scripts), `format_status` (text rendering). The entries of a status file are the *actions*, never the containers holding them: a `DirectedGraph` and a `WorkArea` are pass-through (`WorkAction._progress_names`), so they hold no entry of their own and the actions inside them are registered instead. A graph nested in the same directory therefore does not write its own file at all -- it reports through the owner's reporter -- while a `WorkArea` writes its own file *and* reports into the enclosing graph's (`progress.MultiReporter`), so a job's progress follows the solver inside the work area rather than waiting for the whole area to finish. A `SimulationIterator` and a `RemoteAction` are not pass-through: they keep one entry and report their own fraction into it (jobs done, remote progress). Where more than one action runs at once (an `asynch` graph), `job_fraction` names them all: `3 of 5 running: rad_a (80%), rad_b (34%)`. Solver actions (`DynaAnalysis`, `RadiossAnalysis`, `RadiossUsingDynaInput`, `OpenFOAMAnalysis`) report percent-complete while running: a background thread (`progress.FileProgressTail`) polls the solver's redirected stdout, extracts the current simulation time (parsers in `kunene/util/solver_progress.py`), and reports `fraction` = time/termination-time plus a `message` like `time 12.9 of 40`; the termination time is read from the input deck (`*CONTROL_TERMINATION`, `/RUN` card, or `controlDict endTime`). If the deck or output cannot be parsed, the fraction simply stays `null`. Progress also works for `asynch` graphs: an action running in a child process writes per-action sidecar files that the owning process merges into `status.json` (see `kunene/GEMINI.md` for details).
 
 # Results directory structure for SimulationIterator
 
@@ -157,7 +157,7 @@ and the values can be integers, floats, a numpy float, a list of floats,
 a numpy 1D array of floats, or an image stored as an numpy array.
 
 The jobs_index.json file at the results root indexes the job directories
-(`simnexus/simulation_iterator.py`, alongside `SimulationIterator` itself): one
+(`kunene/simulation_iterator.py`, alongside `SimulationIterator` itself): one
 record per job holding the job directory name, the
 variable values it was run with, its state (`running`/`done`/`failed`), and any group
 labels. It lets past results be retrieved by variable value and lets runs be grouped,

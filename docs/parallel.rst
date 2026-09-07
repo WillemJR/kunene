@@ -44,8 +44,8 @@ runs when all of them have finished.
 
 .. code-block:: python
 
-    from simnexus.graph_actions import DirectedGraph, WorkFlow, WorkArea
-    from simnexus.actions import MathEvaluation
+    from kunene.graph_actions import DirectedGraph, WorkFlow, WorkArea
+    from kunene.actions import MathEvaluation
 
     dg = DirectedGraph('TwoSolvers', asynch=True)
 
@@ -151,7 +151,7 @@ jobs of the batch, and under it a bar per job running right now::
 
 A job's bar is fed from the ``status.json`` that job writes, so it follows
 the job through its actions and shows a solver's percent-complete while one
-runs (:func:`simnexus.progress.job_fraction` is what turns those action
+runs (:func:`kunene.progress.job_fraction` is what turns those action
 states into the one number the bar needs). An action of your own reports
 itself the same way, by calling ``self.report_progress(fraction, message)``
 inside ``solve``.
@@ -175,7 +175,7 @@ the solver in the work area rather than sitting at nothing until the whole
 area is finished, and it makes no difference to the bars whether the
 solvers of a study are wrapped in work areas or not.
 
-The bars appear when tqdm is installed (``pip install simnexus[progress]``)
+The bars appear when tqdm is installed (``pip install kunene[progress]``)
 and stderr is a terminal, so they never litter a log file; pass
 ``progress_bar=True``/``False`` to ``solve_parallel``,
 ``collect_for_expdes`` or ``collect_for_varrange`` to decide explicitly.
@@ -190,8 +190,8 @@ no bars to disturb.
 
 Each job writes its own ``status.json``, and the root ``status.json``
 lists the jobs running at that moment in ``current_jobs``, so
-:func:`simnexus.progress.watch_run` — or a GUI polling the results tree
-with :class:`simnexus.progress.RunWatcher` — shows all of them at once,
+:func:`kunene.progress.watch_run` — or a GUI polling the results tree
+with :class:`kunene.progress.RunWatcher` — shows all of them at once,
 from another process if need be.
 
 The root file's counts are the *batch's*: ``jobs_total`` is the number of
@@ -215,10 +215,10 @@ agree about what happened.
 Child processes and start methods
 ---------------------------------
 
-The two places simnexus runs work in another process — a sweep with
+The two places kunene runs work in another process — a sweep with
 ``max_workers`` > 1, and an ``asynch`` graph — start their children with
 ``fork`` where the platform has it and with ``spawn`` where it does not,
-which on Windows is always.  ``simnexus.util.parallel.get_context`` makes
+which on Windows is always.  ``kunene.util.parallel.get_context`` makes
 the choice.
 
 Under ``fork`` the child is a copy of the calling process and inherits
@@ -229,14 +229,14 @@ caller: **keep the graph picklable, without the script.**  Define your
 action classes in a module the child can import — any ``.py`` file on
 ``sys.path`` — not in the script that starts the run and not inside a
 function, and keep open files, sockets and database handles out of an
-action's attributes; build them in ``solve`` instead.  simnexus' own
+action's attributes; build them in ``solve`` instead.  kunene' own
 unpicklable state (progress locks, heartbeat threads, live child processes)
 is dropped and rebuilt for you.
 
 The script itself is not re-imported by the children (they need nothing
 from it), so it runs once, as written::
 
-    from simnexus.graph_actions import WorkFlow, SimulationIterator
+    from kunene.graph_actions import WorkFlow, SimulationIterator
     from my_actions import Mesh, Solve       # an importable module
 
     wf = WorkFlow('Study', actions=[Mesh('mesh'), Solve('run')])
@@ -244,9 +244,9 @@ from it), so it runs once, as written::
     pars, out = itr.collect_for_varrange({'K': [100., 200., 300.]})
 
 Had ``Mesh`` been defined in this script instead, the child could not find
-it, and simnexus refuses the start with a ``SpawnError`` naming the class
+it, and kunene refuses the start with a ``SpawnError`` naming the class
 rather than letting the child die on it.  Move the class into a module;
-or set ``SIMNEXUS_SPAWN_IMPORTS_MAIN=1`` to have every child re-import the
+or set ``KUNENE_SPAWN_IMPORTS_MAIN=1`` to have every child re-import the
 script as stock multiprocessing does, in which case the script must not
 start the run at top level.
 
@@ -255,6 +255,6 @@ Everything else is the same on both start methods: the job directories, the
 index and the failure semantics.  Spawning is a little slower to start each
 job, which matters only for jobs that are themselves quick.
 
-Set ``SIMNEXUS_START_METHOD=spawn`` to use the Windows path on Linux — to
+Set ``KUNENE_START_METHOD=spawn`` to use the Windows path on Linux — to
 reproduce a Windows problem, or in a process that has already started
 threads and must not fork.

@@ -5,11 +5,11 @@ import tempfile
 import time
 from pathlib import Path
 
-from simnexus.actions import WorkAction
-from simnexus.args import STATUS_PATH
-from simnexus.graph_actions import WorkFlow
-from simnexus.progress import StatusReporter, FileProgressTail
-from simnexus.util import solver_progress as sp
+from kunene.actions import WorkAction
+from kunene.args import STATUS_PATH
+from kunene.graph_actions import WorkFlow
+from kunene.progress import StatusReporter, FileProgressTail
+from kunene.util import solver_progress as sp
 
 
 # samples copied from real output in this repository

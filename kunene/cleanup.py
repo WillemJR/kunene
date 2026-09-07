@@ -3,7 +3,7 @@ Removing bulk solver output from run directories after a graph has run.
 
 A design study keeps every job directory, and solver field output (d3plot
 files, OpenRadioss animation files, VTK directories) is what fills a disk.
-The policy for removing it is a :class:`simnexus.args.Cleanup`, passed as
+The policy for removing it is a :class:`kunene.args.Cleanup`, passed as
 the ``cleanup`` argument of a ``WorkArea`` or a ``SimulationIterator``.
 
 The split of responsibility is deliberate:
@@ -24,7 +24,7 @@ import fnmatch
 import shutil
 from pathlib import Path
 
-from simnexus.args import PROTECTED_FROM_CLEANUP
+from kunene.args import PROTECTED_FROM_CLEANUP
 
 import logging
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def _apply_plan( plan, dry_run=False ):
     """
     Delete the files a plan selects.
 
-    Protected files (``simnexus.args.PROTECTED_FROM_CLEANUP``) and the run
+    Protected files (``kunene.args.PROTECTED_FROM_CLEANUP``) and the run
     directories of the plan itself are never removed, whatever the patterns
     match -- so a ``Cleanup( remove='*' )`` empties a job directory without
     taking out the nested work area whose own files are being kept.

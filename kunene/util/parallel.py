@@ -1,8 +1,8 @@
 """
-Choosing the multiprocessing start method simnexus runs child processes
+Choosing the multiprocessing start method kunene runs child processes
 with, and starting them so that the calling script is left alone.
 
-Two places in simnexus run work in a child process: a ``SimulationIterator``
+Two places in kunene run work in a child process: a ``SimulationIterator``
 with ``max_workers`` > 1 (a process per job) and an ``asynch``
 ``DirectedGraph`` (a process per action). Both used to ask for ``fork``
 explicitly, which exists only on POSIX -- on Windows the request fell
@@ -23,8 +23,8 @@ on Python 3.14, where ``fork`` is no longer the default on Linux either.
 again (as ``__mp_main__``) so that objects pickled by reference to it can
 be found -- so the script's top-level code runs once more in every child,
 and a script that starts the run at top level starts it again there
-(multiprocessing raises a RuntimeError about bootstrapping). simnexus does
-not need the script in the child: the workers live in simnexus modules and
+(multiprocessing raises a RuntimeError about bootstrapping). kunene does
+not need the script in the child: the workers live in kunene modules and
 the graph travels as a pickle. So ``start_process`` hides ``__main__``'s
 ``__spec__`` and ``__file__`` from multiprocessing while it collects what
 the child is told to import, and the child comes up without touching the
@@ -35,10 +35,10 @@ to the script* -- an action class (or a function) defined in the script
 itself, since the child has no ``__main__`` to look it up in. ``start_process``
 checks for that before starting the child and raises ``SpawnError`` naming
 the offender: move it into a module the child can import. Setting
-``IMPORT_MAIN`` (or ``SIMNEXUS_SPAWN_IMPORTS_MAIN=1``) restores
+``IMPORT_MAIN`` (or ``KUNENE_SPAWN_IMPORTS_MAIN=1``) restores
 multiprocessing's behaviour instead, with what it implies for the script.
 
-Set ``SIMNEXUS_START_METHOD`` (or ``simnexus.util.parallel.START_METHOD``)
+Set ``KUNENE_START_METHOD`` (or ``kunene.util.parallel.START_METHOD``)
 to force one method -- useful to exercise the Windows path on Linux, or to
 avoid ``fork`` in a process that has already started threads.
 """
@@ -51,7 +51,7 @@ import threading
 import multiprocessing
 from types import FunctionType
 
-from simnexus.errors import SpawnError
+from kunene.errors import SpawnError
 
 import logging
 logger = logging.getLogger( __name__ )
@@ -61,7 +61,7 @@ logger = logging.getLogger( __name__ )
 # ('fork', 'spawn', 'forkserver'). None leaves the choice to this module.
 START_METHOD = None
 
-ENV_VAR = 'SIMNEXUS_START_METHOD'
+ENV_VAR = 'KUNENE_START_METHOD'
 
 # cheapest first; the first one this platform has is used
 PREFERRED_METHODS = ( 'fork', 'spawn' )
@@ -72,7 +72,7 @@ PREFERRED_METHODS = ( 'fork', 'spawn' )
 # again in every child. None defers to the environment.
 IMPORT_MAIN = None
 
-IMPORT_MAIN_ENV_VAR = 'SIMNEXUS_SPAWN_IMPORTS_MAIN'
+IMPORT_MAIN_ENV_VAR = 'KUNENE_SPAWN_IMPORTS_MAIN'
 
 # ``__main__`` is process-wide state; one start at a time may hide it
 _main_lock = threading.Lock()
@@ -90,12 +90,12 @@ def _wanted_methods( preferred=None ):
 
 def get_context( preferred=None ):
     """
-    A ``multiprocessing`` context to start simnexus child processes with:
+    A ``multiprocessing`` context to start kunene child processes with:
     ``fork`` where the platform has it, ``spawn`` otherwise (Windows).
 
     Arguments:
         preferred (str) : start method to try first, overriding
-            ``START_METHOD`` and ``$SIMNEXUS_START_METHOD``.
+            ``START_METHOD`` and ``$KUNENE_START_METHOD``.
     Returns:
         multiprocessing.context.BaseContext
     """
@@ -247,7 +247,7 @@ def start_process( ctx, target, args=() ):
             f"{'is' if len( offenders ) == 1 else 'are'} defined in the "
             "calling script, and the child does not import the script. "
             "Move it into a module the child can import (any .py file on "
-            "sys.path), or set SIMNEXUS_SPAWN_IMPORTS_MAIN=1 to let the "
+            "sys.path), or set KUNENE_SPAWN_IMPORTS_MAIN=1 to let the "
             "child re-import the script as multiprocessing normally does "
             "-- in which case the script must not start the run at top "
             "level." )

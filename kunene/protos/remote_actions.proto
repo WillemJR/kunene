@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package simnexus;
+package kunene;
 
-service SimNexusRemote {
+service KuneneRemote {
   rpc RunAction (ActionRequest) returns (ActionResponse) {}
   rpc GetAvailableActions (Empty) returns (AvailableActionsResponse) {}
   // Poll the progress of a running job (status.json of its work directory).
@@ -38,7 +38,7 @@ message File {
 
 message ActionRequest {
   string action_name = 1;
-  // Restricted JSON (see simnexus/serialization.py), not pickle.
+  // Restricted JSON (see kunene/serialization.py), not pickle.
   // Field name kept for wire compatibility with the generated pb2 modules.
   bytes pickled_val_dict = 3;
   repeated File input_files = 4;
@@ -50,7 +50,7 @@ message ActionRequest {
 message ActionResponse {
   bool success = 1;
   string error_message = 2;
-  // The result dictionary as restricted JSON (see simnexus/serialization.py).
+  // The result dictionary as restricted JSON (see kunene/serialization.py).
   bytes pickled_results = 3;
   repeated File output_files = 4;
 }

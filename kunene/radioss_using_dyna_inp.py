@@ -6,15 +6,15 @@ import json
 from pathlib import Path
 import subprocess
 
-from simnexus.errors import MissingPathError, SolverError
-from simnexus.progress import FileProgressTail
-from simnexus.util import solver_progress
-from simnexus.radioss_actions import RadiossAnalysis
-from simnexus.dyna_actions import DynaAnalysis
+from kunene.errors import MissingPathError, SolverError
+from kunene.progress import FileProgressTail
+from kunene.util import solver_progress
+from kunene.radioss_actions import RadiossAnalysis
+from kunene.dyna_actions import DynaAnalysis
 
-from simnexus.args import RADIOSS_ROOT_NAME
-from simnexus.args import RADIOSS_BASE_F_NAME # _0000
-from simnexus.args import RADIOSS_ENGINE_F_NAME # _0001
+from kunene.args import RADIOSS_ROOT_NAME
+from kunene.args import RADIOSS_BASE_F_NAME # _0000
+from kunene.args import RADIOSS_ENGINE_F_NAME # _0001
 
 
 #class DynaUsingRadioss(RadiossAnalysis,DynaAnalysis):
