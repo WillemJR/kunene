@@ -2,7 +2,7 @@
 Overview
 --------
 
-`Simnexus` enables the automation and coordination of
+`Kunene` enables the automation and coordination of
 multi-physics simulation workflows — from input preparation and
 remote execution to results extraction and post-processing.
 The module is particularly suited for simulations that span
@@ -12,7 +12,7 @@ The solvers a design needs can run at the same time, and a simulation
 iterator can evaluate the whole graph for several design points at once,
 each in its own job directory.
 
-`SimNexus` has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.
+`Kunene` has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.
 
 Key Features
 ------------
@@ -28,7 +28,7 @@ Key Features
 Requirements
 ------------
 
-`Simnexus` has so far only been tested on Linux and WSL.
+`Kunene` has so far only been tested on Linux and WSL.
 Windows testing is not yet complete; use WSL.
 
 
@@ -40,7 +40,7 @@ The user usually need to:
 1. Parameterize input files for target solvers
 2. Define the actions and their dependencies
 
-The typical `simnexus` steps are:
+The typical `kunene` steps are:
 
 1. Update parameter values with the values for the current design
 2. Execute simulations on designated compute resources (local or remote), possibly in parallel

@@ -4,10 +4,10 @@ import json
 import subprocess
 from pathlib import Path
 
-import simnexus.args
-from simnexus.actions import WorkAction
-from simnexus.errors import MissingPathError, DataNotFoundError
-from simnexus.graph_actions import WorkFlow
+import kunene.args
+from kunene.actions import WorkAction
+from kunene.errors import MissingPathError, DataNotFoundError
+from kunene.graph_actions import WorkFlow
 
 import logging
 logger = logging.getLogger(__name__)

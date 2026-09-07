@@ -3,10 +3,10 @@ from pathlib import Path
 
 import numpy as np
 
-from simnexus.actions import WorkAction
-from simnexus.args import RADIOSS_ROOT_NAME
+from kunene.actions import WorkAction
+from kunene.args import RADIOSS_ROOT_NAME
 
-import simnexus.VTK.read_vtk as read_vtk # pulls in pyvista
+import kunene.VTK.read_vtk as read_vtk # pulls in pyvista
 
 import logging
 logger = logging.getLogger(__name__)

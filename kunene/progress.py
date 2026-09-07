@@ -64,7 +64,7 @@ import time
 import weakref
 from pathlib import Path
 
-from simnexus.args import STATUS_PATH
+from kunene.args import STATUS_PATH
 
 import logging
 logger = logging.getLogger(__name__)
@@ -441,7 +441,7 @@ class FileProgressTail:
     file, and the termination time is known from the input deck. This
     thread polls the tail of that file every ``interval`` seconds, extracts
     the latest time with ``parse_time`` (see
-    ``simnexus.util.solver_progress``), and reports
+    ``kunene.util.solver_progress``), and reports
     ``(time - t_start) / (t_end - t_start)`` as the action's ``fraction``.
 
     Start it right before the blocking ``subprocess.run`` and stop it in a

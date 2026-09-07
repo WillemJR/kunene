@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from simnexus.util.openradios_reader import OpenRadiosKeywordReader
+from kunene.util.openradios_reader import OpenRadiosKeywordReader
 
 SAMPLE_KEYWORD_FILE = """\
 #RADIOSS STARTER

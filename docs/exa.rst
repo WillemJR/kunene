@@ -12,9 +12,9 @@ The study is parameterized using the \*PARAMETER keyword.
 
 .. code-block:: python
 
-    from simnexus.graph_actions import WorkFlow, WorkArea
-    from simnexus.dyna_actions import DynaAnalysis
-    from simnexus.d3plot_actions import d3plot_File
+    from kunene.graph_actions import WorkFlow, WorkArea
+    from kunene.dyna_actions import DynaAnalysis
+    from kunene.d3plot_actions import d3plot_File
 
     # 1. Define a workflow
     wf = WorkFlow("DynaWorkflow")
@@ -57,9 +57,9 @@ the OpenRadioss input deck.
 
         from pathlib import Path
 
-        from simnexus.radioss_actions import RadiossAnalysis
-        from simnexus.d3plot_actions import d3plot_File
-        from simnexus.graph_actions import WorkFlow, WorkArea
+        from kunene.radioss_actions import RadiossAnalysis
+        from kunene.d3plot_actions import d3plot_File
+        from kunene.graph_actions import WorkFlow, WorkArea
 
         # Paths
         starter_deck = Path('models/cube_TYPE7_0000.rad')
@@ -109,9 +109,9 @@ workflow.  This works for any solver — the use of jinja is never required:
 
     from pathlib import Path
 
-    from simnexus.jinja_actions import JinjaReplace
-    from simnexus.radioss_actions import RadiossAnalysis
-    from simnexus.graph_actions import WorkFlow, WorkArea
+    from kunene.jinja_actions import JinjaReplace
+    from kunene.radioss_actions import RadiossAnalysis
+    from kunene.graph_actions import WorkFlow, WorkArea
 
     template    = Path('models/cube_TYPE7_tmpl.rad')   # holds '{{E}}'
     engine_deck = Path('models/cube_TYPE7_0001.rad')
@@ -141,9 +141,9 @@ substituted deck is run by OpenRadioss:
 
 .. code-block:: python
 
-    from simnexus.jinja_actions import JinjaReplace
-    from simnexus.radioss_using_dyna_inp import RadiossUsingDynaInput
-    from simnexus.graph_actions import WorkFlow, WorkArea
+    from kunene.jinja_actions import JinjaReplace
+    from kunene.radioss_using_dyna_inp import RadiossUsingDynaInput
+    from kunene.graph_actions import WorkFlow, WorkArea
 
     wf = WorkFlow('JR_WorkFlow')
 
@@ -171,8 +171,8 @@ via ``copy_paths`` and are copied to the work directory before the solver runs.
 
 .. code-block:: python
 
-    from simnexus.openfoam_actions import OpenFOAMAnalysis, OpenFOAM_Field
-    from simnexus.graph_actions import WorkFlow, WorkArea
+    from kunene.openfoam_actions import OpenFOAMAnalysis, OpenFOAM_Field
+    from kunene.graph_actions import WorkFlow, WorkArea
 
     case_paths = ['path/to/case/system', 'path/to/case/constant', 'path/to/case/0']
 
@@ -192,8 +192,8 @@ Extraction of field data and histories from OpenFOAM cases.
 
 .. code-block:: python
 
-    from simnexus.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
-    from simnexus.graph_actions import WorkFlow
+    from kunene.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
+    from kunene.graph_actions import WorkFlow
 
     wf = WorkFlow('OpenFOAM_Extraction')
 

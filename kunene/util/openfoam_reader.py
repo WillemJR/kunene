@@ -6,8 +6,8 @@ from typing import List, Tuple, Optional
 import numpy as np
 from pathlib import Path
 
-from simnexus.args import Location
-from simnexus.errors import SimNexusError, MissingPathError
+from kunene.args import Location
+from kunene.errors import KuneneError, MissingPathError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -869,7 +869,7 @@ class OpenFOAMFieldReader:
         #elif field_name == 'ZZZZZZ':
         #    extract_location=Location.NODAL
         else:
-            raise SimNexusError( f'Unknown location in file for {field_name}. Needs implementation in openfoam_reader.py.' )
+            raise KuneneError( f'Unknown location in file for {field_name}. Needs implementation in openfoam_reader.py.' )
 
         # Check if case exists
         if os.path.exists(self.case_dir):

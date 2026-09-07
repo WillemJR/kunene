@@ -2,10 +2,10 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 from pathlib import Path
-from simnexus.args import JobType
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.openfoam_actions import OpenFOAMAnalysis
-from simnexus.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
+from kunene.args import JobType
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.openfoam_actions import OpenFOAMAnalysis
+from kunene.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
 
 def create_openfoam_graph():
 

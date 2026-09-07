@@ -9,8 +9,8 @@ Usage
 -----
 1. Build and start the server container (from the project root):
 
-       docker build -f examples/remote/Dockerfile.openfoam -t simnexus-openfoam .
-       docker run --rm -p 50051:50051 simnexus-openfoam
+       docker build -f examples/remote/Dockerfile.openfoam -t kunene-openfoam .
+       docker run --rm -p 50051:50051 kunene-openfoam
 
 2. Run this script locally:
 
@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 from pathlib import Path
-from simnexus.remote_actions import RemoteAction
+from kunene.remote_actions import RemoteAction
 
 SERVER = 'localhost:50051'
 

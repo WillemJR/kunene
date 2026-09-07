@@ -21,10 +21,10 @@ import json
 
 import numpy as np
 
-from simnexus.errors import SerializationError
+from kunene.errors import SerializationError
 
 # reserved key marking an encoded numpy array
-NDARRAY_TAG = '__simnexus_ndarray__'
+NDARRAY_TAG = '__kunene_ndarray__'
 
 # numpy dtype kinds accepted on encode and decode:
 # bool, signed/unsigned int, float, complex
@@ -134,5 +134,5 @@ def loads( data ):
     except ( UnicodeDecodeError, json.JSONDecodeError ) as err:
         raise SerializationError(
             'Payload is not valid JSON. A peer running an older, pickle-based '
-            'version of simnexus is not compatible with this version.' ) from err
+            'version of kunene is not compatible with this version.' ) from err
     return _decode( parsed )

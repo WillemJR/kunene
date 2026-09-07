@@ -1,7 +1,7 @@
 # Remote Execution Examples
 
-This directory contains examples of running simnexus actions on remote compute
-resources via gRPC.  See `simnexus/remote_actions.py` and `docs/remote.rst` for
+This directory contains examples of running kunene actions on remote compute
+resources via gRPC.  See `kunene/remote_actions.py` and `docs/remote.rst` for
 full documentation.
 
 ---
@@ -28,7 +28,7 @@ and returns the pressure field as a numpy array.
 
 | File | Description |
 |---|---|
-| `Dockerfile.openfoam` | Builds an OpenFOAM image with simnexus installed |
+| `Dockerfile.openfoam` | Builds an OpenFOAM image with kunene installed |
 | `openfoam_remote_server.py` | gRPC server — runs inside the container |
 | `openfoam_remote_example.py` | gRPC client — runs on the local machine |
 
@@ -37,7 +37,7 @@ and returns the pressure field as a numpy array.
 Run from the **project root**:
 
 ```bash
-docker build -f examples/remote/Dockerfile.openfoam -t simnexus-openfoam .
+docker build -f examples/remote/Dockerfile.openfoam -t kunene-openfoam .
 ```
 
 > The base image is `opencfd/openfoam-run:2312` (ESI OpenFOAM v2312, which
@@ -48,7 +48,7 @@ docker build -f examples/remote/Dockerfile.openfoam -t simnexus-openfoam .
 ### 2. Start the server container
 
 ```bash
-docker run --rm -p 50051:50051 simnexus-openfoam
+docker run --rm -p 50051:50051 kunene-openfoam
 ```
 
 The container sources the OpenFOAM environment and starts the gRPC server on

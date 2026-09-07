@@ -5,13 +5,13 @@ import json
 import subprocess
 from pathlib import Path
 
-import simnexus.args
-import simnexus.variables as simvars
-from simnexus.actions import WorkAction
-from simnexus.errors import MissingPathError, SolverError
-from simnexus.graph_actions import WorkFlow
-from simnexus.progress import FileProgressTail
-from simnexus.util import solver_progress
+import kunene.args
+import kunene.variables as simvars
+from kunene.actions import WorkAction
+from kunene.errors import MissingPathError, SolverError
+from kunene.graph_actions import WorkFlow
+from kunene.progress import FileProgressTail
+from kunene.util import solver_progress
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,17 +32,17 @@ class DynaAnalysis(WorkAction):
             keep (list): glob patterns of this run's files that a work
                 area's cleanup must never delete, e.g. ``keep=['d3plot']``
                 to keep the first plot when the state files are removed.
-                See :class:`simnexus.args.Cleanup`.
+                See :class:`kunene.args.Cleanup`.
     """
 
-    def __init__( self, name, cmd=simnexus.args.DYNA_DFLT_CMD, input_path=None, keep=None ):
+    def __init__( self, name, cmd=kunene.args.DYNA_DFLT_CMD, input_path=None, keep=None ):
 
         assert input_path is not None, 'No input LS-DYNA file specified.'
 
         super().__init__(name, cmd, copy_paths=[], keep=keep )
         self.input_file_path = input_path
         self.description = f'LS-DYNA analysis using input file {input_path}'
-        self.root_name= simnexus.args.DYNA_BASE_FILE_NAME
+        self.root_name= kunene.args.DYNA_BASE_FILE_NAME
 
 
     @staticmethod

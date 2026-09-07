@@ -11,7 +11,7 @@ with no solver installed. In a real study it would be a DynaAnalysis,
 RadiossAnalysis or OpenFOAMAnalysis, and the design points would be
 thicknesses, material parameters, or whatever is being varied.
 
-Run it in a terminal to see the tqdm job bar (pip install simnexus[progress]);
+Run it in a terminal to see the tqdm job bar (pip install kunene[progress]);
 it needs example_actions.py next to it.
 It writes its results into Study_1/ and Study_3/ in the current directory;
 clean_start=True means a re-run starts from empty ones.
@@ -23,13 +23,13 @@ logging.basicConfig(level=logging.WARNING)
 import sys, time
 from pathlib import Path
 
-# Run against the simnexus this example ships with, not another copy that
+# Run against the kunene this example ships with, not another copy that
 # happens to be installed in the environment.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from simnexus.actions import MathEvaluation
-from simnexus.graph_actions import WorkFlow
-from simnexus.simulation_iterator import SimulationIterator
+from kunene.actions import MathEvaluation
+from kunene.graph_actions import WorkFlow
+from kunene.simulation_iterator import SimulationIterator
 
 # The stand-in solver action lives in a module, not in this script: a job
 # running in a child process on Windows has to be able to import it.

@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'simnexus'
+project = 'kunene'
 copyright = '2026, Willem Roux'
 author = 'Willem Roux'
 release = '1.3.0'
@@ -14,7 +14,7 @@ release = '1.3.0'
 # ---
 import sys, os
 
-# Document the simnexus next to these docs, not whatever copy happens to be
+# Document the kunene next to these docs, not whatever copy happens to be
 # installed in the environment: without this, autodoc imports the installed
 # package (a different checkout) and the API pages describe the wrong code.
 sys.path.insert(0, os.path.abspath('..'))

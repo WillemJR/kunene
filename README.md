@@ -1,12 +1,12 @@
 
-# SimNexus
+# Kunene
 
 A Python module for orchestrating complex simulations 
 with native support for LS-DYNA, OpenRadioss, and OpenFOAM.
 
 ## Overview
 
-`SimNexus` enables the automation and coordination of
+`Kunene` enables the automation and coordination of
 multi-physics simulation workflows.
 The module is particularly suited for simulations that span multiple domains, such as combined structural and fluid dynamics analyses.
 It supports tasks from from input preparation and
@@ -27,7 +27,7 @@ Within a single graph, independent branches can likewise run at the same time,
 each in its own process.
 
 
-`SimNexus` has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.
+`Kunene` has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.
 
 ## Key Features
 
@@ -46,7 +46,7 @@ The user usually need to:
 1. Parameterize input files for target solvers
 2. Define the actions and their dependencies
 
-The typical `simnexus` steps are:
+The typical `kunene` steps are:
 
 1. Update parameter values with the values for the current design
 2. Execute simulations on designated compute resources (local or remote), possibly in parallel
@@ -57,17 +57,17 @@ The typical `simnexus` steps are:
 
 ## Documentation
 
-[Online documentation is available here](https://willemjr.github.io/simnexus/)
+[Online documentation is available here](https://willemjr.github.io/kunene/)
 
 
 
 ## Installation
 
 ```bash
-pip install simnexus[remote,dyna,progress,dev]
+pip install kunene[remote,dyna,progress,dev]
 ```
 
-SimNexus has so far only been tested on Linux and WSL.
+Kunene has so far only been tested on Linux and WSL.
 Windows testing is not yet complete; use WSL.
 
 The library uses lasso-python (including vortex-radioss and lasso.dyna) as
@@ -131,10 +131,10 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 
 from pathlib import Path
-from simnexus.args import JobType
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.openfoam_actions import OpenFOAMAnalysis
-from simnexus.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
+from kunene.args import JobType
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.openfoam_actions import OpenFOAMAnalysis
+from kunene.openfoam_actions import OpenFOAM_Field, OpenFOAM_History
 
 def create_openfoam_graph():
 
@@ -222,14 +222,14 @@ works before anything has run and without the solvers installed:
 
 ```
 Radioss_WorkFlow/   (results root)
-├── status.json   (run progress: current job, jobs done; see simnexus.progress)
-├── jobs_index.json   (job -> variable values and group labels; see simnexus.simulation_iterator)
+├── status.json   (run progress: current job, jobs done; see kunene.progress)
+├── jobs_index.json   (job -> variable values and group labels; see kunene.simulation_iterator)
 ├── job_0/   (one directory per design evaluation)
 │   ├── iter_variables.json   (this design's variable values)
 │   ├── actions_output.pkl   (this design's action outputs)
 │   ├── cube_TYPE7_0000.rad   (copied in)
 │   ├── cube_TYPE7_0001.rad   (copied in)
-│   ├── status.json   (live action states; see simnexus.progress)
+│   ├── status.json   (live action states; see kunene.progress)
 │   ├── radioss_variables.json
 │   ├── rad_run_file_0000.rad
 │   ├── rad_run_file_0001.rad
@@ -321,15 +321,15 @@ directories, which another process can follow at any time.
 
 ### Debug output
 
-simnexus logs through the standard `logging` module, one logger per module
-under the `simnexus` name, so the usual configuration applies:
+kunene logs through the standard `logging` module, one logger per module
+under the `kunene` name, so the usual configuration applies:
 
 ```python
 import logging
 logging.basicConfig( level=logging.DEBUG )                # everything
 
-logging.basicConfig( level=logging.WARNING )              # or simnexus alone
-logging.getLogger( 'simnexus' ).setLevel( logging.DEBUG )
+logging.basicConfig( level=logging.WARNING )              # or kunene alone
+logging.getLogger( 'kunene' ).setLevel( logging.DEBUG )
 ```
 
 The solvers' own output is not logged: it is redirected to files in the run
@@ -372,6 +372,9 @@ example written for one solver is easy to move to another. The decks they use
 are in `tests` and `models`; the solver itself has to be installed and on the
 path.
 
+## History
+
+Kunene is named after the river. Because it is great to see it run. Alternate choice was Nossob.
 
 ## License
 This project is licensed under the MIT License.

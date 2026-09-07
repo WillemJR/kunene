@@ -11,10 +11,10 @@ Start via the Dockerfile ENTRYPOINT; see Dockerfile.openfoam.
 import logging
 logging.basicConfig(level=logging.INFO)
 
-from simnexus.args import JobType
-from simnexus.graph_actions import WorkFlow
-from simnexus.openfoam_actions import OpenFOAMAnalysis, OpenFOAM_Field
-from simnexus.remote_actions import NamedServerAction
+from kunene.args import JobType
+from kunene.graph_actions import WorkFlow
+from kunene.openfoam_actions import OpenFOAMAnalysis, OpenFOAM_Field
+from kunene.remote_actions import NamedServerAction
 
 
 def build_workflow():

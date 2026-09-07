@@ -2,9 +2,9 @@
 import sys
 from pathlib import Path
 
-from simnexus.graph_actions import WorkFlow, WorkArea
-from simnexus.radioss_using_dyna_inp import RadiossUsingDynaInput
-from simnexus.d3plot_actions import d3plot_File
+from kunene.graph_actions import WorkFlow, WorkArea
+from kunene.radioss_using_dyna_inp import RadiossUsingDynaInput
+from kunene.d3plot_actions import d3plot_File
 
 
 def test_radioss_using_dyna_input():
