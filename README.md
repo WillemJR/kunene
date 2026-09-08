@@ -374,7 +374,7 @@ path.
 
 ## History
 
-Kunene is named after the river. Because it is great to see it run. Alternate choice was Nossob.
+Kunene is named after the river. Because it is great to see it run. Also considered was Nossob.
 
 ## License
 This project is licensed under the MIT License.
