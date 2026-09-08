@@ -57,7 +57,9 @@ The typical `kunene` steps are:
 
 ## Documentation
 
-[Online documentation is available here](https://willemjr.github.io/kunene/)
+Available in the `docs` directory. Use `make html`.
+
+[Online documentation is available here](https://willemjr.github.io/kunene/) This part is down for the moment.
 
 
 
