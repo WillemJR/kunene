@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Creating directories and copying files &#8212; simnexus 1.0.1 documentation</title>
+    <title>Work areas and design studies &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
@@ -33,8 +33,8 @@
         <li class="right" >
           <a href="actions_descr.html" title="A graph of actions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Creating directories and copying files</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Work areas and design studies</a></li> 
       </ul>
     </div>  
 
@@ -43,25 +43,30 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="creating-directories-and-copying-files">
-<h1>Creating directories and copying files<a class="headerlink" href="#creating-directories-and-copying-files" title="Link to this heading">¶</a></h1>
+  <section id="work-areas-and-design-studies">
+<h1>Work areas and design studies<a class="headerlink" href="#work-areas-and-design-studies" title="Link to this heading">¶</a></h1>
 <p>Solver actions such as <code class="docutils literal notranslate"><span class="pre">DynaAnalysis</span></code>, <code class="docutils literal notranslate"><span class="pre">RadiossAnalysis</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">OpenFOAMAnalysis</span></code> expect their input files to be present in the
-current working directory when they run.  Two classes handle directory
-creation and file copying automatically: <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> and
-<code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">copy_paths</span></code> is always specified on <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> or
-<code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> — not on individual solver actions.</p>
-<section id="workarea">
-<h2>WorkArea<a class="headerlink" href="#workarea" title="Link to this heading">¶</a></h2>
+current working directory when they run, and they leave their output
+there.  Two classes decide where that directory is and what is kept from
+a run: a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> evaluates a graph once in one directory; a
+<code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> evaluates it for every design point of a study,
+each in a numbered job directory of its own, and keeps an index of them.
+Both create the directory and copy the required files into it before the
+graph runs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">copy_paths</span></code> — the files and directories to copy in — is always given
+to the <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> or <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>, not to the individual
+solver actions.</p>
+<section id="workarea-one-run-in-one-directory">
+<h2>WorkArea: one run in one directory<a class="headerlink" href="#workarea-one-run-in-one-directory" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> evaluates a graph in a dedicated directory.
 Each call to <code class="docutils literal notranslate"><span class="pre">solve()</span></code> cleans the directory and re-copies the required
 files, so previous results are overwritten.  This is the right choice
 for a single run or when you want to inspect intermediate files after
 the run.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
@@ -73,24 +78,32 @@ the run.</p>
 <span class="n">results</span> <span class="o">=</span> <span class="n">wa</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">200.0</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>By default the work directory is <code class="docutils literal notranslate"><span class="pre">{cwd}/{graph.name}</span></code>.
-A custom path can be supplied as the second argument:</p>
+<p>By default the work directory is <code class="docutils literal notranslate"><span class="pre">./{graph.name}</span></code> — created relative to
+the current directory at run time (not the directory in which the
+<code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> was constructed). This means a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> can be nested
+inside a <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>: it is created <em>inside</em> the current
+<code class="docutils literal notranslate"><span class="pre">job_N</span></code> directory rather than next to it. A custom path can be supplied
+as the second argument:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">work_area_path</span><span class="o">=</span><span class="s1">&#39;~/runs/spring&#39;</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The directory path may contain <code class="docutils literal notranslate"><span class="pre">~</span></code> and environment variables; both are
+<p>An explicit relative path is likewise resolved against the current
+directory at run time, while an absolute path is used as given. The
+directory path may contain <code class="docutils literal notranslate"><span class="pre">~</span></code> and environment variables; both are
 expanded automatically.</p>
 </section>
-<section id="simulationiterator">
-<h2>SimulationIterator<a class="headerlink" href="#simulationiterator" title="Link to this heading">¶</a></h2>
+<section id="simulationiterator-a-design-study">
+<h2>SimulationIterator: a design study<a class="headerlink" href="#simulationiterator-a-design-study" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> evaluates a graph once per design point, placing
 each run in its own numbered subdirectory (<code class="docutils literal notranslate"><span class="pre">job_0</span></code>, <code class="docutils literal notranslate"><span class="pre">job_1</span></code>, …).
 The required files are copied into each job directory before the graph
 runs.  Use this when you need to keep the results from every run, for
 example during a parameter study or optimisation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<section id="job-directories">
+<h3>Job directories<a class="headerlink" href="#job-directories" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
@@ -105,35 +118,287 @@ example during a parameter study or optimisation.</p>
 </div>
 <p>The resulting directory layout is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SpringWorkFlow/
+├── jobs_index.json
+├── status.json                 # run progress; see kunene.progress
+├── variables_discovery/        # copies used to read the deck&#39;s variables
 ├── job_0/
 │   ├── iter_variables.json
-│   └── actions_output.pkl
+│   ├── actions_output.pkl
+│   ├── status.json             # per-action progress for this job
+│   └── ...                     # the deck, the solver&#39;s output files
 ├── job_1/
 │   ├── iter_variables.json
 │   └── actions_output.pkl
 </pre></div>
 </div>
-<p>Pass <code class="docutils literal notranslate"><span class="pre">clean_start=True</span></code> to remove any existing results directory
-before starting:</p>
+<p>Each job records the variable values it was run with
+(<code class="docutils literal notranslate"><span class="pre">iter_variables.json</span></code>) and what its actions computed
+(<code class="docutils literal notranslate"><span class="pre">actions_output.pkl</span></code>); <code class="docutils literal notranslate"><span class="pre">jobs_index.json</span></code> at the root lists the jobs
+and is what the retrieval methods below use.  <code class="docutils literal notranslate"><span class="pre">variables_discovery</span></code>
+appears when the iterator has to discover the variables itself:
+<code class="docutils literal notranslate"><span class="pre">parameters()</span></code> copies <code class="docutils literal notranslate"><span class="pre">copy_paths</span></code> there and reads the deck.  Passing
+<code class="docutils literal notranslate"><span class="pre">parameter_list</span></code> explicitly skips it.</p>
+<p>An existing results directory is added to.  Job numbers continue after
+whatever is already there — taken from the index and the directories on
+disk, not from a counter on the iterator — so a study can be extended in
+a later session and a finished job is never written over:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">300.0</span><span class="p">})</span>    <span class="c1"># a later session: writes job_2, not job_0</span>
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">clean_start=True</span></code> to delete the results directory (jobs, index
+and all) before starting:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">],</span> <span class="n">clean_start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="variable-discovery">
-<h2>Variable discovery<a class="headerlink" href="#variable-discovery" title="Link to this heading">¶</a></h2>
-<p>Both <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> and <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> support variable discovery
-via <code class="docutils literal notranslate"><span class="pre">variables()</span></code>.  Files are copied into a temporary subdirectory
-first so that solver actions can read their input files.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<section id="running-a-sweep">
+<h3>Running a sweep<a class="headerlink" href="#running-a-sweep" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">solve</span></code> evaluates one design point.  A study is normally run as a
+sweep, which evaluates a whole set of them and returns the results side
+by side.  <code class="docutils literal notranslate"><span class="pre">collect_for_varrange</span></code> takes the values to try for each
+variable and evaluates every combination:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="mf">300.</span><span class="p">],</span>
+                                      <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">]})</span>       <span class="c1"># 6 jobs</span>
 
-<span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">itr</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">]</span>      <span class="c1"># array([100., 100., 200., 200., 300., 300.])</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>      <span class="c1"># array([ 10.,  20.,  10.,  20.,  10.,  20.])</span>
+<span class="n">out</span><span class="p">[</span><span class="s1">&#39;field&#39;</span><span class="p">]</span>   <span class="c1"># [&lt;job_0 result&gt;, &lt;job_1 result&gt;, ...]</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="discover.html"><span class="doc">Discovering graph usage</span></a> for more details on variable and output discovery.</p>
+<p>Two dictionaries come back: <code class="docutils literal notranslate"><span class="pre">pars</span></code> maps each variable name to an array
+of the values it took, one entry per job, and <code class="docutils literal notranslate"><span class="pre">out</span></code> maps each action
+name to a list of what that action computed, in the same order — the
+order the design points were generated in.  So <code class="docutils literal notranslate"><span class="pre">pars['K'][i]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pars['T'][i]</span></code> and <code class="docutils literal notranslate"><span class="pre">out['field'][i]</span></code> all describe the same job, and
+the two can be handed to a plotting routine as they are.  <code class="docutils literal notranslate"><span class="pre">out</span></code> also
+carries the variable values themselves (<code class="docutils literal notranslate"><span class="pre">out['K']</span></code>, as plain lists),
+since each job’s output starts from the values it was given.  An action
+that returns a dictionary (a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> nested in the graph, say) shows
+up as a dictionary of lists.</p>
+<p><code class="docutils literal notranslate"><span class="pre">collect_for_expdes</span></code> runs an experimental design you build yourself —
+a list of value tuples and the variable names they belong to — for a
+Latin hypercube, a sample from an optimiser, or any set of points that
+is not a full grid:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">),</span> <span class="p">(</span><span class="mf">150.</span><span class="p">,</span> <span class="mf">25.</span><span class="p">),</span> <span class="p">(</span><span class="mf">300.</span><span class="p">,</span> <span class="mf">15.</span><span class="p">)]</span>
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_expdes</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Both methods take <code class="docutils literal notranslate"><span class="pre">dependent_pars</span></code>, a dictionary of variables computed
+from the swept ones by a Python expression, so a deck variable that must
+follow another can be kept in step without being swept itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="mf">300.</span><span class="p">]},</span>
+                                     <span class="n">dependent_pars</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="s1">&#39;K / 10.&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">solve_parallel</span></code> is the third sweep method; it takes an explicit list of
+<code class="docutils literal notranslate"><span class="pre">{variable</span> <span class="pre">name:</span> <span class="pre">value}</span></code> dictionaries and returns one result dictionary
+per point, and is what the other two use underneath.</p>
+</section>
+<section id="running-jobs-in-parallel">
+<h3>Running jobs in parallel<a class="headerlink" href="#running-jobs-in-parallel" title="Link to this heading">¶</a></h3>
+<p>The jobs of a sweep run one at a time unless the iterator is given
+<code class="docutils literal notranslate"><span class="pre">max_workers</span></code>, which evaluates that many design points at once, each in
+a child process with its own job directory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">],</span> <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="mf">300.</span><span class="p">,</span> <span class="mf">400.</span><span class="p">,</span> <span class="mf">500.</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>The results, the job directories and the index are the same as with the
+default <code class="docutils literal notranslate"><span class="pre">max_workers=1</span></code>, and come back in the same order.  See
+<a class="reference internal" href="parallel.html"><span class="doc">Running in parallel</span></a> for the progress bars, the failure semantics and what a
+child process needs on Windows.</p>
+</section>
+<section id="naming-the-job-directories">
+<h3>Naming the job directories<a class="headerlink" href="#naming-the-job-directories" title="Link to this heading">¶</a></h3>
+<p>The job directories are named <code class="docutils literal notranslate"><span class="pre">job_0</span> <span class="pre">…</span> <span class="pre">job_N</span></code>; the prefix comes from
+the class attribute <code class="docutils literal notranslate"><span class="pre">SimulationIterator.JNAME</span></code> and can be changed if
+another name suits better — on the instance, or in a subclass when a
+whole family of studies uses it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">JNAME</span> <span class="o">=</span> <span class="s1">&#39;design_&#39;</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">})</span>    <span class="c1"># writes to SpringWorkFlow/design_0/</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DesignIterator</span><span class="p">(</span><span class="n">SimulationIterator</span><span class="p">):</span>
+    <span class="n">JNAME</span> <span class="o">=</span> <span class="s1">&#39;design_&#39;</span>
+</pre></div>
+</div>
+<p>Change the prefix on an empty results directory.  Jobs already written
+under the old prefix stay in the index and can still be read back by
+variable value, but they no longer take part in the numbering, so the new
+prefix starts its own series at <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+<p>Variable values are <em>not</em> encoded in the directory name — they are
+recorded in <code class="docutils literal notranslate"><span class="pre">jobs_index.json</span></code>, which is what the retrieval methods
+below use.</p>
+</section>
+</section>
+<section id="retrieving-past-runs">
+<h2>Retrieving past runs<a class="headerlink" href="#retrieving-past-runs" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">jobs_index.json</span></code> at the results root maps each job directory to the
+variable values it was run with, its state, and any group labels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="s2">&quot;jobs&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s2">&quot;job&quot;</span><span class="p">:</span> <span class="s2">&quot;job_0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;baseline&quot;</span> <span class="p">],</span>
+              <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;K&quot;</span><span class="p">:</span> <span class="mf">100.0</span> <span class="p">},</span>
+              <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="mf">1753.0</span><span class="p">,</span> <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="mf">1755.0</span> <span class="p">}</span> <span class="p">]</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Point a new <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> at an existing results directory and
+ask it for results by variable value.  Nothing is executed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">work_area_path</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
+
+<span class="n">out</span>  <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">results_for</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">})</span>    <span class="c1"># the stored actions_output.pkl</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">find_job</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">})</span> <span class="c1"># SpringWorkFlow/job_0</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">results_for</span></code> prefers the job whose variables are exactly the ones
+given, and otherwise accepts an unambiguous partial match, so
+<code class="docutils literal notranslate"><span class="pre">results_for({'K':</span> <span class="pre">100.0})</span></code> works in a study that also varied <code class="docutils literal notranslate"><span class="pre">T</span></code>
+as long as only one job has that <code class="docutils literal notranslate"><span class="pre">K</span></code>.  It raises <code class="docutils literal notranslate"><span class="pre">DataNotFoundError</span></code>
+when no job matches and when several do.</p>
+<p>The index is a cache, never the authority.  <code class="docutils literal notranslate"><span class="pre">itr.job_index(rebuild=True)</span></code>
+re-derives it by reading the job directories, so result trees created
+before the index existed keep working; only the group labels — which
+exist nowhere else — are lost if the file is deleted.</p>
+</section>
+<section id="grouping-runs">
+<h2>Grouping runs<a class="headerlink" href="#grouping-runs" title="Link to this heading">¶</a></h2>
+<p>A job may carry any number of group labels.  Set a default for the
+iterator, per sweep, or per job — the most specific wins:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="s1">&#39;baseline&#39;</span><span class="p">)</span>       <span class="c1"># default for all jobs</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">]})</span>         <span class="c1"># -&gt; &#39;baseline&#39;</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">300.</span><span class="p">]},</span> <span class="n">groups</span><span class="o">=</span><span class="s1">&#39;stiff&#39;</span><span class="p">)</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">400.</span><span class="p">},</span> <span class="n">groups</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;stiff&#39;</span><span class="p">,</span> <span class="s1">&#39;hand_check&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">groups</span> <span class="o">=</span> <span class="s1">&#39;later_runs&#39;</span>                             <span class="c1"># from here on</span>
+</pre></div>
+</div>
+<p>Because the labels are metadata rather than directories, runs can be
+grouped long after they finished, and one job can belong to several
+groups:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span><span class="o">.</span><span class="n">add_groups</span><span class="p">(</span><span class="s1">&#39;converged&#39;</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">})</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">add_groups</span><span class="p">(</span><span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;job_0&#39;</span><span class="p">,</span> <span class="s1">&#39;job_3&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">remove_groups</span><span class="p">(</span><span class="s1">&#39;stiff&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;job_2&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">group_names</span><span class="p">()</span>                    <span class="c1"># [&#39;baseline&#39;, &#39;converged&#39;, ...]</span>
+</pre></div>
+</div>
+<p>Read a group back in the same form a sweep returns — so grouped runs can
+be plotted or post-processed like a fresh study:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="s1">&#39;baseline&#39;</span><span class="p">)</span>
+<span class="c1"># pars: {&#39;K&#39;: array([100., 200.])}, out: {&#39;disp&#39;: [...], ...}</span>
+
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="s1">&#39;converged&#39;</span><span class="p">],</span>
+                        <span class="n">match_all_groups</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># in both groups</span>
+<span class="n">jobs</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">find_jobs</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="reusing-completed-runs">
+<h2>Reusing completed runs<a class="headerlink" href="#reusing-completed-runs" title="Link to this heading">¶</a></h2>
+<p>With <code class="docutils literal notranslate"><span class="pre">reuse_existing=True</span></code> a design point that already has a completed
+job is not run again — its stored outputs are returned and its labels
+extended, while new design points run as usual:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">work_area_path</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">,</span>
+                         <span class="n">reuse_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="s1">&#39;study_2&#39;</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">500.</span><span class="p">]})</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">reused_jobs</span>        <span class="c1"># [&#39;job_0&#39;]  — K=100 came off disk</span>
+</pre></div>
+</div>
+<p>The flag only decides whether computed design points are skipped; adding
+to an existing results directory needs no flag.  Without it every design
+point given is run, appended after the jobs already there — so the same
+values can appear in several jobs, which is what you want when a deck or
+a solver version changed.  Note that reuse matches on the <em>complete</em> set
+of variable values, so a job that differs in any variable is treated as a
+different design point.</p>
+<p>A sweep that was aborted — by a failing job, or by you — is resumed the
+same way: run it again with <code class="docutils literal notranslate"><span class="pre">reuse_existing=True</span></code> and only the design
+points without a completed job are evaluated.</p>
+</section>
+<section id="cleaning-up-bulk-solver-output">
+<h2>Cleaning up bulk solver output<a class="headerlink" href="#cleaning-up-bulk-solver-output" title="Link to this heading">¶</a></h2>
+<p>It is easy to fill up a disk by keeping all the solver output in every job directory.
+The solver output being the plot databases, the OpenRadioss animation files, the converted VTK, etc.
+Pass a <code class="docutils literal notranslate"><span class="pre">Cleanup</span></code> policy to have them removed once a run has finished:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cleanup</span>
+
+<span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">],</span>
+                         <span class="n">cleanup</span><span class="o">=</span><span class="n">Cleanup</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d3plot&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Each job is cleaned as soon as its graph has run to the end — not
+before, so a <code class="docutils literal notranslate"><span class="pre">d3plot_File</span></code> action downstream of the solver has already
+read what it needed. A job that failed is not cleaned, leaving you the deck and
+solver log to you debug it with.  <code class="docutils literal notranslate"><span class="pre">cleanup=True</span></code> selects the
+default policy; the default, <code class="docutils literal notranslate"><span class="pre">None</span></code>, keeps everything as before.</p>
+<p><strong>What may be removed.</strong> The actions declare their own bulk output, so a
+policy normally names no files at all:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Cleanup(remove='bulk')</span></code></dt><dd><p>The default.  The field output the actions declare as disposable:
+<code class="docutils literal notranslate"><span class="pre">d3plot*</span></code>, <code class="docutils literal notranslate"><span class="pre">d3thdt*</span></code>, <code class="docutils literal notranslate"><span class="pre">d3dump*</span></code>, <code class="docutils literal notranslate"><span class="pre">runrsf*</span></code>, <code class="docutils literal notranslate"><span class="pre">binout*</span></code> for
+LS-DYNA; the animation and restart files (plus the d3plot and VTK
+conversions, when those are enabled) for OpenRadioss; <code class="docutils literal notranslate"><span class="pre">VTK/</span></code> and
+<code class="docutils literal notranslate"><span class="pre">processor*</span></code> for OpenFOAM.  Input decks, solver logs and small
+time-history files are never in this set — they are what a finished
+run is read back with.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Cleanup(remove=['*.vtk',</span> <span class="pre">'d3plot0*'])</span></code></dt><dd><p>Exactly those patterns, in every run directory, instead of the
+declared set.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Cleanup(remove=Cleanup.ALL)</span></code></dt><dd><p>Everything except the protected files and <code class="docutils literal notranslate"><span class="pre">keep</span></code>.  A job directory
+also holds files nothing declared — copied-in inputs, solver scratch —
+so this deletes more than kunene knows about.  Use it deliberately,
+and once with <code class="docutils literal notranslate"><span class="pre">dry_run=True</span></code> first.</p>
+</dd>
+</dl>
+<p><strong>What you keep.</strong> <code class="docutils literal notranslate"><span class="pre">keep</span></code> is a list of glob patterns that always wins
+over <code class="docutils literal notranslate"><span class="pre">remove</span></code>, so you subtract from the declared set rather than
+enumerating what to delete:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cleanup</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d3plot&#39;</span><span class="p">])</span>      <span class="c1"># drop the state files, keep the first plot</span>
+</pre></div>
+</div>
+<p>The same argument exists on the solver actions themselves, next to the
+knowledge of what those files are.  The action only <em>declares</em> it; the
+work area still decides when to delete:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d3plot&#39;</span><span class="p">,</span> <span class="s1">&#39;binout*&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>What is never deleted.</strong> <code class="docutils literal notranslate"><span class="pre">actions_output.pkl</span></code>, <code class="docutils literal notranslate"><span class="pre">iter_variables.json</span></code>,
+<code class="docutils literal notranslate"><span class="pre">jobs_index.json</span></code> and <code class="docutils literal notranslate"><span class="pre">status.json</span></code>, whatever the patterns match.  A
+cleaned study is still a study: <code class="docutils literal notranslate"><span class="pre">results_for</span></code>, <code class="docutils literal notranslate"><span class="pre">collect</span></code>,
+<code class="docutils literal notranslate"><span class="pre">find_jobs</span></code> and <code class="docutils literal notranslate"><span class="pre">reuse_existing</span></code> all keep working, since they read
+the stored outputs and the index rather than the solver files.</p>
+<p><strong>WorkArea.</strong> The same argument works there, and is inherited by a work
+area nested inside a <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> unless that work area sets its
+own policy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inner</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">cleanup</span><span class="o">=</span><span class="n">Cleanup</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;d3plot*&#39;</span><span class="p">]))</span>   <span class="c1"># overrides</span>
+<span class="n">itr</span>   <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">outer_graph</span><span class="p">,</span> <span class="n">cleanup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> empties its directory at the <em>start</em> of every
+run in any case; <code class="docutils literal notranslate"><span class="pre">cleanup</span></code> is about what the last run leaves behind,
+and about work areas nested in a study.</p>
+<p><strong>Checking first.</strong> <code class="docutils literal notranslate"><span class="pre">Cleanup(dry_run=True)</span></code> logs what it would remove
+and removes nothing.  <code class="docutils literal notranslate"><span class="pre">print_work_dir()</span></code> marks the affected files, so
+the predicted directory structure stays honest about what survives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>itr.print_work_dir()
+
+SpringWorkFlow/   (results root)
+├── status.json   (run progress: current job, jobs done; ...)
+├── jobs_index.json   (job -&gt; variable values and group labels; ...)
+├── job_0/   (one directory per design evaluation)
+│   ├── iter_variables.json   (this design&#39;s variable values)
+│   ├── actions_output.pkl   (this design&#39;s action outputs)
+│   ├── dyna_variables.json
+│   ├── dyna_action_inp.k
+│   ├── run_file.stdout
+│   ├── run_file.stderr
+│   ├── d3plot*   (removed by cleanup)
+│   └── d3hsp
+└── job_1/ … job_N/
+</pre></div>
+</div>
+<p>The mark is per pattern, not per file: with <code class="docutils literal notranslate"><span class="pre">keep=['d3plot']</span></code> the
+<code class="docutils literal notranslate"><span class="pre">d3plot*</span></code> line is marked even though the first plot survives.</p>
 </section>
 </section>
 
@@ -144,35 +409,27 @@ first so that solver actions can read their input files.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Creating directories and copying files</a><ul>
-<li><a class="reference internal" href="#workarea">WorkArea</a></li>
-<li><a class="reference internal" href="#simulationiterator">SimulationIterator</a></li>
-<li><a class="reference internal" href="#variable-discovery">Variable discovery</a></li>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Work areas and design studies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#workarea-one-run-in-one-directory">WorkArea: one run in one directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simulationiterator-a-design-study">SimulationIterator: a design study</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieving-past-runs">Retrieving past runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#grouping-runs">Grouping runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reusing-completed-runs">Reusing completed runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cleaning-up-bulk-solver-output">Cleaning up bulk solver output</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="actions_descr.html"
-                          title="previous chapter">A graph of actions</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="vars.html"
-                          title="next chapter">Variables</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/dirs.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -202,8 +459,8 @@ first so that solver actions can read their input files.</p>
         <li class="right" >
           <a href="actions_descr.html" title="A graph of actions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Creating directories and copying files</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Work areas and design studies</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

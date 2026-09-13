@@ -5,18 +5,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Discovering graph usage &#8212; simnexus 1.0.1 documentation</title>
+    <title>Discovering graph usage &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="exa.html" />
-    <link rel="prev" title="Variables" href="vars.html" /> 
+    <link rel="prev" title="Running in parallel" href="parallel.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
@@ -31,9 +31,9 @@
           <a href="exa.html" title="Examples"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="vars.html" title="Variables"
+          <a href="parallel.html" title="Running in parallel"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Discovering graph usage</a></li> 
       </ul>
     </div>  
@@ -45,48 +45,55 @@
             
   <section id="discovering-graph-usage">
 <h1>Discovering graph usage<a class="headerlink" href="#discovering-graph-usage" title="Link to this heading">¶</a></h1>
-<p>The usage of a graph is described using the <code class="docutils literal notranslate"><span class="pre">variables()</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs()</span></code> methods.
+<p>The usage of a graph is described using the <code class="docutils literal notranslate"><span class="pre">parameters()</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs()</span></code> methods.
 The methods will return the variables and outputs for all the actions in the graph.</p>
 <section id="retrieving-the-graph-variables">
 <h2>Retrieving the graph variables<a class="headerlink" href="#retrieving-the-graph-variables" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">variables()</span></code> method returns the set of <code class="docutils literal notranslate"><span class="pre">Variable</span></code> objects that a graph
+<p>The <code class="docutils literal notranslate"><span class="pre">parameters()</span></code> method returns the set of <code class="docutils literal notranslate"><span class="pre">Variable</span></code> objects that a graph
 or action expects as inputs.</p>
 <p>For actions that read parameterised input files (<code class="docutils literal notranslate"><span class="pre">DynaAnalysis</span></code>,
 <code class="docutils literal notranslate"><span class="pre">RadiossAnalysis</span></code>, <code class="docutils literal notranslate"><span class="pre">OpenFOAMAnalysis</span></code>, <code class="docutils literal notranslate"><span class="pre">JinjaReplace</span></code>), the input file
-must be present in the current working directory when <code class="docutils literal notranslate"><span class="pre">variables()</span></code> is called.
+must be present in the current working directory when <code class="docutils literal notranslate"><span class="pre">parameters()</span></code> is called.
 <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> and <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> both handle this automatically: they
 copy all required files to a work directory before delegating to the graph.</p>
 <p>Using <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RunSpring&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">d3plot_File</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;field&#39;</span><span class="p">))</span>
 
 <span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Using <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RunSpring&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
 
 <span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">itr</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">itr</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Both copy files into a temporary subdirectory so the source files are never
-modified. Each variable carries its name, type, default value, and description:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Variable Name: K, Data Type: float, Value: 200.0, Description: &#39;Spring stiffness [N/m]&#39;
+<p>Neither reads the deck in place, so the source files are never modified:
+<code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> copies them into its work directory, and <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>
+into a <code class="docutils literal notranslate"><span class="pre">variables_discovery</span></code> subdirectory of the results root.  Each
+variable carries its name, type, default value and a description:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Variable Name: floatpar1, Data Type: float, Value: 1.23, Description: &#39;From &#39;spring.k&#39;&#39;
+Variable Name: intpar2, Data Type: int, Value: 789, Description: &#39;From &#39;spring.k&#39;&#39;
 </pre></div>
 </div>
+<p>The value is the default read from the deck.  The description is generated
+by the action, not taken from the deck: every solver action records the
+file the variable was found in, so it identifies the source rather than
+describing the quantity.</p>
 </section>
 <section id="retrieving-the-graph-outputs">
 <h2>Retrieving the graph outputs<a class="headerlink" href="#retrieving-the-graph-outputs" title="Link to this heading">¶</a></h2>
@@ -94,9 +101,9 @@ modified. Each variable carries its name, type, default value, and description:<
 For a single action it returns a <code class="docutils literal notranslate"><span class="pre">(eval_type,</span> <span class="pre">description)</span></code> tuple.
 For a <code class="docutils literal notranslate"><span class="pre">WorkFlow</span></code> or <code class="docutils literal notranslate"><span class="pre">DirectedGraph</span></code> it returns a dictionary
 <code class="docutils literal notranslate"><span class="pre">{action_name:</span> <span class="pre">(eval_type,</span> <span class="pre">description)}</span></code> covering all child actions.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RunSpring&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
@@ -107,6 +114,96 @@ For a <code class="docutils literal notranslate"><span class="pre">WorkFlow</spa
 </pre></div>
 </div>
 </section>
+<section id="visualising-the-action-graph">
+<h2>Visualising the action graph<a class="headerlink" href="#visualising-the-action-graph" title="Link to this heading">¶</a></h2>
+<p>Any action can print itself as a tree, rooted at that action. Call it on a
+top-level action (such as a <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> or <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code>) to see the
+whole workflow. The tree shows each wrapper, graph, and leaf action.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SpringWorkFlow&#39;</span><span class="p">)</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RunSpring&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">d3plot_File</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;field&#39;</span><span class="p">))</span>
+
+<span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">work_area_path</span><span class="o">=</span><span class="s1">&#39;results&#39;</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;spring.k&#39;</span><span class="p">])</span>
+<span class="n">itr</span><span class="o">.</span><span class="n">print_tree</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SimulationIterator &#39;SpringWorkFlow_Iter&#39;
+└── WorkFlow &#39;SpringWorkFlow&#39;
+    ├── DynaAnalysis &#39;RunSpring&#39;
+    └── d3plot_File &#39;field&#39;
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">describe=True</span></code> to append each action’s description to its node.</p>
+</section>
+<section id="visualising-the-work-directory">
+<h2>Visualising the work directory<a class="headerlink" href="#visualising-the-work-directory" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">print_work_dir()</span></code> method shows the directory layout that running the
+workflow creates on disk. It is a <em>predicted</em> layout built from the actions’
+metadata, so it works before anything is run and does not require the solvers
+to be installed. A <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> shows a representative <code class="docutils literal notranslate"><span class="pre">job_0/</span></code>
+directory (one is created per design evaluation), while a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> shows the
+single directory it reuses.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span><span class="o">.</span><span class="n">print_work_dir</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>results/   (results root)
+├── status.json   (run progress: current job, jobs done; see kunene.progress)
+├── jobs_index.json   (job -&gt; variable values and group labels; ...)
+├── job_0/   (one directory per design evaluation)
+│   ├── iter_variables.json   (this design&#39;s variable values)
+│   ├── actions_output.pkl   (this design&#39;s action outputs)
+│   ├── spring.k   (copied in)
+│   ├── status.json   (live action states; see kunene.progress)
+│   ├── dyna_variables.json
+│   ├── dyna_action_inp.k
+│   ├── run_file.stdout
+│   ├── run_file.stderr
+│   ├── d3plot*
+│   └── d3hsp
+└── job_1/ … job_N/
+</pre></div>
+</div>
+<p>When several sub-workflows run in their own directories — for example a
+<code class="docutils literal notranslate"><span class="pre">DirectedGraph</span></code> whose children are <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> or <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>
+wrappers — each child’s directory appears as a nested subtree:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectedGraph</span><span class="p">,</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_wa</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;WF</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">DynaAnalysis</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;run</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;spring.k&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">work_area_path</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;WF</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;spring.k&#39;</span><span class="p">])</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">DirectedGraph</span><span class="p">(</span><span class="s1">&#39;aGraph&#39;</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">make_wa</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">make_wa</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">print_work_dir</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>./   (current working directory)
+├── status.json   (live action states; see kunene.progress)
+├── WF1/   (work area, overwritten each run)
+│   ├── spring.k   (copied in)
+│   ├── status.json   (live action states; see kunene.progress)
+│   ├── dyna_variables.json
+│   ├── dyna_action_inp.k
+│   ├── run_file.stdout
+│   ├── run_file.stderr
+│   ├── d3plot*
+│   └── d3hsp
+└── WF2/   (work area, overwritten each run)
+    ├── spring.k   (copied in)
+    └── ...   (the same files, written by run2)
+</pre></div>
+</div>
+<p>Call <code class="docutils literal notranslate"><span class="pre">describe_workflow()</span></code> to print both the action tree and the work
+directory structure together. The formatting helpers <code class="docutils literal notranslate"><span class="pre">format_tree()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">format_work_dir()</span></code> return the same output as strings instead of printing it.</p>
+</section>
 </section>
 
 
@@ -116,34 +213,25 @@ For a <code class="docutils literal notranslate"><span class="pre">WorkFlow</spa
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Discovering graph usage</a><ul>
-<li><a class="reference internal" href="#retrieving-the-graph-variables">Retrieving the graph variables</a></li>
-<li><a class="reference internal" href="#retrieving-the-graph-outputs">Retrieving the graph outputs</a></li>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Discovering graph usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#retrieving-the-graph-variables">Retrieving the graph variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieving-the-graph-outputs">Retrieving the graph outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualising-the-action-graph">Visualising the action graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualising-the-work-directory">Visualising the work directory</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="vars.html"
-                          title="previous chapter">Variables</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="exa.html"
-                          title="next chapter">Examples</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/discover.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -171,9 +259,9 @@ For a <code class="docutils literal notranslate"><span class="pre">WorkFlow</spa
           <a href="exa.html" title="Examples"
              >next</a> |</li>
         <li class="right" >
-          <a href="vars.html" title="Variables"
+          <a href="parallel.html" title="Running in parallel"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Discovering graph usage</a></li> 
       </ul>
     </div>

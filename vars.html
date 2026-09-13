@@ -5,18 +5,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Variables &#8212; simnexus 1.0.1 documentation</title>
+    <title>Variables &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Discovering graph usage" href="discover.html" />
-    <link rel="prev" title="Creating directories and copying files" href="dirs.html" /> 
+    <link rel="next" title="Running in parallel" href="parallel.html" />
+    <link rel="prev" title="Work areas and design studies" href="dirs.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
@@ -28,12 +28,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="discover.html" title="Discovering graph usage"
+          <a href="parallel.html" title="Running in parallel"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="dirs.html" title="Creating directories and copying files"
+          <a href="dirs.html" title="Work areas and design studies"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Variables</a></li> 
       </ul>
     </div>  
@@ -47,44 +47,122 @@
 <h1>Variables<a class="headerlink" href="#variables" title="Link to this heading">¶</a></h1>
 <p>Variables are used to parameterize the simulation for design changes,
 creating ML training data, and design optimization.</p>
-<section id="variable-description">
-<h2>Variable description<a class="headerlink" href="#variable-description" title="Link to this heading">¶</a></h2>
-<p>Each variable has an optional <code class="docutils literal notranslate"><span class="pre">description</span></code> argument.
+<p>Typically the variable are read from the input decks; for example, *PARAMETER definitions in LS-DYNA.
+You can also define a variable for use.</p>
+<p>The following types of variables are available: <code class="docutils literal notranslate"><span class="pre">FloatVariable</span></code>, <code class="docutils literal notranslate"><span class="pre">IntSetVariable</span></code>, and <code class="docutils literal notranslate"><span class="pre">StrSetVariable</span></code>.</p>
+<section id="members-of-a-variable">
+<h2>Members of a variable<a class="headerlink" href="#members-of-a-variable" title="Link to this heading">¶</a></h2>
+<p>Every variable carries four members, from the <code class="docutils literal notranslate"><span class="pre">Variable</span></code> base class:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>The variable’s name.  It is the key the value is looked up under in the
+<code class="docutils literal notranslate"><span class="pre">val_dict</span></code> passed to <code class="docutils literal notranslate"><span class="pre">solve()</span></code>, so it must match the name in the
+deck.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">value</span></code></dt><dd><p>The current value.  It is a property: assigning to it is checked
+against the variable’s bounds or its set of allowable values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">type</span></code></dt><dd><p>The Python type the variable holds — <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">description</span></code></dt><dd><p>Each variable has an optional <code class="docutils literal notranslate"><span class="pre">description</span></code> argument.
 If not provided, the class docstring is used as the description.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVariable</span>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">FloatVariable(name,</span> <span class="pre">value,</span> <span class="pre">upper_bound=None,</span> <span class="pre">lower_bound=None,</span> <span class="pre">description=None)</span></code>
+is the continuous variable.  It adds:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">lower_bound</span></code>, <code class="docutils literal notranslate"><span class="pre">upper_bound</span></code></dt><dd><p>The range the value must stay within.  <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default) leaves
+that side unbounded.</p>
+</dd>
+</dl>
+<p>A value outside the range is refused at construction with a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>,
+and on assignment with an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVariable</span>
 
-<span class="n">temperature</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mf">75.</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">200.</span><span class="p">,</span>
-                            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Inlet temperature in Kelvin&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">temperature</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>  <span class="c1"># &#39;Inlet temperature in Kelvin&#39;</span>
-
-<span class="c1"># Without description, falls back to the class docstring:</span>
-<span class="n">k</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>  <span class="c1"># &#39;A variable that may only assume an float value. ...&#39;</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mf">75.</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">200.</span><span class="p">)</span>
+<span class="n">t</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">80.</span>                                 <span class="c1"># fine</span>
+<span class="n">t</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">500.</span>                                <span class="c1"># AssertionError</span>
+<span class="n">FloatVariable</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mf">500.</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">200.</span><span class="p">)</span>    <span class="c1"># ValueError</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">IntSetVariable(name,</span> <span class="pre">value,</span> <span class="pre">allowable=None,</span> <span class="pre">description=None)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">StrSetVariable(name,</span> <span class="pre">value,</span> <span class="pre">allowable=None,</span> <span class="pre">description=None)</span></code> are the
+discrete variables — an integer and a string chosen from a fixed set.  Both
+add:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">allowable</span></code></dt><dd><p>The set of values the variable may take.  A list or tuple is converted
+to a set.  If it is omitted or empty it becomes <code class="docutils literal notranslate"><span class="pre">{value}</span></code>, which pins
+the variable to its initial value — rarely what is wanted, so pass the
+set explicitly.</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntSetVariable</span><span class="p">,</span> <span class="n">StrSetVariable</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">IntSetVariable</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">n</span><span class="o">.</span><span class="n">allowable</span>                        <span class="c1"># {1, 2, 3} — the list became a set</span>
+<span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">3</span>                        <span class="c1"># fine</span>
+<span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">7</span>                        <span class="c1"># AssertionError</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">StrSetVariable</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">allowable</span>                        <span class="c1"># {&#39;foo&#39;, &#39;bar&#39;}</span>
+
+<span class="n">IntSetVariable</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">allowable</span>   <span class="c1"># {5}: no set given, so pinned to 5</span>
+</pre></div>
+</div>
+<p>Only assignment is checked, never the initial value, so
+<code class="docutils literal notranslate"><span class="pre">IntSetVariable('N',</span> <span class="pre">9,</span> <span class="pre">[1,</span> <span class="pre">2])</span></code> is built without complaint and holds a
+value outside its own set.  The checks on assignment are <code class="docutils literal notranslate"><span class="pre">assert</span></code>
+statements, which Python removes when run with <code class="docutils literal notranslate"><span class="pre">-O</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">parameters()</span></code> returns an <code class="docutils literal notranslate"><span class="pre">UnknownVariable</span></code> when the deck gives neither
+a type nor a default — a jinja <code class="docutils literal notranslate"><span class="pre">{{</span> <span class="pre">}}</span></code> name, or an OpenRadioss expression
+parameter.  It has <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">value</span></code> and <code class="docutils literal notranslate"><span class="pre">description</span></code> but its <code class="docutils literal notranslate"><span class="pre">type</span></code>
+is <code class="docutils literal notranslate"><span class="pre">None</span></code>, and its <code class="docutils literal notranslate"><span class="pre">value</span></code> is read-only.</p>
+</section>
+<section id="variable-discovery">
+<h2>Variable discovery<a class="headerlink" href="#variable-discovery" title="Link to this heading">¶</a></h2>
+<p>Both <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> and <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> support variable discovery
+via <code class="docutils literal notranslate"><span class="pre">parameters()</span></code>.  The files are copied first so that solver actions
+can read their input files: <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> copies them into its work
+directory, <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> into a <code class="docutils literal notranslate"><span class="pre">variables_discovery</span></code>
+subdirectory of the results root.  The originals are never modified.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkArea</span><span class="p">,</span> <span class="n">SimulationIterator</span>
+
+<span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+<span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">itr</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="discover.html"><span class="doc">Discovering graph usage</span></a> for more details on variable and output discovery.</p>
 </section>
 <section id="using-a-variable-as-an-argument-to-an-action">
 <h2>Using a variable as an argument to an action<a class="headerlink" href="#using-a-variable-as-an-argument-to-an-action" title="Link to this heading">¶</a></h2>
-<p>First, you have to define the variable</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVariable</span>
-
-<span class="n">temperature</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mf">75.</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">200.</span> <span class="p">)</span>
-<span class="n">etime</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span> <span class="s1">&#39;ET&#39;</span><span class="p">,</span> <span class="mf">40.</span> <span class="p">)</span>
-</pre></div>
-</div>
-<p>Having defined a variable you can use it to control actions</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVariable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAM_Field</span>
+<p>First, you have to define the variable, then you can use it to control actions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.args</span><span class="w"> </span><span class="kn">import</span> <span class="n">Location</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.variables</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVariable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAM_Field</span>
 
 <span class="c1"># define variable</span>
 <span class="n">etime</span> <span class="o">=</span> <span class="n">FloatVariable</span><span class="p">(</span> <span class="s1">&#39;ET&#39;</span><span class="p">,</span> <span class="mf">40.</span> <span class="p">)</span>
 <span class="c1"># The variable can be used to construct an action</span>
 <span class="c1"># Below it is used to control an extraction time</span>
-<span class="n">f</span> <span class="o">=</span> <span class="n">OpenFOAM_Field</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;TF&#39;</span><span class="p">,</span> <span class="n">case_dir</span><span class="o">=</span><span class="s2">&quot;WING&quot;</span><span class="p">,</span> <span class="n">field_variable</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">,</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">OpenFOAM_Field</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;TF&#39;</span><span class="p">,</span> <span class="n">field_variable</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">,</span>
                     <span class="n">time</span><span class="o">=</span><span class="n">etime</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">Location</span><span class="o">.</span><span class="n">NODAL</span><span class="p">)</span>
+
+<span class="c1"># the value given to solve() replaces the variable</span>
 <span class="n">f</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span> <span class="p">{</span><span class="s1">&#39;ET&#39;</span><span class="p">:</span><span class="mi">50</span><span class="p">}</span> <span class="p">)</span>
 </pre></div>
 </div>
+<p>The action reads the OpenFOAM case in the current working directory, which
+is the work area the graph runs in, so there is no case-directory argument:
+put the case there with the <code class="docutils literal notranslate"><span class="pre">copy_paths</span></code> of a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> or a
+<code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code>.</p>
+<p>The two decorators that make this work are
+<code class="docutils literal notranslate"><span class="pre">&#64;WorkAction.allow_variables_as_arguments</span></code> on <code class="docutils literal notranslate"><span class="pre">__init__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&#64;WorkAction.assign_variables_values_to_members</span></code> on <code class="docutils literal notranslate"><span class="pre">solve</span></code>.  An action
+that should accept variables as constructor arguments needs both.</p>
 </section>
 </section>
 
@@ -95,34 +173,24 @@ If not provided, the class docstring is used as the description.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Variables</a><ul>
-<li><a class="reference internal" href="#variable-description">Variable description</a></li>
-<li><a class="reference internal" href="#using-a-variable-as-an-argument-to-an-action">Using a variable as an argument to an action</a></li>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#members-of-a-variable">Members of a variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variable-discovery">Variable discovery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-variable-as-an-argument-to-an-action">Using a variable as an argument to an action</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="dirs.html"
-                          title="previous chapter">Creating directories and copying files</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="discover.html"
-                          title="next chapter">Discovering graph usage</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/vars.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -147,12 +215,12 @@ If not provided, the class docstring is used as the description.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="discover.html" title="Discovering graph usage"
+          <a href="parallel.html" title="Running in parallel"
              >next</a> |</li>
         <li class="right" >
-          <a href="dirs.html" title="Creating directories and copying files"
+          <a href="dirs.html" title="Work areas and design studies"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Variables</a></li> 
       </ul>
     </div>

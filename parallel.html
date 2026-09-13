@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Running in parallel &#8212; kunene 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Discovering graph usage" href="discover.html" />
+    <link rel="prev" title="Variables" href="vars.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="discover.html" title="Discovering graph usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="vars.html" title="Variables"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Running in parallel</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="running-in-parallel">
+<h1>Running in parallel<a class="headerlink" href="#running-in-parallel" title="Link to this heading">¶</a></h1>
+<p>The solvers are where the time goes, and a workflow can run more than one
+of them at a time at three levels, which combine:</p>
+<ul class="simple">
+<li><p><strong>The solvers used in a graph</strong> — a graph that runs several solvers
+(a structural and a fluid analysis, the same model in two solvers,
+several load cases) runs them at the same time when the
+<code class="docutils literal notranslate"><span class="pre">DirectedGraph</span></code> that holds them is given <code class="docutils literal notranslate"><span class="pre">asynch=True</span></code>.</p></li>
+<li><p><strong>The jobs of a design study</strong> — a <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> with
+<code class="docutils literal notranslate"><span class="pre">max_workers</span></code> &gt; 1 evaluates several design points at once, each in its
+own job directory.</p></li>
+<li><p><strong>Other machines</strong> — a sub-graph wrapped in a <code class="docutils literal notranslate"><span class="pre">RemoteAction</span></code> runs on
+a server and its results come back into the local graph; see
+<a class="reference internal" href="remote.html"><span class="doc">Remote Execution</span></a>.</p></li>
+</ul>
+<p>The first two are the subject of this chapter.  Both start ordinary
+child processes on the local machine, and the section at the end,
+<a class="reference internal" href="#start-methods"><span class="std std-ref">Child processes and start methods</span></a>, describes what those processes need from your
+script — on Linux nothing; on Windows that the graph be picklable.</p>
+<p>Which one to reach for follows from what is independent.  Solvers used
+in the same graph belong in an <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph.  The jobs of a design
+study belong to <code class="docutils literal notranslate"><span class="pre">max_workers</span></code>.  A study whose graph uses several solvers
+can use both, at the price of the cores it then needs: every job is a
+whole graph, an <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph adds a process per solver inside each
+job, and a solver may itself use several cores.</p>
+<section id="solvers-used-in-a-graph-asynch">
+<h2>Solvers used in a graph: <code class="docutils literal notranslate"><span class="pre">asynch</span></code><a class="headerlink" href="#solvers-used-in-a-graph-asynch" title="Link to this heading">¶</a></h2>
+<p>A design is often evaluated by more than one solver run — OpenRadioss and
+LS-DYNA on the same model, a structural analysis alongside a CFD one, the
+same deck under several load cases — and those runs do not depend on one
+another, only the step that combines their results does.  Run sequentially
+they take the sum of their times; <code class="docutils literal notranslate"><span class="pre">DirectedGraph(name,</span> <span class="pre">asynch=True)</span></code>
+starts each of them in a child process as soon as its inputs are ready, so
+the design takes about as long as its slowest solver.  The dependencies
+are unchanged: an action still waits for the actions it was added with as
+<code class="docutils literal notranslate"><span class="pre">parents</span></code>, so the solvers overlap and the step that merges their results
+runs when all of them have finished.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectedGraph</span><span class="p">,</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">MathEvaluation</span>
+
+<span class="n">dg</span> <span class="o">=</span> <span class="n">DirectedGraph</span><span class="p">(</span><span class="s1">&#39;TwoSolvers&#39;</span><span class="p">,</span> <span class="n">asynch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># The two solvers, each running in a directory of its own. radioss_flow</span>
+<span class="c1"># and dyna_flow are WorkFlows: the solver action followed by the</span>
+<span class="c1"># action that reads its results.</span>
+<span class="n">rr</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">WorkArea</span><span class="p">(</span><span class="n">radioss_flow</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;spring.rad&#39;</span><span class="p">]))</span>
+<span class="n">rs</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">WorkArea</span><span class="p">(</span><span class="n">dyna_flow</span><span class="p">,</span>    <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;spring.k&#39;</span><span class="p">]))</span>
+
+<span class="c1"># Combines their results, so it runs when both solvers have finished.</span>
+<span class="n">dg</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">MathEvaluation</span><span class="p">(</span><span class="s1">&#39;solver_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;rad_n5 - dyna_n5&#39;</span><span class="p">),</span>
+              <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">rr</span><span class="p">,</span> <span class="n">rs</span><span class="p">])</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Leave <code class="docutils literal notranslate"><span class="pre">asynch</span></code> out and the same graph runs the solvers one after the
+other, with the same results.  Four things follow from the solvers running
+in separate processes:</p>
+<p><strong>Each solver needs its own directory.</strong>  The children inherit the
+graph’s working directory and would all run in it, so each solver — with
+the actions that read its output — is wrapped in a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code>, as above,
+or the solvers overwrite one another’s decks and results.  An action that
+only computes (a <code class="docutils literal notranslate"><span class="pre">MathEvaluation</span></code>) needs none.</p>
+<p><strong>The flag is not inherited.</strong>  <code class="docutils literal notranslate"><span class="pre">asynch</span></code> governs the immediate children
+of the graph it is given to.  A graph nested inside an <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph —
+the <code class="docutils literal notranslate"><span class="pre">radioss_flow</span></code> inside its work area, say — runs its own actions one
+after the other, which is what you want there: the reader of the results
+has to wait for the solver anyway.  And a <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> around an
+<code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph still evaluates its designs one at a time unless it is
+given <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> (next section).</p>
+<p><strong>Results cross a process boundary.</strong>  What each solver’s work area
+produces comes back through a <code class="docutils literal notranslate"><span class="pre">multiprocessing.Manager</span></code> dict, so it must
+be picklable — numbers, arrays, lists and dicts of those are; an open file
+handle is not.  The results are structured exactly as in a sequential run:
+a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> contributes its outputs as a nested dictionary under its
+own name, which is what keeps two solvers with similar action names apart.</p>
+<p><strong>A solver that fails stops the others.</strong>  If a child raises, dies or
+returns nothing — a solver that terminates with an error raises
+<code class="docutils literal notranslate"><span class="pre">SolverError</span></code> in its child — the graph marks it <code class="docutils literal notranslate"><span class="pre">failed</span></code> in
+<code class="docutils literal notranslate"><span class="pre">status.json</span></code>, terminates the solvers still running (marked <code class="docutils literal notranslate"><span class="pre">failed</span></code>
+too, with a <em>terminated: a sibling action failed</em> message) and raises
+<code class="docutils literal notranslate"><span class="pre">AsyncActionError</span></code> carrying the child’s traceback.</p>
+<p>The progress of an <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph is reported like any other graph’s:
+each child writes what it knows about its own action to a sidecar file
+that the graph merges into its <code class="docutils literal notranslate"><span class="pre">status.json</span></code>, so each solver’s
+percent-complete shows up there while it runs, next to the others. A child
+that is a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> reports the actions <em>inside</em> it the same way, so the
+graph’s file names the solvers rather than the areas wrapping them.</p>
+</section>
+<section id="design-study-jobs-max-workers">
+<h2>Design study jobs: <code class="docutils literal notranslate"><span class="pre">max_workers</span></code><a class="headerlink" href="#design-study-jobs-max-workers" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">SimulationIterator(graph,</span> <span class="pre">max_workers=N)</span></code> evaluates up to <code class="docutils literal notranslate"><span class="pre">N</span></code> design
+points at the same time, each in a child process with its own job
+directory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;path/to/spring.k&#39;</span><span class="p">],</span> <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="mf">300.</span><span class="p">,</span> <span class="mf">400.</span><span class="p">,</span> <span class="mf">500.</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>The results are the same as with the default <code class="docutils literal notranslate"><span class="pre">max_workers=1</span></code>, and come
+back in the order the design points were given.  Only the sweep methods
+(<code class="docutils literal notranslate"><span class="pre">collect_for_varrange</span></code>, <code class="docutils literal notranslate"><span class="pre">collect_for_expdes</span></code> and <code class="docutils literal notranslate"><span class="pre">solve_parallel</span></code>,
+which takes an explicit list of design points) fan out; <code class="docutils literal notranslate"><span class="pre">solve</span></code> is a
+single design point and always runs in the calling process.</p>
+<p>Job directories are numbered by the calling process alone, so the jobs
+cannot collide over a number, and each job leaves its results in its own
+directory as usual — <code class="docutils literal notranslate"><span class="pre">results_for</span></code>, <code class="docutils literal notranslate"><span class="pre">collect</span></code> and <code class="docutils literal notranslate"><span class="pre">reuse_existing</span></code>
+(see <a class="reference internal" href="dirs.html"><span class="doc">Work areas and design studies</span></a>) see no difference between a job that ran in a child
+and one that ran in the calling process.</p>
+<p>A job that fails aborts the sweep, as it does when the jobs run one after
+the other: the jobs still running are terminated, marked <code class="docutils literal notranslate"><span class="pre">failed</span></code> in the
+index, and <code class="docutils literal notranslate"><span class="pre">AsyncActionError</span></code> is raised with the failing job’s
+traceback.  The jobs that completed before it keep their results, so the
+sweep can be resumed with <code class="docutils literal notranslate"><span class="pre">reuse_existing=True</span></code>.</p>
+<p>Choose <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> for what the machine can actually run: every job is
+a full graph, a solver action may use several cores of its own, and an
+<code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph adds processes inside each job.  A sweep of six two-second
+jobs with <code class="docutils literal notranslate"><span class="pre">max_workers=3</span></code> is what <code class="docutils literal notranslate"><span class="pre">examples/parallel_jobs.py</span></code> runs; it
+needs no solver installed.</p>
+<section id="watching-the-jobs">
+<h3>Watching the jobs<a class="headerlink" href="#watching-the-jobs" title="Link to this heading">¶</a></h3>
+<p>In a terminal the batch reports itself as <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> bars: one counting the
+jobs of the batch, and under it a bar per job running right now:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Study_Iter:  50%|█████████████            | 3/6 [00:42&lt;00:41, 13.9s/job]
+  job_3  rad 1 of 3: time 12.9 of 40 (97%)        32%|███████▎               |
+  job_4  rad 1 of 3: time 11.4 of 40 (86%)        28%|██████▍                |
+  job_5  rad 1 of 3: time  2.1 of 40 (16%)         5%|█▏                     |
+</pre></div>
+</div>
+<p>A job’s bar is fed from the <code class="docutils literal notranslate"><span class="pre">status.json</span></code> that job writes, so it follows
+the job through its actions and shows a solver’s percent-complete while one
+runs (<a class="reference internal" href="api.html#kunene.progress.job_fraction" title="kunene.progress.job_fraction"><code class="xref py py-func docutils literal notranslate"><span class="pre">kunene.progress.job_fraction()</span></code></a> is what turns those action
+states into the one number the bar needs). An action of your own reports
+itself the same way, by calling <code class="docutils literal notranslate"><span class="pre">self.report_progress(fraction,</span> <span class="pre">message)</span></code>
+inside <code class="docutils literal notranslate"><span class="pre">solve</span></code>.</p>
+<p>A job’s line names the action running now and its place in the graph
+(<code class="docutils literal notranslate"><span class="pre">rad</span> <span class="pre">1</span> <span class="pre">of</span> <span class="pre">3</span></code>), then that action’s own message and percentage. The bar’s
+own percentage is something else: the whole job, averaged over its actions
+– a solver 97% through the first of three actions leaves the job at 32%.</p>
+<p>When several actions run at once – the <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph above – the line
+names them all with their own percentages instead, since none of them is
+<em>the</em> action running now:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>job_3  3 of 5 running: rad_a (80%), rad_b (34%), post   28%|██████▍   |
+</pre></div>
+</div>
+<p>A solver wrapped in a <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code> is followed just as closely. A work
+area, like a sub-graph, holds no entry of its own in the enclosing
+<code class="docutils literal notranslate"><span class="pre">status.json</span></code>: it reports the actions inside it there, as well as into
+the <code class="docutils literal notranslate"><span class="pre">status.json</span></code> it writes in its own directory. So a job’s bar shows
+the solver in the work area rather than sitting at nothing until the whole
+area is finished, and it makes no difference to the bars whether the
+solvers of a study are wrapped in work areas or not.</p>
+<p>The bars appear when tqdm is installed (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">kunene[progress]</span></code>)
+and stderr is a terminal, so they never litter a log file; pass
+<code class="docutils literal notranslate"><span class="pre">progress_bar=True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> to <code class="docutils literal notranslate"><span class="pre">solve_parallel</span></code>,
+<code class="docutils literal notranslate"><span class="pre">collect_for_expdes</span></code> or <code class="docutils literal notranslate"><span class="pre">collect_for_varrange</span></code> to decide explicitly.
+They are a convenience for watching a run go by — the <code class="docutils literal notranslate"><span class="pre">status.json</span></code> files
+are written either way.</p>
+<p>So that the bars keep their lines, a job running in parallel does not write
+to the terminal: its stdout and stderr (the solver wrappers’ messages, its
+log records) are redirected into <code class="docutils literal notranslate"><span class="pre">job_N/job.log</span></code>, which cleanup never
+removes. A job run serially still writes to the terminal, where there are
+no bars to disturb.</p>
+<p>Each job writes its own <code class="docutils literal notranslate"><span class="pre">status.json</span></code>, and the root <code class="docutils literal notranslate"><span class="pre">status.json</span></code>
+lists the jobs running at that moment in <code class="docutils literal notranslate"><span class="pre">current_jobs</span></code>, so
+<a class="reference internal" href="api.html#kunene.progress.watch_run" title="kunene.progress.watch_run"><code class="xref py py-func docutils literal notranslate"><span class="pre">kunene.progress.watch_run()</span></code></a> — or a GUI polling the results tree
+with <a class="reference internal" href="api.html#kunene.progress.RunWatcher" title="kunene.progress.RunWatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">kunene.progress.RunWatcher</span></code></a> — shows all of them at once,
+from another process if need be.</p>
+<p>The root file’s counts are the <em>batch’s</em>: <code class="docutils literal notranslate"><span class="pre">jobs_total</span></code> is the number of
+design points this sweep was given and <code class="docutils literal notranslate"><span class="pre">jobs_done</span></code> counts from zero, so
+running a second sweep on the same iterator starts the count again rather
+than carrying on from the first.  A bare <code class="docutils literal notranslate"><span class="pre">solve()</span></code> is one design point
+and belongs to no batch, so it reports <code class="docutils literal notranslate"><span class="pre">jobs_total</span></code> as null.  A sweep
+ends by writing its final state and letting go of the results root, which
+is what lets a re-run of the same study — a new <code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code> on
+the same directory — take the file over and be the run a watcher sees.</p>
+<p>When a job fails and the others are terminated with it, the terminated
+jobs cannot report themselves: the parent marks each of their
+<code class="docutils literal notranslate"><span class="pre">status.json</span></code> files failed (every action that was running with them) and
+empties <code class="docutils literal notranslate"><span class="pre">current_jobs</span></code>, so the status files and <code class="docutils literal notranslate"><span class="pre">jobs_index.json</span></code>
+agree about what happened.</p>
+</section>
+</section>
+<section id="child-processes-and-start-methods">
+<span id="start-methods"></span><h2>Child processes and start methods<a class="headerlink" href="#child-processes-and-start-methods" title="Link to this heading">¶</a></h2>
+<p>The two places kunene runs work in another process — a sweep with
+<code class="docutils literal notranslate"><span class="pre">max_workers</span></code> &gt; 1, and an <code class="docutils literal notranslate"><span class="pre">asynch</span></code> graph — start their children with
+<code class="docutils literal notranslate"><span class="pre">fork</span></code> where the platform has it and with <code class="docutils literal notranslate"><span class="pre">spawn</span></code> where it does not,
+which on Windows is always.  <code class="docutils literal notranslate"><span class="pre">kunene.util.parallel.get_context</span></code> makes
+the choice.</p>
+<p>Under <code class="docutils literal notranslate"><span class="pre">fork</span></code> the child is a copy of the calling process and inherits
+everything: the graph, the imports, the logging configuration, the working
+directory.  Under <code class="docutils literal notranslate"><span class="pre">spawn</span></code> the child is a <em>fresh interpreter</em>, and the
+graph and its actions travel to it as a pickle.  That asks one thing of the
+caller: <strong>keep the graph picklable, without the script.</strong>  Define your
+action classes in a module the child can import — any <code class="docutils literal notranslate"><span class="pre">.py</span></code> file on
+<code class="docutils literal notranslate"><span class="pre">sys.path</span></code> — not in the script that starts the run and not inside a
+function, and keep open files, sockets and database handles out of an
+action’s attributes; build them in <code class="docutils literal notranslate"><span class="pre">solve</span></code> instead.  kunene’ own
+unpicklable state (progress locks, heartbeat threads, live child processes)
+is dropped and rebuilt for you.</p>
+<p>The script itself is not re-imported by the children (they need nothing
+from it), so it runs once, as written:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">SimulationIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">my_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mesh</span><span class="p">,</span> <span class="n">Solve</span>       <span class="c1"># an importable module</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;Study&#39;</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="p">[</span><span class="n">Mesh</span><span class="p">(</span><span class="s1">&#39;mesh&#39;</span><span class="p">),</span> <span class="n">Solve</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">)])</span>
+<span class="n">itr</span> <span class="o">=</span> <span class="n">SimulationIterator</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">collect_for_varrange</span><span class="p">({</span><span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">200.</span><span class="p">,</span> <span class="mf">300.</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>Had <code class="docutils literal notranslate"><span class="pre">Mesh</span></code> been defined in this script instead, the child could not find
+it, and kunene refuses the start with a <code class="docutils literal notranslate"><span class="pre">SpawnError</span></code> naming the class
+rather than letting the child die on it.  Move the class into a module;
+or set <code class="docutils literal notranslate"><span class="pre">KUNENE_SPAWN_IMPORTS_MAIN=1</span></code> to have every child re-import the
+script as stock multiprocessing does, in which case the script must not
+start the run at top level.</p>
+<p>Everything else is the same on both start methods: the job directories, the
+<code class="docutils literal notranslate"><span class="pre">status.json</span></code> files, the <code class="docutils literal notranslate"><span class="pre">job.log</span></code> redirect, the progress bars, the
+index and the failure semantics.  Spawning is a little slower to start each
+job, which matters only for jobs that are themselves quick.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">KUNENE_START_METHOD=spawn</span></code> to use the Windows path on Linux — to
+reproduce a Windows problem, or in a process that has already started
+threads and must not fork.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running in parallel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#solvers-used-in-a-graph-asynch">Solvers used in a graph: <code class="docutils literal notranslate"><span class="pre">asynch</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-study-jobs-max-workers">Design study jobs: <code class="docutils literal notranslate"><span class="pre">max_workers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#child-processes-and-start-methods">Child processes and start methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="discover.html" title="Discovering graph usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="vars.html" title="Variables"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Running in parallel</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2026, Willem Roux.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>

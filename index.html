@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>SimNexus &#8212; simnexus 1.0.1 documentation</title>
+    <title>Kunene &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
@@ -29,8 +29,8 @@
         <li class="right" >
           <a href="actions_descr.html" title="A graph of actions"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">simnexus 1.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">SimNexus</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Kunene</a></li> 
       </ul>
     </div>  
 
@@ -39,69 +39,94 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="simnexus">
-<h1>SimNexus<a class="headerlink" href="#simnexus" title="Link to this heading">¶</a></h1>
+  <section id="kunene">
+<h1>Kunene<a class="headerlink" href="#kunene" title="Link to this heading">¶</a></h1>
 <p>A Python module for orchestrating complex simulations
 with native support for LS-DYNA, OpenRadioss, and OpenFOAM.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<p>SimNexus enables the automation and coordination of
+<p><cite>Kunene</cite> enables the automation and coordination of
 multi-physics simulation workflows — from input preparation and
 remote execution to results extraction and post-processing.
 The module is particularly suited for simulations that span
 multiple domains, such as combined structural and fluid dynamics analyses.</p>
-<p>SimNexus has native support for
-solvers like LS-DYNA, OpenRadioss, and OpenFOAM.</p>
+<p>The solvers a design needs can run at the same time, and a simulation
+iterator can evaluate the whole graph for several design points at once,
+each in its own job directory.</p>
+<p><cite>Kunene</cite> has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.</p>
 </section>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>Workflow Management</strong>: Define simulation workflows as directed acyclic graphs (DAGs) where actions are executed based on dependency relationships and completion status of prerequisite tasks</p></li>
 <li><p><strong>Native Solver Support</strong>: Specify input parameter values and the results to extract for a supported solver.  Currently implemented are LS-DYNA and OpenRadioss for structural analysis, and OpenFOAM for computational fluid dynamics</p></li>
+<li><p><strong>Parallel Execution</strong>: Evaluate several design points of a study concurrently, each job in its own directory with its own progress bar</p></li>
+<li><p><strong>Results Extraction</strong>: Read from the solvers’ result databases in the graph. Supported are: LS-DYNA d3plot, OpenRadioss VTK and time-history CSV, and OpenFOAM fields and histories.</p></li>
 <li><p><strong>Remote Execution</strong>: Submit computational subgraphs to remote computing resources while maintaining local workflow coordination</p></li>
-<li><p><strong>Dependency Resolution</strong>: Automatically manages execution order based on inter-action dependencies, ensuring downstream actions wait for required upstream results</p></li>
-<li><p><strong>Discoverability</strong>: Query any graph for its inputs (<code class="docutils literal notranslate"><span class="pre">variables()</span></code>) and outputs (<code class="docutils literal notranslate"><span class="pre">outputs()</span></code>) without running it — solver actions read their parameterised input files to report variable names, types, and default values</p></li>
-<li><p><strong>Scalability</strong>: Designed to scale through integration with an LLM CLI for the extension and use of the module.</p></li>
+<li><p><strong>Custom Actions</strong>: Add an operation of your own by subclassing <cite>WorkAction</cite> and writing <cite>solve(val_dict)</cite>; it then behaves like any built-in action.</p></li>
+<li><p><strong>Discoverability</strong>: Query any graph for its inputs and outputs without running it — solver actions read their parameterised input files to report variable names, types, and default values</p></li>
 </ul>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<p><cite>Kunene</cite> has so far only been tested on Linux and WSL.
+Windows testing is not yet complete; use WSL.</p>
 </section>
 <section id="typical-workflow">
 <h2>Typical Workflow<a class="headerlink" href="#typical-workflow" title="Link to this heading">¶</a></h2>
+<p>The user usually need to:</p>
 <ol class="arabic simple">
-<li><p>Configure input files for target solvers</p></li>
-<li><p>Define analysis actions and their dependencies</p></li>
-<li><p>Execute simulations on designated compute resources (local or remote)</p></li>
-<li><p>Extract relevant results from solver outputs</p></li>
-<li><p>Aggregate and summarize findings</p></li>
+<li><p>Parameterize input files for target solvers</p></li>
+<li><p>Define the actions and their dependencies</p></li>
 </ol>
-<p>SimNexus streamlines the complexity of managing heterogeneous simulation environments, enabling researchers and engineers to focus on analysis rather than workflow orchestration.</p>
+<p>The typical <cite>kunene</cite> steps are:</p>
+<ol class="arabic simple">
+<li><p>Update parameter values with the values for the current design</p></li>
+<li><p>Execute simulations on designated compute resources (local or remote), possibly in parallel</p></li>
+<li><p>Extract relevant results from solver outputs</p></li>
+<li><p>Aggregate, summarize, and postprocess findings</p></li>
+</ol>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="actions_descr.html#using-an-action">Using an action</a></li>
-<li class="toctree-l2"><a class="reference internal" href="actions_descr.html#defining-a-user-action">Defining a user action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="actions_descr.html#actions">Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="actions_descr.html#user-actions">User actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="actions_descr.html#setting-up-a-graph">Setting up a graph</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dirs.html">Creating directories and copying files</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dirs.html#workarea">WorkArea</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dirs.html#simulationiterator">SimulationIterator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dirs.html#variable-discovery">Variable discovery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#workarea-one-run-in-one-directory">WorkArea: one run in one directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#simulationiterator-a-design-study">SimulationIterator: a design study</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#retrieving-past-runs">Retrieving past runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#grouping-runs">Grouping runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#reusing-completed-runs">Reusing completed runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dirs.html#cleaning-up-bulk-solver-output">Cleaning up bulk solver output</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="vars.html#variable-description">Variable description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vars.html#members-of-a-variable">Members of a variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vars.html#variable-discovery">Variable discovery</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vars.html#using-a-variable-as-an-argument-to-an-action">Using a variable as an argument to an action</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html#solvers-used-in-a-graph-asynch">Solvers used in a graph: <code class="docutils literal notranslate"><span class="pre">asynch</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html#design-study-jobs-max-workers">Design study jobs: <code class="docutils literal notranslate"><span class="pre">max_workers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel.html#child-processes-and-start-methods">Child processes and start methods</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="discover.html#retrieving-the-graph-variables">Retrieving the graph variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="discover.html#retrieving-the-graph-outputs">Retrieving the graph outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="discover.html#visualising-the-action-graph">Visualising the action graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="discover.html#visualising-the-work-directory">Visualising the work directory</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="exa.html#ls-dyna">LS-DYNA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exa.html#openradioss">OpenRadioss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exa.html#parameters-with-jinja-markup">Parameters with jinja markup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exa.html#openfoam">OpenFOAM</a></li>
 </ul>
 </li>
@@ -109,32 +134,62 @@ solvers like LS-DYNA, OpenRadioss, and OpenFOAM.</p>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#architecture">Architecture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#setting-up-the-server">Setting up the Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#defining-remote-actions">Defining Remote Actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="remote.html#discovering-available-remove-graphs">Discovering Available Remove Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote.html#discovering-available-remote-graphs">Discovering Available Remote Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#example-using-a-named-graph">Example: Using a Named Graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote.html#progress-of-remote-jobs">Progress of remote jobs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#implementation-details">Implementation Details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="remote.html#site-security">Site security</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.actions.MathEvaluation"><code class="docutils literal notranslate"><span class="pre">MathEvaluation</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.actions.WorkAction"><code class="docutils literal notranslate"><span class="pre">WorkAction</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.variables.FloatVariable"><code class="docutils literal notranslate"><span class="pre">FloatVariable</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.variables.IntSetVariable"><code class="docutils literal notranslate"><span class="pre">IntSetVariable</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.variables.StrSetVariable"><code class="docutils literal notranslate"><span class="pre">StrSetVariable</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.variables.UnknownVariable"><code class="docutils literal notranslate"><span class="pre">UnknownVariable</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.variables.Variable"><code class="docutils literal notranslate"><span class="pre">Variable</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.graph_actions.DirectedGraph"><code class="docutils literal notranslate"><span class="pre">DirectedGraph</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.graph_actions.SimulationIterator"><code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.graph_actions.WorkArea"><code class="docutils literal notranslate"><span class="pre">WorkArea</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.graph_actions.WorkFlow"><code class="docutils literal notranslate"><span class="pre">WorkFlow</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.dyna_actions.DynaAnalysis"><code class="docutils literal notranslate"><span class="pre">DynaAnalysis</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.d3plot_actions.d3plot_File"><code class="docutils literal notranslate"><span class="pre">d3plot_File</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.jinja_actions.JinjaReplace"><code class="docutils literal notranslate"><span class="pre">JinjaReplace</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.jinja_actions.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.remote_actions.NamedServerAction"><code class="docutils literal notranslate"><span class="pre">NamedServerAction</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.remote_actions.RemoteAction"><code class="docutils literal notranslate"><span class="pre">RemoteAction</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.remote_actions.ServerAction"><code class="docutils literal notranslate"><span class="pre">ServerAction</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#simnexus.remote_actions.SimFlowService"><code class="docutils literal notranslate"><span class="pre">SimFlowService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.ActionNameError"><code class="docutils literal notranslate"><span class="pre">ActionNameError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.AsyncActionError"><code class="docutils literal notranslate"><span class="pre">AsyncActionError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.DataNotFoundError"><code class="docutils literal notranslate"><span class="pre">DataNotFoundError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.EvaluationError"><code class="docutils literal notranslate"><span class="pre">EvaluationError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.KuneneError"><code class="docutils literal notranslate"><span class="pre">KuneneError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.MissingPathError"><code class="docutils literal notranslate"><span class="pre">MissingPathError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.ParameterError"><code class="docutils literal notranslate"><span class="pre">ParameterError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.SerializationError"><code class="docutils literal notranslate"><span class="pre">SerializationError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.SolverError"><code class="docutils literal notranslate"><span class="pre">SolverError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.errors.SpawnError"><code class="docutils literal notranslate"><span class="pre">SpawnError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.actions.MathEvaluation"><code class="docutils literal notranslate"><span class="pre">MathEvaluation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.actions.WorkAction"><code class="docutils literal notranslate"><span class="pre">WorkAction</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.actions.render_tree"><code class="docutils literal notranslate"><span class="pre">render_tree()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.actions.validate_action_name"><code class="docutils literal notranslate"><span class="pre">validate_action_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.variables.FloatVariable"><code class="docutils literal notranslate"><span class="pre">FloatVariable</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.variables.IntSetVariable"><code class="docutils literal notranslate"><span class="pre">IntSetVariable</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.variables.StrSetVariable"><code class="docutils literal notranslate"><span class="pre">StrSetVariable</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.variables.UnknownVariable"><code class="docutils literal notranslate"><span class="pre">UnknownVariable</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.variables.Variable"><code class="docutils literal notranslate"><span class="pre">Variable</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.graph_actions.DirectedGraph"><code class="docutils literal notranslate"><span class="pre">DirectedGraph</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.graph_actions.WorkArea"><code class="docutils literal notranslate"><span class="pre">WorkArea</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.graph_actions.WorkFlow"><code class="docutils literal notranslate"><span class="pre">WorkFlow</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.dyna_actions.DynaAnalysis"><code class="docutils literal notranslate"><span class="pre">DynaAnalysis</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.d3plot_actions.d3plot_File"><code class="docutils literal notranslate"><span class="pre">d3plot_File</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.jinja_actions.JinjaReplace"><code class="docutils literal notranslate"><span class="pre">JinjaReplace</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.jinja_actions.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.remote_actions.KuneneService"><code class="docutils literal notranslate"><span class="pre">KuneneService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.remote_actions.NamedServerAction"><code class="docutils literal notranslate"><span class="pre">NamedServerAction</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.remote_actions.RemoteAction"><code class="docutils literal notranslate"><span class="pre">RemoteAction</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.remote_actions.ServerAction"><code class="docutils literal notranslate"><span class="pre">ServerAction</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.FileProgressTail"><code class="docutils literal notranslate"><span class="pre">FileProgressTail</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.MultiReporter"><code class="docutils literal notranslate"><span class="pre">MultiReporter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.RunWatcher"><code class="docutils literal notranslate"><span class="pre">RunWatcher</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.StatusReporter"><code class="docutils literal notranslate"><span class="pre">StatusReporter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.StatusWatcher"><code class="docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.format_status"><code class="docutils literal notranslate"><span class="pre">format_status()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.is_alive"><code class="docutils literal notranslate"><span class="pre">is_alive()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.job_fraction"><code class="docutils literal notranslate"><span class="pre">job_fraction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.mark_failed"><code class="docutils literal notranslate"><span class="pre">mark_failed()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.progress.watch_run"><code class="docutils literal notranslate"><span class="pre">watch_run()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.simulation_iterator.JobIndex"><code class="docutils literal notranslate"><span class="pre">JobIndex</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.simulation_iterator.SimulationIterator"><code class="docutils literal notranslate"><span class="pre">SimulationIterator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.simulation_iterator.as_jsonable"><code class="docutils literal notranslate"><span class="pre">as_jsonable()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.simulation_iterator.normalise_groups"><code class="docutils literal notranslate"><span class="pre">normalise_groups()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.simulation_iterator.values_match"><code class="docutils literal notranslate"><span class="pre">values_match()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.cleanup.clean_run_dir"><code class="docutils literal notranslate"><span class="pre">clean_run_dir()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.cleanup.marks_removed"><code class="docutils literal notranslate"><span class="pre">marks_removed()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#kunene.args.Cleanup"><code class="docutils literal notranslate"><span class="pre">Cleanup</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -149,30 +204,19 @@ solvers like LS-DYNA, OpenRadioss, and OpenFOAM.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="#">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">SimNexus</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#key-features">Key Features</a></li>
-<li><a class="reference internal" href="#typical-workflow">Typical Workflow</a></li>
-</ul>
-</li>
+<h3><a href="#">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="actions_descr.html"
-                          title="next chapter">A graph of actions</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -199,8 +243,8 @@ solvers like LS-DYNA, OpenRadioss, and OpenFOAM.</p>
         <li class="right" >
           <a href="actions_descr.html" title="A graph of actions"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">simnexus 1.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">SimNexus</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">kunene 1.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Kunene</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

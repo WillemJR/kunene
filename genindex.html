@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; simnexus 1.0.1 documentation</title>
+    <title>Index &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -41,14 +41,17 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#U"><strong>U</strong></a>
@@ -59,21 +62,37 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.DirectedGraph.add_action">add_action() (simnexus.graph_actions.DirectedGraph method)</a>
+      <li><a href="api.html#kunene.progress.StatusReporter.action_state">action_state() (kunene.progress.StatusReporter method)</a>
+</li>
+      <li><a href="api.html#kunene.errors.ActionNameError">ActionNameError</a>
+</li>
+      <li><a href="api.html#kunene.progress.StatusReporter.active">active (kunene.progress.StatusReporter property)</a>
+</li>
+      <li><a href="api.html#kunene.graph_actions.DirectedGraph.add_action">add_action() (kunene.graph_actions.DirectedGraph method)</a>
 
       <ul>
-        <li><a href="api.html#simnexus.graph_actions.WorkFlow.add_action">(simnexus.graph_actions.WorkFlow method)</a>
+        <li><a href="api.html#kunene.graph_actions.WorkFlow.add_action">(kunene.graph_actions.WorkFlow method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#simnexus.remote_actions.ServerAction.add_graph">add_graph() (simnexus.remote_actions.ServerAction method)</a>
+      <li><a href="api.html#kunene.remote_actions.ServerAction.add_graph">add_graph() (kunene.remote_actions.ServerAction method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.actions.WorkAction.allow_variables_as_arguments">allow_variables_as_arguments() (simnexus.actions.WorkAction method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.add_groups">add_groups() (kunene.simulation_iterator.JobIndex method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.add_groups">(kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
-      <li><a href="api.html#simnexus.actions.WorkAction.assign_variables_values_to_members">assign_variables_values_to_members() (simnexus.actions.WorkAction method)</a>
+      </ul></li>
+      <li><a href="api.html#kunene.actions.WorkAction.allow_variables_as_arguments">allow_variables_as_arguments() (kunene.actions.WorkAction method)</a>
 </li>
-      <li><a href="api.html#simnexus.remote_actions.RemoteAction.available_actions">available_actions() (simnexus.remote_actions.RemoteAction method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.as_jsonable">as_jsonable() (in module kunene.simulation_iterator)</a>
+</li>
+      <li><a href="api.html#kunene.actions.WorkAction.assign_variables_values_to_members">assign_variables_values_to_members() (kunene.actions.WorkAction method)</a>
+</li>
+      <li><a href="api.html#kunene.errors.AsyncActionError">AsyncActionError</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.RemoteAction.available_actions">available_actions() (kunene.remote_actions.RemoteAction method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -81,11 +100,19 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.collect_for_expdes">collect_for_expdes() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.cleanup.clean_run_dir">clean_run_dir() (in module kunene.cleanup)</a>
+</li>
+      <li><a href="api.html#kunene.args.Cleanup">Cleanup (class in kunene.args)</a>
+</li>
+      <li><a href="api.html#kunene.args.Cleanup.coerce">coerce() (kunene.args.Cleanup class method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.collect_for_varrange">collect_for_varrange() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.collect">collect() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.collect_for_expdes">collect_for_expdes() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.collect_for_varrange">collect_for_varrange() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -93,13 +120,25 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.d3plot_actions.d3plot_File">d3plot_File (class in simnexus.d3plot_actions)</a>
+      <li><a href="api.html#kunene.d3plot_actions.d3plot_File">d3plot_File (class in kunene.d3plot_actions)</a>
+</li>
+      <li><a href="api.html#kunene.errors.DataNotFoundError">DataNotFoundError</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.DirectedGraph">DirectedGraph (class in simnexus.graph_actions)</a>
+      <li><a href="api.html#kunene.actions.WorkAction.describe_workflow">describe_workflow() (kunene.actions.WorkAction method)</a>
 </li>
-      <li><a href="api.html#simnexus.dyna_actions.DynaAnalysis">DynaAnalysis (class in simnexus.dyna_actions)</a>
+      <li><a href="api.html#kunene.graph_actions.DirectedGraph">DirectedGraph (class in kunene.graph_actions)</a>
+</li>
+      <li><a href="api.html#kunene.dyna_actions.DynaAnalysis">DynaAnalysis (class in kunene.dyna_actions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.errors.EvaluationError">EvaluationError</a>
 </li>
   </ul></td>
 </tr></table>
@@ -107,7 +146,29 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.variables.FloatVariable">FloatVariable (class in simnexus.variables)</a>
+      <li><a href="api.html#kunene.progress.StatusReporter.fail_running">fail_running() (kunene.progress.StatusReporter method)</a>
+</li>
+      <li><a href="api.html#kunene.progress.FileProgressTail">FileProgressTail (class in kunene.progress)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.find">find() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.find_exact">find_exact() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.find_job">find_job() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.find_jobs">find_jobs() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.progress.StatusReporter.finish">finish() (kunene.progress.StatusReporter method)</a>
+</li>
+      <li><a href="api.html#kunene.variables.FloatVariable">FloatVariable (class in kunene.variables)</a>
+</li>
+      <li><a href="api.html#kunene.progress.format_status">format_status() (in module kunene.progress)</a>
+</li>
+      <li><a href="api.html#kunene.actions.WorkAction.format_tree">format_tree() (kunene.actions.WorkAction method)</a>
+</li>
+      <li><a href="api.html#kunene.actions.WorkAction.format_work_dir">format_work_dir() (kunene.actions.WorkAction method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -115,11 +176,23 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.gather_outputs">gather_outputs() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.gather_outputs">gather_outputs() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.KuneneService.GetAvailableActions">GetAvailableActions() (kunene.remote_actions.KuneneService method)</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.KuneneService.GetProgress">GetProgress() (kunene.remote_actions.KuneneService method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.remote_actions.SimFlowService.GetAvailableActions">GetAvailableActions() (simnexus.remote_actions.SimFlowService method)</a>
+      <li><a href="api.html#kunene.args.Cleanup.globs_for">globs_for() (kunene.args.Cleanup method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.group_names">group_names() (kunene.simulation_iterator.JobIndex method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.group_names">(kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.groups_of">groups_of() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -127,11 +200,15 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.variables.IntSetVariable">IntSetVariable (class in simnexus.variables)</a>
+      <li><a href="api.html#kunene.variables.IntSetVariable">IntSetVariable (class in kunene.variables)</a>
+</li>
+      <li><a href="api.html#kunene.progress.is_alive">is_alive() (in module kunene.progress)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.iterdir">iterdir() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.iter_job_dirs">iter_job_dirs() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.iterdir">iterdir() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -139,7 +216,106 @@
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.jinja_actions.JinjaReplace">JinjaReplace (class in simnexus.jinja_actions)</a>
+      <li><a href="api.html#kunene.jinja_actions.JinjaReplace">JinjaReplace (class in kunene.jinja_actions)</a>
+</li>
+      <li><a href="api.html#kunene.progress.job_fraction">job_fraction() (in module kunene.progress)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.job_index">job_index() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.job_path">job_path() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex">JobIndex (class in kunene.simulation_iterator)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    kunene.actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.actions">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.cleanup
+
+      <ul>
+        <li><a href="api.html#module-kunene.cleanup">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.d3plot_actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.d3plot_actions">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.dyna_actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.dyna_actions">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.errors
+
+      <ul>
+        <li><a href="api.html#module-kunene.errors">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.graph_actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.graph_actions">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    kunene.jinja_actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.jinja_actions">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.progress
+
+      <ul>
+        <li><a href="api.html#module-kunene.progress">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.remote_actions
+
+      <ul>
+        <li><a href="api.html#module-kunene.remote_actions">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.simulation_iterator
+
+      <ul>
+        <li><a href="api.html#module-kunene.simulation_iterator">module</a>
+</li>
+      </ul></li>
+      <li>
+    kunene.variables
+
+      <ul>
+        <li><a href="api.html#module-kunene.variables">module</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#kunene.errors.KuneneError">KuneneError</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.KuneneService">KuneneService (class in kunene.remote_actions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -147,7 +323,11 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.jinja_actions.logger">logger (in module simnexus.jinja_actions)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.load">load() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.jinja_actions.logger">logger (in module kunene.jinja_actions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -155,42 +335,64 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.actions.MathEvaluation">MathEvaluation (class in simnexus.actions)</a>
+      <li><a href="api.html#kunene.progress.mark_failed">mark_failed() (in module kunene.progress)</a>
+</li>
+      <li><a href="api.html#kunene.cleanup.marks_removed">marks_removed() (in module kunene.cleanup)</a>
+</li>
+      <li><a href="api.html#kunene.actions.MathEvaluation">MathEvaluation (class in kunene.actions)</a>
+</li>
+      <li><a href="api.html#kunene.errors.MissingPathError">MissingPathError</a>
 </li>
       <li>
     module
 
       <ul>
-        <li><a href="api.html#module-simnexus.actions">simnexus.actions</a>
+        <li><a href="api.html#module-kunene.actions">kunene.actions</a>
 </li>
-        <li><a href="api.html#module-simnexus.d3plot_actions">simnexus.d3plot_actions</a>
+        <li><a href="api.html#module-kunene.cleanup">kunene.cleanup</a>
 </li>
-        <li><a href="api.html#module-simnexus.dyna_actions">simnexus.dyna_actions</a>
+        <li><a href="api.html#module-kunene.d3plot_actions">kunene.d3plot_actions</a>
 </li>
-        <li><a href="api.html#module-simnexus.graph_actions">simnexus.graph_actions</a>
+        <li><a href="api.html#module-kunene.dyna_actions">kunene.dyna_actions</a>
 </li>
-        <li><a href="api.html#module-simnexus.jinja_actions">simnexus.jinja_actions</a>
+        <li><a href="api.html#module-kunene.errors">kunene.errors</a>
 </li>
-        <li><a href="api.html#module-simnexus.remote_actions">simnexus.remote_actions</a>
+        <li><a href="api.html#module-kunene.graph_actions">kunene.graph_actions</a>
 </li>
-        <li><a href="api.html#module-simnexus.variables">simnexus.variables</a>
+        <li><a href="api.html#module-kunene.jinja_actions">kunene.jinja_actions</a>
+</li>
+        <li><a href="api.html#module-kunene.progress">kunene.progress</a>
+</li>
+        <li><a href="api.html#module-kunene.remote_actions">kunene.remote_actions</a>
+</li>
+        <li><a href="api.html#module-kunene.simulation_iterator">kunene.simulation_iterator</a>
+</li>
+        <li><a href="api.html#module-kunene.variables">kunene.variables</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.progress.MultiReporter">MultiReporter (class in kunene.progress)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.remote_actions.NamedServerAction">NamedServerAction (class in simnexus.remote_actions)</a>
+      <li><a href="api.html#kunene.remote_actions.NamedServerAction">NamedServerAction (class in kunene.remote_actions)</a>
 </li>
-      <li><a href="api.html#simnexus.d3plot_actions.d3plot_File.NodalFieldData">NodalFieldData() (simnexus.d3plot_actions.d3plot_File method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.next_job_number">next_job_number() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.d3plot_actions.d3plot_File.NodalField">NodalField() (kunene.d3plot_actions.d3plot_File method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.d3plot_actions.d3plot_File.NodalHistory">NodalHistory() (simnexus.d3plot_actions.d3plot_File method)</a>
+      <li><a href="api.html#kunene.d3plot_actions.d3plot_File.NodalHistory">NodalHistory() (kunene.d3plot_actions.d3plot_File method)</a>
 </li>
-      <li><a href="api.html#simnexus.d3plot_actions.d3plot_File.NodalValue">NodalValue() (simnexus.d3plot_actions.d3plot_File method)</a>
+      <li><a href="api.html#kunene.d3plot_actions.d3plot_File.NodalValue">NodalValue() (kunene.d3plot_actions.d3plot_File method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.normalise_groups">normalise_groups() (in module kunene.simulation_iterator)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -198,31 +400,87 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.outcomes_as_lists">outcomes_as_lists() (simnexus.graph_actions.SimulationIterator static method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.outcomes_as_lists">outcomes_as_lists() (kunene.simulation_iterator.SimulationIterator static method)</a>
 </li>
-      <li><a href="api.html#simnexus.actions.WorkAction.outputs">outputs() (simnexus.actions.WorkAction method)</a>
+      <li><a href="api.html#kunene.actions.WorkAction.outputs">outputs() (kunene.actions.WorkAction method)</a>
 
       <ul>
-        <li><a href="api.html#simnexus.graph_actions.DirectedGraph.outputs">(simnexus.graph_actions.DirectedGraph method)</a>
+        <li><a href="api.html#kunene.graph_actions.DirectedGraph.outputs">(kunene.graph_actions.DirectedGraph method)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.SimulationIterator.outputs">(simnexus.graph_actions.SimulationIterator method)</a>
+        <li><a href="api.html#kunene.graph_actions.WorkArea.outputs">(kunene.graph_actions.WorkArea method)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.WorkArea.outputs">(simnexus.graph_actions.WorkArea method)</a>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.outputs">(kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.errors.ParameterError">ParameterError</a>
+</li>
+      <li><a href="api.html#kunene.actions.WorkAction.parameters">parameters() (kunene.actions.WorkAction method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.dyna_actions.DynaAnalysis.parameters">(kunene.dyna_actions.DynaAnalysis method)</a>
+</li>
+        <li><a href="api.html#kunene.graph_actions.DirectedGraph.parameters">(kunene.graph_actions.DirectedGraph method)</a>
+</li>
+        <li><a href="api.html#kunene.graph_actions.WorkArea.parameters">(kunene.graph_actions.WorkArea method)</a>
+</li>
+        <li><a href="api.html#kunene.jinja_actions.JinjaReplace.parameters">(kunene.jinja_actions.JinjaReplace method)</a>
+</li>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.parameters">(kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.progress.RunWatcher.poll">poll() (kunene.progress.RunWatcher method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.progress.StatusWatcher.poll">(kunene.progress.StatusWatcher method)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#kunene.actions.WorkAction.print_tree">print_tree() (kunene.actions.WorkAction method)</a>
+</li>
+      <li><a href="api.html#kunene.actions.WorkAction.print_work_dir">print_work_dir() (kunene.actions.WorkAction method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.read_outputs">read_outputs() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.read_outputs">read_outputs() (kunene.simulation_iterator.JobIndex method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.read_outputs">(kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
+      </ul></li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.rebuild">rebuild() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.record_job">record_job() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.RemoteAction">RemoteAction (class in kunene.remote_actions)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.remove_groups">remove_groups() (kunene.simulation_iterator.JobIndex method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.remove_groups">(kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.remote_actions.RemoteAction">RemoteAction (class in simnexus.remote_actions)</a>
+      <li><a href="api.html#kunene.actions.render_tree">render_tree() (in module kunene.actions)</a>
 </li>
-      <li><a href="api.html#simnexus.remote_actions.SimFlowService.RunAction">RunAction() (simnexus.remote_actions.SimFlowService method)</a>
+      <li><a href="api.html#kunene.actions.WorkAction.report_progress">report_progress() (kunene.actions.WorkAction method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.results_for">results_for() (kunene.simulation_iterator.SimulationIterator method)</a>
+</li>
+      <li><a href="api.html#kunene.remote_actions.KuneneService.RunAction">RunAction() (kunene.remote_actions.KuneneService method)</a>
+</li>
+      <li><a href="api.html#kunene.progress.RunWatcher">RunWatcher (class in kunene.progress)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -230,82 +488,51 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.remote_actions.ServerAction">ServerAction (class in simnexus.remote_actions)</a>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.save">save() (kunene.simulation_iterator.JobIndex method)</a>
 </li>
-      <li><a href="api.html#simnexus.remote_actions.SimFlowService">SimFlowService (class in simnexus.remote_actions)</a>
+      <li><a href="api.html#kunene.errors.SerializationError">SerializationError</a>
 </li>
-      <li>
-    simnexus.actions
+      <li><a href="api.html#kunene.remote_actions.ServerAction">ServerAction (class in kunene.remote_actions)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.JobIndex.set_state">set_state() (kunene.simulation_iterator.JobIndex method)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator">SimulationIterator (class in kunene.simulation_iterator)</a>
+</li>
+      <li><a href="api.html#kunene.actions.MathEvaluation.solve">solve() (kunene.actions.MathEvaluation method)</a>
 
       <ul>
-        <li><a href="api.html#module-simnexus.actions">module</a>
+        <li><a href="api.html#kunene.actions.WorkAction.solve">(kunene.actions.WorkAction method)</a>
 </li>
-      </ul></li>
-      <li>
-    simnexus.d3plot_actions
-
-      <ul>
-        <li><a href="api.html#module-simnexus.d3plot_actions">module</a>
+        <li><a href="api.html#kunene.d3plot_actions.d3plot_File.solve">(kunene.d3plot_actions.d3plot_File method)</a>
 </li>
-      </ul></li>
-      <li>
-    simnexus.dyna_actions
-
-      <ul>
-        <li><a href="api.html#module-simnexus.dyna_actions">module</a>
+        <li><a href="api.html#kunene.graph_actions.DirectedGraph.solve">(kunene.graph_actions.DirectedGraph method)</a>
 </li>
-      </ul></li>
-      <li>
-    simnexus.graph_actions
-
-      <ul>
-        <li><a href="api.html#module-simnexus.graph_actions">module</a>
+        <li><a href="api.html#kunene.graph_actions.WorkArea.solve">(kunene.graph_actions.WorkArea method)</a>
 </li>
-      </ul></li>
-      <li>
-    simnexus.jinja_actions
-
-      <ul>
-        <li><a href="api.html#module-simnexus.jinja_actions">module</a>
+        <li><a href="api.html#kunene.jinja_actions.JinjaReplace.solve">(kunene.jinja_actions.JinjaReplace method)</a>
 </li>
-      </ul></li>
-      <li>
-    simnexus.remote_actions
-
-      <ul>
-        <li><a href="api.html#module-simnexus.remote_actions">module</a>
+        <li><a href="api.html#kunene.remote_actions.RemoteAction.solve">(kunene.remote_actions.RemoteAction method)</a>
+</li>
+        <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.solve">(kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li>
-    simnexus.variables
-
-      <ul>
-        <li><a href="api.html#module-simnexus.variables">module</a>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.solve_parallel">solve_parallel() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
-      </ul></li>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator">SimulationIterator (class in simnexus.graph_actions)</a>
+      <li><a href="api.html#kunene.errors.SolverError">SolverError</a>
 </li>
-      <li><a href="api.html#simnexus.actions.MathEvaluation.solve">solve() (simnexus.actions.MathEvaluation method)</a>
-
-      <ul>
-        <li><a href="api.html#simnexus.actions.WorkAction.solve">(simnexus.actions.WorkAction method)</a>
+      <li><a href="api.html#kunene.errors.SpawnError">SpawnError</a>
 </li>
-        <li><a href="api.html#simnexus.d3plot_actions.d3plot_File.solve">(simnexus.d3plot_actions.d3plot_File method)</a>
+      <li><a href="api.html#kunene.progress.StatusReporter.start">start() (kunene.progress.StatusReporter method)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.DirectedGraph.solve">(simnexus.graph_actions.DirectedGraph method)</a>
+      <li><a href="api.html#kunene.progress.StatusReporter">StatusReporter (class in kunene.progress)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.SimulationIterator.solve">(simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.progress.StatusWatcher">StatusWatcher (class in kunene.progress)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.WorkArea.solve">(simnexus.graph_actions.WorkArea method)</a>
+      <li><a href="api.html#kunene.progress.FileProgressTail.stop">stop() (kunene.progress.FileProgressTail method)</a>
 </li>
-        <li><a href="api.html#simnexus.jinja_actions.JinjaReplace.solve">(simnexus.jinja_actions.JinjaReplace method)</a>
-</li>
-        <li><a href="api.html#simnexus.remote_actions.RemoteAction.solve">(simnexus.remote_actions.RemoteAction method)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#simnexus.variables.StrSetVariable">StrSetVariable (class in simnexus.variables)</a>
+      <li><a href="api.html#kunene.variables.StrSetVariable">StrSetVariable (class in kunene.variables)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -313,49 +540,49 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.variables.UnknownVariable">UnknownVariable (class in simnexus.variables)</a>
+      <li><a href="api.html#kunene.variables.UnknownVariable">UnknownVariable (class in kunene.variables)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.DirectedGraph.update">update() (simnexus.graph_actions.DirectedGraph method)</a>
+      <li><a href="api.html#kunene.graph_actions.DirectedGraph.update">update() (kunene.graph_actions.DirectedGraph method)</a>
+
+      <ul>
+        <li><a href="api.html#kunene.progress.StatusReporter.update">(kunene.progress.StatusReporter method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.variables.Variable">Variable (class in simnexus.variables)</a>
+      <li><a href="api.html#kunene.actions.validate_action_name">validate_action_name() (in module kunene.actions)</a>
 </li>
-      <li><a href="api.html#simnexus.actions.WorkAction.variables">variables() (simnexus.actions.WorkAction method)</a>
-
-      <ul>
-        <li><a href="api.html#simnexus.dyna_actions.DynaAnalysis.variables">(simnexus.dyna_actions.DynaAnalysis method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.values_match">values_match() (in module kunene.simulation_iterator)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.DirectedGraph.variables">(simnexus.graph_actions.DirectedGraph method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#kunene.variables.Variable">Variable (class in kunene.variables)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.SimulationIterator.variables">(simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.variables_of">variables_of() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
-        <li><a href="api.html#simnexus.graph_actions.WorkArea.variables">(simnexus.graph_actions.WorkArea method)</a>
-</li>
-        <li><a href="api.html#simnexus.jinja_actions.JinjaReplace.variables">(simnexus.jinja_actions.JinjaReplace method)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.actions.WorkAction">WorkAction (class in simnexus.actions)</a>
+      <li><a href="api.html#kunene.progress.watch_run">watch_run() (in module kunene.progress)</a>
 </li>
-      <li><a href="api.html#simnexus.graph_actions.WorkArea">WorkArea (class in simnexus.graph_actions)</a>
+      <li><a href="api.html#kunene.actions.WorkAction">WorkAction (class in kunene.actions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#simnexus.graph_actions.WorkFlow">WorkFlow (class in simnexus.graph_actions)</a>
+      <li><a href="api.html#kunene.graph_actions.WorkArea">WorkArea (class in kunene.graph_actions)</a>
 </li>
-      <li><a href="api.html#simnexus.graph_actions.SimulationIterator.write_outputs">write_outputs() (simnexus.graph_actions.SimulationIterator method)</a>
+      <li><a href="api.html#kunene.graph_actions.WorkFlow">WorkFlow (class in kunene.graph_actions)</a>
+</li>
+      <li><a href="api.html#kunene.simulation_iterator.SimulationIterator.write_outputs">write_outputs() (kunene.simulation_iterator.SimulationIterator method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -368,6 +595,19 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exa.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -391,7 +631,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>

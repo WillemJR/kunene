@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Examples &#8212; simnexus 1.0.1 documentation</title>
+    <title>Examples &#8212; kunene 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
     
-    <script src="_static/documentation_options.js?v=292eb321"></script>
+    <script src="_static/documentation_options.js?v=1f29e9d3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="discover.html" title="Discovering graph usage"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Examples</a></li> 
       </ul>
     </div>  
@@ -45,24 +45,25 @@
             
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<p>In addition to the examples below, see the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory.</p>
 <section id="ls-dyna">
 <h2>LS-DYNA<a class="headerlink" href="#ls-dyna" title="Link to this heading">¶</a></h2>
-<p>The example does an analysis and extracts results.</p>
+<p>The example does an analysis, substitute parameter values, and extracts results.</p>
 <p>The study is parameterized using the *PARAMETER keyword.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.dyna_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynaAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
 
 <span class="c1"># 1. Define a workflow</span>
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s2">&quot;DynaWorkflow&quot;</span><span class="p">)</span>
 
 <span class="c1"># 2. Add an action to run LS-DYNA</span>
 <span class="c1"># The &#39;input_path&#39; file contains *PARAMETER keywords for substitution</span>
-<span class="n">run_dyna</span> <span class="o">=</span> <span class="n">DynaAnalysis</span><span class="p">(</span><span class="s2">&quot;RunSimulation&quot;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;model.k&quot;</span><span class="p">)</span>
+<span class="n">run_dyna</span> <span class="o">=</span> <span class="n">DynaAnalysis</span><span class="p">(</span><span class="s2">&quot;RunDyna&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="s1">&#39;ls-dyna&#39;</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;model.k&quot;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">run_dyna</span><span class="p">)</span>
 
 <span class="c1"># 3. Add an action to extract results from d3plot</span>
-<span class="n">d3p</span> <span class="o">=</span> <span class="n">d3plot_File</span><span class="p">(</span><span class="s1">&#39;results_extraction&#39;</span><span class="p">)</span>
+<span class="n">d3p</span> <span class="o">=</span> <span class="n">d3plot_File</span><span class="p">(</span><span class="s1">&#39;d3p&#39;</span><span class="p">)</span>
 <span class="n">d3p</span><span class="o">.</span><span class="n">NodalValue</span><span class="p">(</span><span class="s1">&#39;disp_n5&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nid</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;node_displacement&#39;</span><span class="p">)</span>
 <span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">d3p</span><span class="p">)</span>
 
@@ -70,56 +71,133 @@
 <span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="s2">&quot;./simulation_run&quot;</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;path/to/model.k&quot;</span><span class="p">])</span>
 
 <span class="c1"># 5. Discover variables (WorkArea copies files first so DynaAnalysis can read them)</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 <span class="c1"># 6. Execute</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;VELOCITY&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s1">&#39;THICKNESS&#39;</span><span class="p">:</span> <span class="mf">2.5</span><span class="p">}</span>
 <span class="n">results</span> <span class="o">=</span> <span class="n">wa</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Displacement at node 5: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;disp_n5&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># &#39;d3p&#39; is itself a graph, so its extractions sit under</span>
+<span class="c1"># its name rather than being merged into the workflow&#39;s results.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Displacement at node 5: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;d3p&#39;</span><span class="p">][</span><span class="s1">&#39;disp_n5&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="openradioss">
 <h2>OpenRadioss<a class="headerlink" href="#openradioss" title="Link to this heading">¶</a></h2>
-<p>The example does an analysis and extracts results.</p>
-<p>The study is parameterized using the jinja double brace format in the
-input deck.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.jinja_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JinjaReplace</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.radioss_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RadiossAnalysis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span>
+<p>The example does an analysis, substitute parameter values, and extracts results.</p>
+<p>The study is parameterized using the /PARAMETER cards in
+the OpenRadioss input deck.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;RadiossWorkflow&#39;</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.radioss_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RadiossAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.d3plot_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">d3plot_File</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
 
-<span class="c1"># 1. Prepare the input deck using Jinja2 templates</span>
-<span class="c1"># Substitutes {{E}} and {{SIG_Y}} in &#39;model.rad&#39;</span>
-<span class="n">jinja_act</span> <span class="o">=</span> <span class="n">JinjaReplace</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;prepare_deck&#39;</span><span class="p">,</span>
-    <span class="n">input_file_path</span><span class="o">=</span><span class="s1">&#39;model.rad&#39;</span>
-<span class="p">)</span>
-<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">jinja_act</span><span class="p">)</span>
+<span class="c1"># Paths</span>
+<span class="n">starter_deck</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;models/cube_TYPE7_0000.rad&#39;</span><span class="p">)</span>
+<span class="n">engine_deck</span>  <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;models/cube_TYPE7_0001.rad&#39;</span><span class="p">)</span>
 
-<span class="c1"># 2. Run the OpenRadioss solver</span>
-<span class="n">run_rad</span> <span class="o">=</span> <span class="n">RadiossAnalysis</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;run_solver&#39;</span><span class="p">,</span>
-    <span class="n">cmd</span><span class="o">=</span><span class="s1">&#39;starter_linux64_gf&#39;</span> <span class="c1"># Path to your Radioss executable</span>
-<span class="p">)</span>
-<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="n">run_rad</span><span class="p">)</span>
+<span class="c1"># 1. Define RadiossAnalysis to run the simulation</span>
+<span class="n">run_rad</span> <span class="o">=</span> <span class="n">RadiossAnalysis</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span>
+                  <span class="n">starter_cmd</span><span class="o">=</span><span class="s1">&#39;openradioss_starter&#39;</span><span class="p">,</span>
+                  <span class="n">starter_input_path</span><span class="o">=</span><span class="n">starter_deck</span><span class="p">,</span>
+                  <span class="n">engine_cmd</span><span class="o">=</span><span class="s1">&#39;openradioss_engine&#39;</span><span class="p">,</span>
+                  <span class="n">engine_input_path</span><span class="o">=</span><span class="n">engine_deck</span><span class="p">,</span>
+                  <span class="n">create_d3plot</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
 
-<span class="c1"># 3. Execute the workflow</span>
-<span class="n">val_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="mf">210000.0</span><span class="p">,</span> <span class="s1">&#39;SIG_Y&#39;</span><span class="p">:</span> <span class="mf">250.0</span><span class="p">}</span>
-<span class="n">wf</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">val_dict</span><span class="p">)</span>
+<span class="c1"># 2. Create a workflow and add actions</span>
+<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span> <span class="s1">&#39;Radioss_WorkFlow&#39;</span> <span class="p">)</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">run_rad</span> <span class="p">)</span>
+
+<span class="n">d3p</span> <span class="o">=</span> <span class="n">d3plot_File</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;d3plot&#39;</span> <span class="p">)</span>
+<span class="n">d3p</span><span class="o">.</span><span class="n">NodalValue</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;n5&#39;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nid</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span> <span class="s1">&#39;node_displacement&#39;</span>  <span class="p">)</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">d3p</span> <span class="p">)</span>
+
+<span class="n">wrk_area</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span> <span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="n">starter_deck</span><span class="p">,</span><span class="n">engine_deck</span><span class="p">]</span> <span class="p">)</span>
+
+<span class="c1"># Discover variables defined in input deck and other actions</span>
+<span class="n">discovered_vars</span> <span class="o">=</span> <span class="n">wrk_area</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Discovered variables:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">discovered_vars</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 3. Execute the workflow. Provide values for the variables.</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">wrk_area</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span> <span class="p">{</span> <span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="mf">210000.0</span><span class="p">,</span> <span class="p">}</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;output&#39;</span><span class="p">,</span> <span class="n">ret</span> <span class="p">)</span>
+
+<span class="c1"># &#39;d3plot&#39; is a reader graph, so its extractions sit under its name</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;node 5&#39;</span><span class="p">,</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;d3plot&#39;</span><span class="p">][</span><span class="s1">&#39;n5&#39;</span><span class="p">]</span> <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parameters-with-jinja-markup">
+<h2>Parameters with jinja markup<a class="headerlink" href="#parameters-with-jinja-markup" title="Link to this heading">¶</a></h2>
+<p>A deck can be parameterised with jinja <code class="docutils literal notranslate"><span class="pre">{{</span> <span class="pre">}}</span></code> markup instead of the
+solver’s own parameter cards.  <code class="docutils literal notranslate"><span class="pre">JinjaReplace</span></code> substitutes the values and
+writes the deck the solver then runs; the two are simply chained in the
+workflow.  This works for any solver — the use of jinja is never required:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.jinja_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JinjaReplace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.radioss_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RadiossAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+
+<span class="n">template</span>    <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;models/cube_TYPE7_tmpl.rad&#39;</span><span class="p">)</span>   <span class="c1"># holds &#39;{{E}}&#39;</span>
+<span class="n">engine_deck</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;models/cube_TYPE7_0001.rad&#39;</span><span class="p">)</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;Radioss_Jinja&#39;</span><span class="p">)</span>
+
+<span class="c1"># substitutes {{E}} and writes the starter deck</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">JinjaReplace</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;prepare_deck&#39;</span><span class="p">,</span>
+                             <span class="n">input_file_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">template</span><span class="p">),</span>
+                             <span class="n">output_file_path</span><span class="o">=</span><span class="s1">&#39;cube_TYPE7_0000.rad&#39;</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># ... which is what the solver reads</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">RadiossAnalysis</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span>
+                                <span class="n">starter_input_path</span><span class="o">=</span><span class="s1">&#39;cube_TYPE7_0000.rad&#39;</span><span class="p">,</span>
+                                <span class="n">engine_input_path</span><span class="o">=</span><span class="n">engine_deck</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span> <span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="p">[</span><span class="n">template</span><span class="p">,</span> <span class="n">engine_deck</span><span class="p">]</span> <span class="p">)</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">wa</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span> <span class="p">{</span><span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="mf">210000.0</span><span class="p">}</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">parameters()</span></code> finds the jinja names too, but a template says nothing
+about types or defaults, so they come back as <code class="docutils literal notranslate"><span class="pre">UnknownVariable</span></code> with a
+value of <code class="docutils literal notranslate"><span class="pre">None</span></code> — unlike the parameter cards of a deck, which carry both.</p>
+<p><code class="docutils literal notranslate"><span class="pre">examples/jinja_dyna.py</span></code> chains the same two actions for an LS-DYNA
+keyword deck, with <code class="docutils literal notranslate"><span class="pre">RadiossUsingDynaInput</span></code> as the solver action so the
+substituted deck is run by OpenRadioss:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.jinja_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JinjaReplace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.radioss_using_dyna_inp</span><span class="w"> </span><span class="kn">import</span> <span class="n">RadiossUsingDynaInput</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+
+<span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;JR_WorkFlow&#39;</span><span class="p">)</span>
+
+<span class="c1"># substitutes {{E}} and {{SIG_Y}} and writes the deck the solver reads</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">JinjaReplace</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;prepare_deck&#39;</span><span class="p">,</span>
+                             <span class="n">input_file_path</span><span class="o">=</span><span class="s1">&#39;tests/par_tens.k&#39;</span><span class="p">,</span>
+                             <span class="n">output_file_path</span><span class="o">=</span><span class="s1">&#39;edited.k&#39;</span><span class="p">,</span>
+                             <span class="n">val_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%10.3g</span><span class="s2">&quot;</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="n">wf</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span> <span class="n">RadiossUsingDynaInput</span><span class="p">(</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RADIOSS&#39;</span><span class="p">,</span>
+                                      <span class="n">cmd</span><span class="o">=</span><span class="s1">&#39;rad_dyna_inp&#39;</span><span class="p">,</span>
+                                      <span class="n">input_path</span><span class="o">=</span><span class="s1">&#39;edited.k&#39;</span> <span class="p">)</span> <span class="p">)</span>
+
+<span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span> <span class="n">wf</span> <span class="p">)</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">wa</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span> <span class="p">{</span><span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="mf">210.0</span><span class="p">,</span> <span class="s1">&#39;SIG_Y&#39;</span><span class="p">:</span> <span class="mf">310.0</span><span class="p">}</span> <span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="openfoam">
 <h2>OpenFOAM<a class="headerlink" href="#openfoam" title="Link to this heading">¶</a></h2>
+<p>The example does an analysis, substitute parameter values, and extracts results.</p>
 <p>The study is parameterized using the <code class="docutils literal notranslate"><span class="pre">system/parameters</span></code> file.
 Case files (<code class="docutils literal notranslate"><span class="pre">system/</span></code>, <code class="docutils literal notranslate"><span class="pre">constant/</span></code>, <code class="docutils literal notranslate"><span class="pre">0/</span></code>) are supplied to <code class="docutils literal notranslate"><span class="pre">WorkArea</span></code>
 via <code class="docutils literal notranslate"><span class="pre">copy_paths</span></code> and are copied to the work directory before the solver runs.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAMAnalysis</span><span class="p">,</span> <span class="n">OpenFOAM_Field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAMAnalysis</span><span class="p">,</span> <span class="n">OpenFOAM_Field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span><span class="p">,</span> <span class="n">WorkArea</span>
 
 <span class="n">case_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;path/to/case/system&#39;</span><span class="p">,</span> <span class="s1">&#39;path/to/case/constant&#39;</span><span class="p">,</span> <span class="s1">&#39;path/to/case/0&#39;</span><span class="p">]</span>
 
@@ -130,15 +208,15 @@ via <code class="docutils literal notranslate"><span class="pre">copy_paths</spa
 <span class="n">wa</span> <span class="o">=</span> <span class="n">WorkArea</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">copy_paths</span><span class="o">=</span><span class="n">case_paths</span><span class="p">)</span>
 
 <span class="c1"># Discover variables from system/parameters (files are copied first)</span>
-<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">variables</span><span class="p">():</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">wa</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">wa</span><span class="o">.</span><span class="n">solve</span><span class="p">({</span><span class="s1">&#39;lidVelocity&#39;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>Extraction of field data and histories from OpenFOAM cases.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAM_Field</span><span class="p">,</span> <span class="n">OpenFOAM_History</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">simnexus.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kunene.openfoam_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenFOAM_Field</span><span class="p">,</span> <span class="n">OpenFOAM_History</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kunene.graph_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkFlow</span>
 
 <span class="n">wf</span> <span class="o">=</span> <span class="n">WorkFlow</span><span class="p">(</span><span class="s1">&#39;OpenFOAM_Extraction&#39;</span><span class="p">)</span>
 
@@ -174,35 +252,25 @@ via <code class="docutils literal notranslate"><span class="pre">copy_paths</spa
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Examples</a><ul>
-<li><a class="reference internal" href="#ls-dyna">LS-DYNA</a></li>
-<li><a class="reference internal" href="#openradioss">OpenRadioss</a></li>
-<li><a class="reference internal" href="#openfoam">OpenFOAM</a></li>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="actions_descr.html">A graph of actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dirs.html">Work areas and design studies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vars.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parallel.html">Running in parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discover.html">Discovering graph usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ls-dyna">LS-DYNA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#openradioss">OpenRadioss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameters-with-jinja-markup">Parameters with jinja markup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#openfoam">OpenFOAM</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
-  </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="discover.html"
-                          title="previous chapter">Discovering graph usage</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="remote.html"
-                          title="next chapter">Remote Execution</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/exa.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -232,7 +300,7 @@ via <code class="docutils literal notranslate"><span class="pre">copy_paths</spa
         <li class="right" >
           <a href="discover.html" title="Discovering graph usage"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">simnexus 1.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">kunene 1.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Examples</a></li> 
       </ul>
     </div>
