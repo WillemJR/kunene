@@ -57,10 +57,10 @@ The typical `kunene` steps are:
 
 ## Documentation
 
-Available in the `docs` directory. Use `make html`.
+[The online documentation is available here](https://willemjr.github.io/kunene/).
 
-[Online documentation is available here](https://willemjr.github.io/kunene/) This part is down for the moment.
-
+The documentation is also available in the `docs` directory.
+Use `make html` and look in the `_build` directory.
 
 
 ## Installation
