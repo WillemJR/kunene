@@ -137,10 +137,16 @@ records its constructor arguments automatically (`_capture_init_args` wraps
 of your own needs nothing beyond being importable. Only the containers override
 them, because their children arrive through `add_action`/`add_edge` rather than
 through `__init__`. Argument values use the plain-data whitelist of
-`kunene/serialization.py` extended with `Variable`, `Path`, `Cleanup` and the
-enums of `kunene/args.py`; the gRPC whitelist itself is unchanged, so a spec may
-carry a `Variable` and a wire payload may not. A value outside that -- an open
-file, a lambda -- raises `SpecError` at *save* time, naming the argument.
+`kunene/serialization.py` (plain types and numeric numpy arrays, so an
+experimental curve can be an action's argument) extended with `Variable`,
+`Path`, `Cleanup` and registered enums; the gRPC whitelist itself is unchanged,
+so a spec may carry a `Variable` and a wire payload may not. An enum must be
+registered before it can be written or read -- kunene registers its own
+(`EvalType`, `JobType`, `Location`) and `lasso.dyna.FilterType`, which the
+d3plot actions take as `element_type`; for one of your own call
+`action_spec.register_enum()`, which is what keeps loading a spec from reaching
+for a class the file names. A value outside all of that -- an open file, a
+lambda -- raises `SpecError` at *save* time, naming the argument.
 
 # Progress reporting
 

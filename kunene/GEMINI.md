@@ -101,6 +101,22 @@ constructor derives it again from the graph and a kept name would grow a
 something loading a file should do — and records `JNAME` when it was changed
 on the instance, since it decides what the job directories are called.
 
+Values travel through `_encode_value`/`_decode_value`, which handle the kunene
+types and hand everything else to `serialization._encode`/`_decode` -- including
+numpy arrays, which are written as the tagged `__kunene_ndarray__` object and
+must be decoded by that counterpart rather than recursed into as a dict (a
+`CurveSimilarity` takes its experimental curve as a constructor argument, so
+this path is not an edge case). Both tags are reserved as dictionary keys on
+encode, so a plain dict cannot masquerade as either.
+
+Enums are the one value type that needs registering. `_ENUMS` maps a name to a
+class and `register_enum()` adds to it; `_ensure_enums()` fills in the ones
+behind optional dependencies (`lasso.dyna.FilterType`, which `element_type` on
+the d3plot actions is) on first use. Encoding looks the class up by *identity*,
+so a foreign enum that happens to share a name with a registered one is refused
+rather than silently written as the other; decoding only ever instantiates a
+registered class, which is what stops a spec from naming an arbitrary import.
+
 `Variable` and `Cleanup` are not actions and carry no `_init_args`; they are
 encoded by reading the attributes their `__init__` parameters name
 (`_args_from_signature`), which works because both store every argument under
