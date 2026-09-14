@@ -821,6 +821,31 @@ class SimulationIterator(WorkAction):
         if sim_path.exists():  shutil.rmtree( sim_path )
         self._index = JobIndex( self.work_area_path, job_prefix=self.JNAME )
 
+    # the graph is nested under its own key and the name derives from it;
+    # clean_start deletes the results directory, which is something a run
+    # does, not a property of the workflow -- reloading a spec must never
+    # be what wipes a study
+    _spec_skip = ( 'graph', 'clean_start' )
+
+    def to_spec( self ):
+        d = super().to_spec()
+        d.pop( 'name', None )
+        d['graph'] = self.graph.to_spec()
+        if self.JNAME != type( self ).JNAME:
+            # set on the instance after construction; it decides what the
+            # job directories are called, so it belongs in the spec
+            d['job_prefix'] = self.JNAME
+        return d
+
+    @classmethod
+    def from_spec( cls, d ):
+        from kunene import action_spec
+        itr = cls( action_spec.action_from_spec( d['graph'] ),
+                   **action_spec.decode_args( d.get( 'args', {} ) ) )
+        if 'job_prefix' in d:
+            itr.JNAME = d['job_prefix']
+        return itr
+
     def __getstate__( self ):
         """
         Pickle the iterator for a job's child process, without the state

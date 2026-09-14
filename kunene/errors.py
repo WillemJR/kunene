@@ -48,3 +48,7 @@ class AsyncActionError(KuneneError):
 class SpawnError(KuneneError):
     """A child process could not be started under the ``spawn`` start method,
     because something it needs is defined in the calling script."""
+
+
+class SpecError(KuneneError):
+    """A workflow could not be written to, or rebuilt from, a spec file."""

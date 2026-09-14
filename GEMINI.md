@@ -114,6 +114,34 @@ inherits the enclosing policy unless it sets its own), and a nested
 `SimulationIterator` is left to clean its own jobs. `print_work_dir()` marks the
 entries cleanup removes.
 
+# Saving a workflow
+
+A workflow is saved as a JSON *spec* rather than as a pickle
+(`kunene/action_spec.py`, `save_workflow`/`load_workflow` re-exported from
+`kunene`). The file names each action's class and the arguments it was
+constructed with, plus the edges of each graph; loading looks the class up in
+`WorkAction._registry` and calls it. Nothing in the file is executed, so a spec
+can be written by a GUI, reviewed in a diff, or accepted from elsewhere -- the
+same trust model as `ServerAction.add_graph`, which executes only actions it
+already knows. It also survives an upgrade that would break a pickle, since it
+records constructor arguments rather than the attribute layout of the classes.
+
+    from kunene import save_workflow, load_workflow
+    save_workflow( itr, 'crash.kunene.json' )
+    itr = load_workflow( 'crash.kunene.json' )
+
+What is saved is the *definition*, not the results of a run: those stay in the
+results directory (`actions_output.pkl`, `jobs_index.json`). Every action
+records its constructor arguments automatically (`_capture_init_args` wraps
+`__init__`), so `to_spec`/`from_spec` on `WorkAction` are generic and an action
+of your own needs nothing beyond being importable. Only the containers override
+them, because their children arrive through `add_action`/`add_edge` rather than
+through `__init__`. Argument values use the plain-data whitelist of
+`kunene/serialization.py` extended with `Variable`, `Path`, `Cleanup` and the
+enums of `kunene/args.py`; the gRPC whitelist itself is unchanged, so a spec may
+carry a `Variable` and a wire payload may not. A value outside that -- an open
+file, a lambda -- raises `SpecError` at *save* time, naming the argument.
+
 # Progress reporting
 
 Long runs report progress through `status.json` files (`kunene/progress.py`), written atomically into the work directories so an external consumer (e.g. a GUI in a separate process) can poll them safely at any moment. A `DirectedGraph`/`WorkFlow` writes per-action states (`pending`/`running`/`done`/`failed`) into its run directory; a `SimulationIterator` writes job counts (`jobs_total`, `jobs_done`, `current_job`, `current_jobs`, state `running`/`idle`/`done`/`failed`) at the results root, where `current_jobs` lists the jobs running at that moment (more than one with `max_workers` > 1) and `current_job` the last one started. The counts belong to the batch being run, not to the iterator's lifetime: `collect_for_expdes`, `collect_for_varrange` and `solve_parallel` each set `jobs_total` and start `jobs_done` from zero, and each ends by writing the final state and releasing the results root, so a re-run of the same study — a new iterator on the same directory — owns the file and is the run a reader sees. A bare `solve()` is one design point and belongs to no batch, so it reports `jobs_total: null`. When a job of a parallel batch fails, the jobs terminated with it are marked failed in their own `status.json` by the parent (`progress.mark_failed`), since their processes are gone, and `current_jobs` is emptied. A heartbeat thread keeps `updated_at` fresh so a reader can tell a slow run from a dead one (`progress.is_alive`). Reader-side helpers: `StatusWatcher` (poll one file), `RunWatcher` (follow a results tree: root plus the job(s) running now; non-blocking `poll()` for GUI timers), `watch_run` (blocking generator for scripts), `format_status` (text rendering). The entries of a status file are the *actions*, never the containers holding them: a `DirectedGraph` and a `WorkArea` are pass-through (`WorkAction._progress_names`), so they hold no entry of their own and the actions inside them are registered instead. A graph nested in the same directory therefore does not write its own file at all -- it reports through the owner's reporter -- while a `WorkArea` writes its own file *and* reports into the enclosing graph's (`progress.MultiReporter`), so a job's progress follows the solver inside the work area rather than waiting for the whole area to finish. A `SimulationIterator` and a `RemoteAction` are not pass-through: they keep one entry and report their own fraction into it (jobs done, remote progress). Where more than one action runs at once (an `asynch` graph), `job_fraction` names them all: `3 of 5 running: rad_a (80%), rad_b (34%)`. Solver actions (`DynaAnalysis`, `RadiossAnalysis`, `RadiossUsingDynaInput`, `OpenFOAMAnalysis`) report percent-complete while running: a background thread (`progress.FileProgressTail`) polls the solver's redirected stdout, extracts the current simulation time (parsers in `kunene/util/solver_progress.py`), and reports `fraction` = time/termination-time plus a `message` like `time 12.9 of 40`; the termination time is read from the input deck (`*CONTROL_TERMINATION`, `/RUN` card, or `controlDict endTime`). If the deck or output cannot be parsed, the fraction simply stays `null`. Progress also works for `asynch` graphs: an action running in a child process writes per-action sidecar files that the owning process merges into `status.json` (see `kunene/GEMINI.md` for details).

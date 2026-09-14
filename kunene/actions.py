@@ -1,5 +1,7 @@
 import os
 import keyword
+import inspect
+import functools
 from pathlib import Path
 from abc import ABC, abstractmethod
 import numpy as np
@@ -16,7 +18,7 @@ from kunene.util.observer import Subject, notify_observers
 from kunene.util import parallel
 
 from kunene.variables import Variable, UnknownVariable
-from kunene.errors import ActionNameError, ParameterError, EvaluationError
+from kunene.errors import ActionNameError, ParameterError, EvaluationError, SpecError
 
 
 # key under which a child process stores its traceback in the shared result
@@ -128,6 +130,58 @@ def _render_children( children, prefix, lines ):
         _render_children( child[1], prefix + extension, lines )
 
 
+def _capture_init_args( func ):
+    """
+    Wrap an ``__init__`` so it records the arguments it was called with as
+    ``self._init_args``.
+
+    This is what lets an action describe itself as a spec
+    (:mod:`kunene.action_spec`) without a serialiser per class. The record
+    is taken from the *bound signature* rather than from ``__dict__``,
+    because an argument given as a ``Variable`` is replaced by its value in
+    ``_collect_arg_pars()`` and the spec has to keep the ``Variable``. Only
+    the arguments actually passed are kept, so a spec stays short and picks
+    up a later change to a default.
+
+    Applied to ``WorkAction.__init__``, chained by
+    ``allow_variables_as_arguments``, and applied by ``__init_subclass__``
+    to any subclass that defines its own ``__init__``. When a subclass
+    calls ``super().__init__()`` both wrappers run; the outermost assigns
+    last, so the subclass's own arguments are the ones recorded.
+    """
+    sig = inspect.signature( func )    # follows __wrapped__
+
+    @functools.wraps( func )
+    def wrapper( self, *args, **kwargs ):
+        ret = func( self, *args, **kwargs )
+        try:
+            bound = sig.bind( self, *args, **kwargs )
+        except TypeError:                      # let the real call report it
+            return ret
+        captured = dict( bound.arguments )
+        captured.pop( 'self', None )
+        for pname, p in sig.parameters.items():
+            if p.kind is p.VAR_KEYWORD:        # **kwargs arrives nested
+                captured.update( captured.pop( pname, {} ) )
+            elif p.kind is p.VAR_POSITIONAL and pname in captured:
+                # *args cannot be replayed by keyword; such an action can
+                # still run, it just cannot be written to a spec
+                captured[pname] = _UNSPECABLE
+        self._init_args = captured
+        return ret
+
+    wrapper._kunene_captures_args = True
+    return wrapper
+
+
+class _Unspecable:
+    """Marks a constructor argument that a spec cannot record."""
+    def __repr__( self ): return '<not recordable in a spec>'
+
+
+_UNSPECABLE = _Unspecable()
+
+
 class WorkAction(Subject):
     """
     Base class for the nodes in the graph.
@@ -155,6 +209,24 @@ class WorkAction(Subject):
     # in a status file; the actions inside it are reported instead. See
     # _progress_names() below.
     _progress_passthrough = False
+
+    # Action class name -> class, filled by __init_subclass__. This is what
+    # makes a spec file safe to load: the file *names* an action, it never
+    # supplies one -- the same trust model as ServerAction.add_graph.
+    _registry = {}
+
+    # constructor arguments to_spec() must not record, because the class
+    # rebuilds them itself (see the containers in graph_actions)
+    _spec_skip = ()
+
+    def __init_subclass__( cls, **kwargs ):
+        super().__init_subclass__( **kwargs )
+        WorkAction._registry[ cls.__name__ ] = cls
+        # a subclass that defines its own __init__ without using
+        # allow_variables_as_arguments still gets its arguments recorded
+        init = cls.__dict__.get( '__init__' )
+        if init is not None and not getattr( init, '_kunene_captures_args', False ):
+            cls.__init__ = _capture_init_args( init )
 
     def __init__( self, name, cmd=None, copy_paths=None, lower_bound=None, upper_bound=None,
                   description=None, data_type = EvalType.NOT_SPECIFIED, keep=None ):
@@ -226,11 +298,14 @@ class WorkAction(Subject):
         You cannot do computations with the variables in
         __init__() because the values are only set at the end.
         """
+        @functools.wraps( func )
         def wrapper( self, *args, **kwargs ):
             v = func( self, *args, **kwargs )
-            self._collect_arg_pars() 
+            self._collect_arg_pars()
             return v
-        return wrapper
+        # the spec records the Variables as given, before _collect_arg_pars
+        # replaced them by their values
+        return _capture_init_args( wrapper )
 
     def assign_variables_values_to_members( func ):
         """ A decorator for the solve() method allowing you to
@@ -299,6 +374,54 @@ class WorkAction(Subject):
         state = self.__dict__.copy()
         state.pop( '_async_proc', None )
         return state
+
+    def to_spec( self ):
+        """
+        Describe this action as plain data, for :func:`kunene.save_workflow`.
+
+        The generic implementation replays the constructor: it records the
+        arguments the action was built with (captured by
+        ``_capture_init_args``). A container whose children do not arrive
+        through ``__init__`` -- a ``DirectedGraph``, a ``WorkArea``, a
+        ``SimulationIterator`` -- overrides this and ``from_spec``.
+
+        Returns:
+            dict : ``{'type': ..., 'name': ..., 'args': {...}}``
+        Raises:
+            SpecError : an argument cannot be written to a spec.
+        """
+        from kunene import action_spec
+
+        if not hasattr( self, '_init_args' ):
+            raise SpecError(
+                f'Action {self.name!r} of type {type(self).__name__} did not '
+                f'record its constructor arguments and cannot be written to '
+                f'a spec.' )
+        args = { k: v for k, v in self._init_args.items()
+                 if k != 'name' and k not in self._spec_skip }
+        bad = [ k for k, v in args.items() if isinstance( v, _Unspecable ) ]
+        if bad:
+            raise SpecError(
+                f'Action {self.name!r} of type {type(self).__name__} takes '
+                f'*{bad[0]}, whose values cannot be replayed by keyword, so '
+                f'it cannot be written to a spec.' )
+        return { 'type': type( self ).__name__,
+                 'name': self.name,
+                 'args': action_spec.encode_args( args, self.name ) }
+
+    @classmethod
+    def from_spec( cls, d ):
+        """
+        Rebuild an action from the dict :meth:`to_spec` produced.
+
+        Arguments:
+            d (dict) : one action's spec.
+        Returns:
+            WorkAction
+        """
+        from kunene import action_spec
+        args = action_spec.decode_args( d.get( 'args', {} ), d.get( 'name', '?' ) )
+        return cls( name=d['name'], **args )
 
     #@notify_observers
     def _observed_eval(self,  val_dict=None ):
@@ -655,6 +778,13 @@ class WorkAction(Subject):
     def __str__(self ):
         r = f'WorkAction: \'{self.name}\' {type(self)}'
         return r
+
+
+# The base __init__ is wrapped here rather than by a decorator in the class
+# body so that __init_subclass__ (which wraps the subclasses) can test for
+# the marker it leaves. An action that does not define its own __init__ --
+# MathEvaluation, for one -- records its arguments through this.
+WorkAction.__init__ = _capture_init_args( WorkAction.__init__ )
 
 
 def _flatten_namespace( val_dict ):

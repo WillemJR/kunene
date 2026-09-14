@@ -63,3 +63,46 @@ Workflow progress crosses the process boundary (to a GUI) through `status.json` 
 - **Async failures**: the child of `_observed_eval_async` catches any exception from `solve()`, stores `type: message + traceback` in the shared result dict, and exits non-zero. The watcher thread classifies the outcome — stored error, non-zero exit code (segfault/oom-kill/terminate), or missing result — and notifies the graph with `[action, 'Failed']` instead of `'Done'`. `DirectedGraph.update` collects these in `self.failed`; the solve loop then marks the action `failed` in the status file (message = first line of the child's error), terminates the still-running sibling children (marked `failed` with a 'terminated: a sibling action failed' message), and raises `AsyncActionError` carrying the child's full traceback. Sync-mode failures propagate directly as before.
 
 
+
+## Workflow specs (`kunene/action_spec.py`)
+
+`save_workflow`/`load_workflow` write and rebuild a workflow as JSON. The
+format is `{'type', 'name', 'args'}` per action, with a graph adding
+`actions` (each carrying the `parents` it waits for) and a `WorkArea` or
+`SimulationIterator` nesting its graph under `graph`.
+
+Constructor arguments are recorded automatically: `_capture_init_args`
+(`kunene/actions.py`) wraps `WorkAction.__init__`, is chained by
+`allow_variables_as_arguments`, and is applied by `__init_subclass__` to any
+subclass defining its own `__init__`. It binds the call signature and stores
+it as `self._init_args`. Three details matter:
+
+- It reads the *bound signature*, not `__dict__`: `_collect_arg_pars()`
+  replaces a `Variable` argument by its value on the instance, and the spec
+  has to keep the `Variable`.
+- Only arguments actually passed are kept. Specs stay short, and a later
+  change to a default is picked up on load.
+- When a subclass calls `super().__init__()` both wrappers run; the outermost
+  assigns last, so the subclass's own arguments are what is recorded.
+
+`__init_subclass__` also fills `WorkAction._registry`, which is the only way
+`action_from_spec` can reach a class — a spec names an action, it never
+supplies one. Classes kunene ships are imported on demand
+(`_BUILTIN_ACTION_MODULES`, skipping any whose optional dependency is
+missing); an action of your own only has to be imported before loading.
+
+The containers override `to_spec`/`from_spec` because their children arrive
+through `add_action`/`add_edge`. Two traps they handle: a graph must add
+every child before any edge (`add_edge` requires both endpoints), and
+`WorkArea`/`SimulationIterator` must *drop* the name from the spec, since the
+constructor derives it again from the graph and a kept name would grow a
+`_WorkArea` suffix on every round trip. `SimulationIterator` also excludes
+`clean_start` — deleting a results directory is something a run does, never
+something loading a file should do — and records `JNAME` when it was changed
+on the instance, since it decides what the job directories are called.
+
+`Variable` and `Cleanup` are not actions and carry no `_init_args`; they are
+encoded by reading the attributes their `__init__` parameters name
+(`_args_from_signature`), which works because both store every argument under
+its own name. An omitted `description` that the constructor filled from the
+class docstring is dropped rather than written into the file.

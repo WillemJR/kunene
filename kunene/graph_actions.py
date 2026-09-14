@@ -73,6 +73,23 @@ class WorkArea(WorkAction):
         self.description = f'Work area for graph {graph.name} at {self.work_area_path}'
 
 
+    # the graph is nested under its own key, and the name is derived from it
+    _spec_skip = ( 'graph', )
+
+    def to_spec( self ):
+        d = super().to_spec()
+        # the name is graph.name + '_WorkArea'; the constructor derives it
+        # again, so keeping it here would grow a suffix per round trip
+        d.pop( 'name', None )
+        d['graph'] = self.graph.to_spec()
+        return d
+
+    @classmethod
+    def from_spec( cls, d ):
+        from kunene import action_spec
+        return cls( action_spec.action_from_spec( d['graph'] ),
+                    **action_spec.decode_args( d.get( 'args', {} ) ) )
+
     def _prepare_work_area(self):
         """Create the work area directory and copy all required files into it."""
         self.wa_path = self.work_area_path
@@ -281,6 +298,30 @@ class DirectedGraph(WorkAction, Observer):
             raise ValueError("Both nodes must be added to the graph before creating an edge")
         self.parent_list[to_node.name].append(from_node.name)
 
+
+    def to_spec( self ):
+        """Describe the graph and everything in it. The children are listed
+        with the parents each waits for, since they are added through
+        ``add_action``/``add_edge`` rather than through ``__init__``."""
+        d = super().to_spec()
+        d['actions'] = [ dict( a.to_spec(), parents=list( self.parent_list[ name ] ) )
+                         for name, a in self.child_actions.items() ]
+        return d
+
+    @classmethod
+    def from_spec( cls, d ):
+        from kunene import action_spec
+        graph = cls( name=d['name'],
+                     **action_spec.decode_args( d.get( 'args', {} ), d['name'] ) )
+        specs = d.get( 'actions', [] )
+        # two passes: add_edge needs both endpoints in the graph already
+        for a in specs:
+            graph.add_action( action_spec.action_from_spec( a, d['name'] ) )
+        for a in specs:
+            for parent in a.get( 'parents', [] ):
+                graph.add_edge( graph.child_actions[ parent ],
+                                graph.child_actions[ a['name'] ] )
+        return graph
 
     def _parent_results(self, nname, val_dict ):
         # Results are kept structured: a WorkArea or sub-graph contributes
@@ -616,4 +657,14 @@ class WorkFlow(DirectedGraph):
 
         return action
 
-
+    @classmethod
+    def from_spec( cls, d ):
+        """A workflow is a chain: ``add_action`` makes the edges itself, so
+        the recorded parents are not replayed. ``child_actions`` keeps its
+        insertion order, which is the order of the chain."""
+        from kunene import action_spec
+        flow = cls( name=d['name'],
+                    **action_spec.decode_args( d.get( 'args', {} ), d['name'] ) )
+        for a in d.get( 'actions', [] ):
+            flow.add_action( action_spec.action_from_spec( a, d['name'] ) )
+        return flow
