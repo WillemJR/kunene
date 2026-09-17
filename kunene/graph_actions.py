@@ -87,8 +87,9 @@ class WorkArea(WorkAction):
     @classmethod
     def from_spec( cls, d ):
         from kunene import action_spec
-        return cls( action_spec.action_from_spec( d['graph'] ),
-                    **action_spec.decode_args( d.get( 'args', {} ) ) )
+        return action_spec.apply_state(
+            cls( action_spec.action_from_spec( d['graph'] ),
+                 **action_spec.decode_args( d.get( 'args', {} ) ) ), d )
 
     def _prepare_work_area(self):
         """Create the work area directory and copy all required files into it."""
@@ -321,7 +322,7 @@ class DirectedGraph(WorkAction, Observer):
             for parent in a.get( 'parents', [] ):
                 graph.add_edge( graph.child_actions[ parent ],
                                 graph.child_actions[ a['name'] ] )
-        return graph
+        return action_spec.apply_state( graph, d )
 
     def _parent_results(self, nname, val_dict ):
         # Results are kept structured: a WorkArea or sub-graph contributes
@@ -667,4 +668,4 @@ class WorkFlow(DirectedGraph):
                     **action_spec.decode_args( d.get( 'args', {} ), d['name'] ) )
         for a in d.get( 'actions', [] ):
             flow.add_action( action_spec.action_from_spec( a, d['name'] ) )
-        return flow
+        return action_spec.apply_state( flow, d )

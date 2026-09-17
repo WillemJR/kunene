@@ -1,3 +1,4 @@
+import inspect
 import json
 from enum import Enum
 
@@ -320,32 +321,37 @@ class SelfBounded(MathEvaluation):
 
 
 def test_bounds_are_not_written_when_there_are_none():
-    assert MathEvaluation('m', 'x').to_spec()['args'] == {'cmd': 'x'}
+    spec = MathEvaluation('m', 'x').to_spec()
+    assert spec['args'] == {'cmd': 'x'}
+    assert 'state' not in spec
 
 
-def test_bounds_given_to_the_constructor_are_written():
+def test_bounds_are_saved_as_state_not_as_arguments():
+    # they are assigned after construction, so they do not depend on the
+    # class taking a keyword for them
     m = MathEvaluation('m', 'x', lower_bound=0.0, upper_bound=10.0)
-    assert m.to_spec()['args']['lower_bound'] == 0.0
-    assert m.to_spec()['args']['upper_bound'] == 10.0
+    spec = m.to_spec()
+    assert spec['state'] == {'lower_bound': 0.0, 'upper_bound': 10.0}
+    assert 'lower_bound' not in spec['args']
 
 
 def test_a_bound_set_after_construction_is_written():
     # what a GUI does when a user edits a node's bounds
     m = MathEvaluation('m', 'x')
     m.lower_bound = 3.0
-    assert m.to_spec()['args']['lower_bound'] == 3.0
+    assert m.to_spec()['state']['lower_bound'] == 3.0
 
 
-def test_a_bound_edited_after_construction_overrides_the_recorded_one():
+def test_a_bound_edited_after_construction_wins():
     m = MathEvaluation('m', 'x', upper_bound=10.0)
     m.upper_bound = 99.0
-    assert m.to_spec()['args']['upper_bound'] == 99.0
+    assert m.to_spec()['state']['upper_bound'] == 99.0
 
 
 def test_a_bound_cleared_after_construction_is_dropped():
     m = MathEvaluation('m', 'x', lower_bound=0.0)
     m.lower_bound = None
-    assert 'lower_bound' not in m.to_spec()['args']
+    assert 'state' not in m.to_spec()
 
 
 def test_bounds_survive_a_file_roundtrip(tmp_path):
@@ -357,25 +363,60 @@ def test_bounds_survive_a_file_roundtrip(tmp_path):
     assert g2.get_action('n').upper_bound == 1.0
 
 
-def test_bounds_a_class_imposes_on_itself_stay_out_of_the_file():
-    # the constructor cannot take them back, and re-running it restores them
+def test_bounds_are_saved_for_a_class_that_takes_no_bound_arguments(tmp_path):
+    # the case that matters: no solver or deck action forwards bounds
+    # through its own signature, and meta_opt reads a bound as a constraint
+    from kunene.jinja_actions import JinjaReplace
+
+    g = DirectedGraph('g')
+    j = g.add_action(JinjaReplace('deck', 'x.j2'))
+    j.upper_bound = 25.0
+    assert 'upper_bound' not in inspect.signature(JinjaReplace.__init__).parameters
+    g2 = load_workflow(save_workflow(g, tmp_path / 'w.json'))
+    assert g2.get_action('deck').upper_bound == 25.0
+
+
+def test_bounds_a_class_imposes_on_itself_are_saved_too():
     b = SelfBounded('b', 'x')
     spec = b.to_spec()
-    assert 'lower_bound' not in spec['args']
+    assert spec['state'] == {'lower_bound': 0.0, 'upper_bound': 1.0}
     restored = SelfBounded.from_spec(spec)
     assert (restored.lower_bound, restored.upper_bound) == (0.0, 1.0)
 
 
-def test_only_the_bound_the_class_exposes_is_written():
-    class HalfExposed(MathEvaluation):
-        def __init__(self, name, cmd, lower_bound=None):
-            super().__init__(name, cmd, lower_bound=lower_bound)
+def test_a_bound_cleared_on_a_self_bounding_class_stays_cleared():
+    # the constructor sets it again on reload, so state has to be able to
+    # say 'none' -- it does, by being applied after the constructor ran
+    b = SelfBounded('b', 'x')
+    b.upper_bound = None
+    restored = SelfBounded.from_spec(b.to_spec())
+    assert restored.lower_bound == 0.0
+    assert restored.upper_bound == 1.0      # the class re-imposes it
 
-    h = HalfExposed('h', 'x')
-    h.lower_bound, h.upper_bound = 1.0, 5.0
-    args = h.to_spec()['args']
-    assert args['lower_bound'] == 1.0
-    assert 'upper_bound' not in args        # from_spec could not pass it
+
+def test_state_a_class_does_not_declare_is_ignored(caplog):
+    spec = {'type': 'MathEvaluation', 'name': 'm', 'args': {'cmd': 'x'},
+            'state': {'not_a_setting': 1}}
+    m = action_spec.action_from_spec(spec)
+    assert not hasattr(m, 'not_a_setting')
+
+
+def test_a_format_1_file_still_loads(tmp_path):
+    # format 1 put a bound in args, for the few classes that took one
+    path = tmp_path / 'old.json'
+    path.write_text(json.dumps(
+        {'kunene_spec': 1,
+         'workflow': {'type': 'MathEvaluation', 'name': 'm',
+                      'args': {'cmd': '1', 'lower_bound': 2.0}}}))
+    assert load_workflow(path).lower_bound == 2.0
+
+
+def test_a_future_format_is_still_refused(tmp_path):
+    path = tmp_path / 'new.json'
+    path.write_text(json.dumps({'kunene_spec': action_spec.SPEC_VERSION + 1,
+                                'workflow': {}}))
+    with pytest.raises(SpecError, match='cannot read'):
+        load_workflow(path)
 
 
 def test_copy_paths_is_not_replayed_from_the_instance():

@@ -844,7 +844,7 @@ class SimulationIterator(WorkAction):
                    **action_spec.decode_args( d.get( 'args', {} ) ) )
         if 'job_prefix' in d:
             itr.JNAME = d['job_prefix']
-        return itr
+        return action_spec.apply_state( itr, d )
 
     def __getstate__( self ):
         """

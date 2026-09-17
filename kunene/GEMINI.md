@@ -86,16 +86,26 @@ it as `self._init_args`. Three details matter:
   assigns last, so the subclass's own arguments are what is recorded.
 
 `_init_args` records the constructor *call*, which is blind to anything set on
-the action afterwards. `_spec_state` names the attributes `to_spec()` therefore
-reads back off the instance (`_apply_spec_state`): `lower_bound` and
-`upper_bound`, the settings a GUI lets a user edit on a node it already placed.
-For those the live value wins — written when it says something, and the
-recorded argument dropped when the attribute has been cleared. An attribute is
-only written when the class takes a keyword of the same name, so a class that
-imposes a bound on itself in `__init__` keeps it out of the file and restores it
-by running that `__init__` again. `copy_paths` is deliberately not in the set: a
-graph extends a child's list in `add_action`, so replaying the live value would
-double the entries on every round trip.
+the action afterwards. The attributes named by `_spec_state` are therefore saved
+as **state** rather than as arguments: `spec_state()` reads them off the
+instance into the spec's own `state` section, and `action_spec.apply_state()`
+assigns them with `setattr` once the action has been rebuilt. That is what makes
+them independent of the constructor — every action carries
+`lower_bound`/`upper_bound` from `WorkAction.__init__`, but hardly any subclass
+forwards them through its own signature, so a bound set on a `RadiossAnalysis`
+or a `JinjaReplace` has no keyword to travel through. Nothing validates a bound
+in an action's `__init__`, so assigning it afterwards bypasses no check. `None`
+means unset and is not written; a name a class does not declare in `_spec_state`
+is logged and ignored rather than set, so a file cannot assign arbitrary
+attributes. `copy_paths` is deliberately not in the set: a graph extends a
+child's list in `add_action`, so replaying it would double the entries on every
+round trip.
+
+`state` is why the format is at version 2. `_READABLE_VERSIONS` lists what this
+module still understands (1 and 2), so a file written before `state` existed
+still loads — a format 1 file put a bound in `args`, which works for the few
+classes that took one. A file numbered *above* `SPEC_VERSION` is refused, since
+it may carry a section this kunene would drop silently.
 
 `__init_subclass__` also fills `WorkAction._registry`, which is the only way
 `action_from_spec` can reach a class — a spec names an action, it never

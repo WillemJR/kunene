@@ -43,9 +43,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Bumped when a change to the format stops this module reading files that
-# earlier versions wrote.
-SPEC_VERSION = 1
+# Written into every file. Bumped when the format gains something an older
+# reader would not see -- format 2 added the per-action 'state' section, which
+# a format 1 reader would drop silently, taking an action's bounds with it.
+SPEC_VERSION = 2
+
+# Older formats this module still understands. A file numbered above
+# SPEC_VERSION is refused: it may hold something this kunene cannot see.
+_READABLE_VERSIONS = ( 1, 2 )
 
 # Marks an encoded kunene object: { _TAG: 'FloatVariable', ... }
 _TAG = '__kunene__'
@@ -290,6 +295,41 @@ def _import_builtin_actions():
             logger.debug( f'Not registering actions from {mod}: {err}' )
 
 
+def apply_state( action, d, path='$' ):
+    """
+    Assign the ``state`` section of a spec onto a freshly built action.
+
+    Kept apart from the constructor arguments because these settings do not
+    depend on the class taking a keyword for them: ``lower_bound`` and
+    ``upper_bound`` exist on every action through ``WorkAction.__init__``,
+    but hardly any subclass forwards them through its own signature. Nothing
+    validates a bound in an action's ``__init__``, so assigning it here
+    bypasses no check.
+
+    Only names the class declares in ``_spec_state`` are assigned; anything
+    else is a section written by a kunene that knows more than this one, and
+    is reported rather than set.
+
+    Arguments:
+        action (WorkAction) : the action just built.
+        d (dict) : that action's spec.
+    Returns:
+        WorkAction : the same action.
+    """
+    state = d.get( 'state' )
+    if not state:
+        return action
+    allowed = set( type( action )._spec_state )
+    for name, value in decode_args( state, f'{path}.state' ).items():
+        if name not in allowed:
+            logger.warning(
+                f'{path}: ignoring state {name!r}, which '
+                f'{type(action).__name__} does not declare.' )
+            continue
+        setattr( action, name, value )
+    return action
+
+
 def action_from_spec( d, path='$' ):
     """
     Build one action from its spec.
@@ -317,7 +357,7 @@ def action_from_spec( d, path='$' ):
             f'{path}: unknown action type {type_name!r}. Import the module '
             f'that defines it before loading the workflow. Known types: '
             f'{known}.' )
-    return action_class.from_spec( d )
+    return apply_state( action_class.from_spec( d ), d, path )
 
 
 # ------------------------------------------------------------------ files
@@ -384,9 +424,10 @@ def load_workflow( path ):
         raise SpecError( f'{path} is not a kunene workflow spec.' )
 
     version = doc['kunene_spec']
-    if version != SPEC_VERSION:
+    if version not in _READABLE_VERSIONS:
         raise SpecError(
             f'{path} was written in spec format {version}, which this kunene '
-            f'(format {SPEC_VERSION}) cannot read.' )
+            f'cannot read. It writes format {SPEC_VERSION} and reads '
+            f'{", ".join( str( v ) for v in _READABLE_VERSIONS )}.' )
 
     return action_from_spec( doc['workflow'], path=str( path ) )

@@ -219,13 +219,16 @@ class WorkAction(Subject):
     # rebuilds them itself (see the containers in graph_actions)
     _spec_skip = ()
 
-    # Attributes to_spec() reads back off the instance rather than trusting
-    # the recorded constructor call. They are the settings a caller may
-    # change after the action was built -- a GUI editing a node's bounds --
-    # which _init_args cannot see. Only attributes the constructor can take
-    # back as a keyword of the same name belong here; copy_paths, say, does
-    # not, because a graph extends it in add_action and replaying the live
-    # value would double the entries. See _spec_live_args().
+    # Attributes that are saved as *state*: read off the instance at save
+    # time and assigned back with setattr after the action is rebuilt, so
+    # they do not depend on the constructor taking a keyword of the same
+    # name. Every action carries bounds (meta_opt reads them as a
+    # constraint) but almost no subclass forwards them through its own
+    # signature, so a GUI setting a bound on a RadiossAnalysis has nowhere
+    # else to put them. A value of None means 'unset' and is not written.
+    # copy_paths is deliberately not here: a graph extends a child's list in
+    # add_action, so replaying it would double the entries. See
+    # spec_state() and action_spec.apply_state().
     _spec_state = ( 'lower_bound', 'upper_bound' )
 
     def __init_subclass__( cls, **kwargs ):
@@ -407,54 +410,46 @@ class WorkAction(Subject):
                 f'record its constructor arguments and cannot be written to '
                 f'a spec.' )
         args = { k: v for k, v in self._init_args.items()
-                 if k != 'name' and k not in self._spec_skip }
-        self._apply_spec_state( args )
+                 if k != 'name' and k not in self._spec_skip
+                 and k not in self._spec_state }
         bad = [ k for k, v in args.items() if isinstance( v, _Unspecable ) ]
         if bad:
             raise SpecError(
                 f'Action {self.name!r} of type {type(self).__name__} takes '
                 f'*{bad[0]}, whose values cannot be replayed by keyword, so '
                 f'it cannot be written to a spec.' )
-        return { 'type': type( self ).__name__,
+        spec = { 'type': type( self ).__name__,
                  'name': self.name,
                  'args': action_spec.encode_args( args, self.name ) }
+        state = self.spec_state()
+        if state:
+            spec['state'] = action_spec.encode_args( state, self.name )
+        return spec
 
-    def _apply_spec_state( self, args ):
+    def spec_state( self ):
         """
-        Overwrite the recorded constructor arguments with the values the
-        ``_spec_state`` attributes carry *now*.
+        The values of the ``_spec_state`` attributes as they stand now.
 
-        ``_init_args`` records the constructor call, so a bound set on the
-        action afterwards (``action.lower_bound = 3.0``, which is what a GUI
-        editing a node does) would otherwise not be saved, and a bound
-        cleared afterwards would be saved as though it still applied. For
-        these attributes the live value is authoritative: it is written when
-        it says something, and the recorded argument is dropped when it does
-        not.
+        These are saved apart from the constructor arguments and assigned
+        back with ``setattr`` once the action has been rebuilt, because the
+        settings they hold outlive the constructor call: every action has
+        ``lower_bound``/``upper_bound`` through ``WorkAction.__init__``, but
+        hardly any subclass forwards them through its own signature, so
+        there is no keyword to replay them through. A GUI that lets someone
+        bound the output of a ``RadiossAnalysis`` writes a constraint that
+        would otherwise disappear on save.
 
-        An attribute is only written when the class can take it back as a
-        keyword argument of the same name -- otherwise ``from_spec`` would
-        call a constructor that does not accept it. A class that sets a
-        bound on itself in ``__init__`` without exposing it therefore keeps
-        it out of the file and restores it by running that ``__init__``
-        again, which comes to the same thing.
+        ``None`` means unset and is left out of the file.
 
-        Arguments:
-            args (dict) : the arguments being assembled; modified in place.
+        Returns:
+            dict : attribute name -> value, for the ones that say something.
         """
-        params = inspect.signature( type( self ).__init__ ).parameters
+        state = {}
         for attr in self._spec_state:
-            if not hasattr( self, attr ):
-                continue
-            param = params.get( attr )
-            if param is None or param.kind in ( param.VAR_POSITIONAL,
-                                                param.VAR_KEYWORD ):
-                continue        # the constructor cannot take it back
-            value = getattr( self, attr )
-            if param.default is not param.empty and value == param.default:
-                args.pop( attr, None )      # nothing to say, and nothing left over
-            else:
-                args[attr] = value
+            value = getattr( self, attr, None )
+            if value is not None:
+                state[attr] = value
+        return state
 
     @classmethod
     def from_spec( cls, d ):
@@ -468,7 +463,7 @@ class WorkAction(Subject):
         """
         from kunene import action_spec
         args = action_spec.decode_args( d.get( 'args', {} ), d.get( 'name', '?' ) )
-        return cls( name=d['name'], **args )
+        return action_spec.apply_state( cls( name=d['name'], **args ), d )
 
     #@notify_observers
     def _observed_eval(self,  val_dict=None ):
