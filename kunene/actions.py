@@ -219,6 +219,15 @@ class WorkAction(Subject):
     # rebuilds them itself (see the containers in graph_actions)
     _spec_skip = ()
 
+    # Attributes to_spec() reads back off the instance rather than trusting
+    # the recorded constructor call. They are the settings a caller may
+    # change after the action was built -- a GUI editing a node's bounds --
+    # which _init_args cannot see. Only attributes the constructor can take
+    # back as a keyword of the same name belong here; copy_paths, say, does
+    # not, because a graph extends it in add_action and replaying the live
+    # value would double the entries. See _spec_live_args().
+    _spec_state = ( 'lower_bound', 'upper_bound' )
+
     def __init_subclass__( cls, **kwargs ):
         super().__init_subclass__( **kwargs )
         WorkAction._registry[ cls.__name__ ] = cls
@@ -399,6 +408,7 @@ class WorkAction(Subject):
                 f'a spec.' )
         args = { k: v for k, v in self._init_args.items()
                  if k != 'name' and k not in self._spec_skip }
+        self._apply_spec_state( args )
         bad = [ k for k, v in args.items() if isinstance( v, _Unspecable ) ]
         if bad:
             raise SpecError(
@@ -408,6 +418,43 @@ class WorkAction(Subject):
         return { 'type': type( self ).__name__,
                  'name': self.name,
                  'args': action_spec.encode_args( args, self.name ) }
+
+    def _apply_spec_state( self, args ):
+        """
+        Overwrite the recorded constructor arguments with the values the
+        ``_spec_state`` attributes carry *now*.
+
+        ``_init_args`` records the constructor call, so a bound set on the
+        action afterwards (``action.lower_bound = 3.0``, which is what a GUI
+        editing a node does) would otherwise not be saved, and a bound
+        cleared afterwards would be saved as though it still applied. For
+        these attributes the live value is authoritative: it is written when
+        it says something, and the recorded argument is dropped when it does
+        not.
+
+        An attribute is only written when the class can take it back as a
+        keyword argument of the same name -- otherwise ``from_spec`` would
+        call a constructor that does not accept it. A class that sets a
+        bound on itself in ``__init__`` without exposing it therefore keeps
+        it out of the file and restores it by running that ``__init__``
+        again, which comes to the same thing.
+
+        Arguments:
+            args (dict) : the arguments being assembled; modified in place.
+        """
+        params = inspect.signature( type( self ).__init__ ).parameters
+        for attr in self._spec_state:
+            if not hasattr( self, attr ):
+                continue
+            param = params.get( attr )
+            if param is None or param.kind in ( param.VAR_POSITIONAL,
+                                                param.VAR_KEYWORD ):
+                continue        # the constructor cannot take it back
+            value = getattr( self, attr )
+            if param.default is not param.empty and value == param.default:
+                args.pop( attr, None )      # nothing to say, and nothing left over
+            else:
+                args[attr] = value
 
     @classmethod
     def from_spec( cls, d ):

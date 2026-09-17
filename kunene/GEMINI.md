@@ -85,6 +85,18 @@ it as `self._init_args`. Three details matter:
 - When a subclass calls `super().__init__()` both wrappers run; the outermost
   assigns last, so the subclass's own arguments are what is recorded.
 
+`_init_args` records the constructor *call*, which is blind to anything set on
+the action afterwards. `_spec_state` names the attributes `to_spec()` therefore
+reads back off the instance (`_apply_spec_state`): `lower_bound` and
+`upper_bound`, the settings a GUI lets a user edit on a node it already placed.
+For those the live value wins — written when it says something, and the
+recorded argument dropped when the attribute has been cleared. An attribute is
+only written when the class takes a keyword of the same name, so a class that
+imposes a bound on itself in `__init__` keeps it out of the file and restores it
+by running that `__init__` again. `copy_paths` is deliberately not in the set: a
+graph extends a child's list in `add_action`, so replaying the live value would
+double the entries on every round trip.
+
 `__init_subclass__` also fills `WorkAction._registry`, which is the only way
 `action_from_spec` can reach a class — a spec names an action, it never
 supplies one. Classes kunene ships are imported on demand

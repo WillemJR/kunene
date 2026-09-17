@@ -307,3 +307,80 @@ def test_kunene_enums_still_roundtrip_by_name():
     from kunene.args import EvalType
     out = action_spec.decode_args(action_spec.encode_args({'t': EvalType.IMAGE}))
     assert out['t'] is EvalType.IMAGE
+
+
+# ---------------------------------------------------------- live attributes
+
+
+class SelfBounded(MathEvaluation):
+    """Imposes its own bounds without taking them as arguments."""
+
+    def __init__(self, name, cmd):
+        super().__init__(name, cmd, lower_bound=0.0, upper_bound=1.0)
+
+
+def test_bounds_are_not_written_when_there_are_none():
+    assert MathEvaluation('m', 'x').to_spec()['args'] == {'cmd': 'x'}
+
+
+def test_bounds_given_to_the_constructor_are_written():
+    m = MathEvaluation('m', 'x', lower_bound=0.0, upper_bound=10.0)
+    assert m.to_spec()['args']['lower_bound'] == 0.0
+    assert m.to_spec()['args']['upper_bound'] == 10.0
+
+
+def test_a_bound_set_after_construction_is_written():
+    # what a GUI does when a user edits a node's bounds
+    m = MathEvaluation('m', 'x')
+    m.lower_bound = 3.0
+    assert m.to_spec()['args']['lower_bound'] == 3.0
+
+
+def test_a_bound_edited_after_construction_overrides_the_recorded_one():
+    m = MathEvaluation('m', 'x', upper_bound=10.0)
+    m.upper_bound = 99.0
+    assert m.to_spec()['args']['upper_bound'] == 99.0
+
+
+def test_a_bound_cleared_after_construction_is_dropped():
+    m = MathEvaluation('m', 'x', lower_bound=0.0)
+    m.lower_bound = None
+    assert 'lower_bound' not in m.to_spec()['args']
+
+
+def test_bounds_survive_a_file_roundtrip(tmp_path):
+    g = DirectedGraph('g')
+    n = g.add_action(MathEvaluation('n', 'x'))
+    n.lower_bound, n.upper_bound = -1.0, 1.0
+    g2 = load_workflow(save_workflow(g, tmp_path / 'w.json'))
+    assert g2.get_action('n').lower_bound == -1.0
+    assert g2.get_action('n').upper_bound == 1.0
+
+
+def test_bounds_a_class_imposes_on_itself_stay_out_of_the_file():
+    # the constructor cannot take them back, and re-running it restores them
+    b = SelfBounded('b', 'x')
+    spec = b.to_spec()
+    assert 'lower_bound' not in spec['args']
+    restored = SelfBounded.from_spec(spec)
+    assert (restored.lower_bound, restored.upper_bound) == (0.0, 1.0)
+
+
+def test_only_the_bound_the_class_exposes_is_written():
+    class HalfExposed(MathEvaluation):
+        def __init__(self, name, cmd, lower_bound=None):
+            super().__init__(name, cmd, lower_bound=lower_bound)
+
+    h = HalfExposed('h', 'x')
+    h.lower_bound, h.upper_bound = 1.0, 5.0
+    args = h.to_spec()['args']
+    assert args['lower_bound'] == 1.0
+    assert 'upper_bound' not in args        # from_spec could not pass it
+
+
+def test_copy_paths_is_not_replayed_from_the_instance():
+    # a graph extends a child's copy_paths in add_action; replaying the live
+    # value would double the entries on every round trip
+    g = DirectedGraph('g')
+    g.add_action(MathEvaluation('m', 'x', copy_paths=['a.k']))
+    assert 'copy_paths' not in g.to_spec()['args']

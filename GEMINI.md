@@ -134,7 +134,11 @@ What is saved is the *definition*, not the results of a run: those stay in the
 results directory (`actions_output.pkl`, `jobs_index.json`). Every action
 records its constructor arguments automatically (`_capture_init_args` wraps
 `__init__`), so `to_spec`/`from_spec` on `WorkAction` are generic and an action
-of your own needs nothing beyond being importable. Only the containers override
+of your own needs nothing beyond being importable. Only arguments actually
+passed are written, so a spec stays short and picks up a later change to a
+default; the exception is the attributes named by `_spec_state`
+(`lower_bound`, `upper_bound`), which are read off the instance at save time so
+that a bound set or changed after the action was built is saved too. Only the containers override
 them, because their children arrive through `add_action`/`add_edge` rather than
 through `__init__`. Argument values use the plain-data whitelist of
 `kunene/serialization.py` (plain types and numeric numpy arrays, so an
