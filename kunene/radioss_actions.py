@@ -2,6 +2,7 @@
 import os
 import contextlib
 import json
+import warnings
 import glob
 import subprocess
 import numpy as np
@@ -11,7 +12,7 @@ import shutil
 from pathlib import Path
 
 from kunene.actions import WorkAction
-from kunene.errors import KuneneError, MissingPathError, SolverError
+from kunene.errors import KuneneError, MissingPathError, ParameterError, SolverError
 from kunene.progress import FileProgressTail
 from kunene.util import solver_progress
 from kunene.rare import HistoryEvaluation
@@ -28,21 +29,50 @@ from kunene.args import RADIOSS_BASE_F_NAME # _0000
 from kunene.args import RADIOSS_ENGINE_F_NAME # _0001
 
 
+def _decode_select( select, cmd, who ):
+    """ Settings of a CSV reader: which column to read, and for a scalar which
+    point on it. Accepts a dict, or the JSON string the readers were originally
+    given. ``cmd`` is the old name of the argument, kept as a deprecated alias.
+    """
+    if cmd is not None:
+        if select is not None:
+            raise ParameterError( f"{who}: pass either select= or the deprecated cmd=, not both" )
+        warnings.warn( f"{who}: the 'cmd' argument is deprecated, use 'select'",
+                       DeprecationWarning, stacklevel=3 )
+        select = cmd
+    if select is None:
+        raise ParameterError( f"{who}: select= is required, e.g. select={{'quantity': 'EXTERNAL WORK'}}" )
+    if isinstance( select, str ):
+        try:
+            select = json.loads( select )
+        except json.JSONDecodeError as err:
+            raise ParameterError( f"{who}: select= is not valid JSON: {err}" ) from err
+    if not isinstance( select, dict ):
+        raise ParameterError( f"{who}: select= must be a dict or a JSON object, got {type(select).__name__}" )
+    if not select.get( 'quantity' ):
+        raise ParameterError( f"{who}: select= must name a 'quantity', the CSV column to read" )
+    return select
+
+
+
 class RadiossCSVHistory(HistoryEvaluation):
     """ Extraction of Radioss history 
 
     Args:
         name (str) :
-        cmd (str) :
+        select (dict or str) : what to read from the time-history CSV, e.g.
+            ``{'quantity': 'EXTERNAL WORK'}``. A JSON object as a string is
+            also accepted.
         root_name (str) : root_name of radios input. E.g. 'dyna_action_inp' to read dyna_action_inpT01.csv
+        cmd (str) : deprecated alias of select.
     Returns:
       hist (list): [ [time vals],  [vals] ]
     """
 
 
-    def __init__( self, name, cmd, root_name=RADIOSS_ROOT_NAME ):
-        super().__init__(name, cmd )
-        self.args = json.loads( cmd )
+    def __init__( self, name, select=None, root_name=RADIOSS_ROOT_NAME, cmd=None ):
+        super().__init__( name )
+        self.args = _decode_select( select, cmd, type(self).__name__ )
         self.parent_simu = None
         self.root_name = root_name
         self.description = f'Radioss CSV history extraction of {self.args.get("quantity", "")}'
@@ -86,7 +116,7 @@ class CSVNodeLocationHistory(HistoryEvaluation):
             node_id (str):
             root_name (str):
         """
-        super().__init__(name, "" )
+        super().__init__( name )
         self.node_id = node_id
         self.parent_simu = None
         self.root_name = root_name
@@ -148,18 +178,30 @@ class CSVNodeLocation(CSVNodeLocationHistory):
 class ScalarEvaluation(RadiossCSVHistory):
     """
     Evaluation of FEA results
+
+    Args:
+        name (str) :
+        select (dict or str) : what to read from the time-history CSV, e.g.
+            ``{'quantity': 'EXTERNAL WORK'}``
+        step (int) : index into the history; -1 (the default) is the last step
+        root_name (str) : root_name of radios input
+        cmd (str) : deprecated alias of select. A 'step' key in it is still
+            honoured, as that is where the step used to be given.
     Returns: float
     """
 
-    def __init__( self, name, cmd, root_name=RADIOSS_ROOT_NAME ):
-        super().__init__(name, cmd, root_name )
-        self.args = json.loads( cmd )
+    def __init__( self, name, select=None, step=-1, root_name=RADIOSS_ROOT_NAME, cmd=None ):
+        args = _decode_select( select, cmd, type(self).__name__ )
+        if cmd is not None and 'step' in args:
+            step = args['step']
+        super().__init__( name, select=args, root_name=root_name )
+        self.step = step
         self.parent_simu = None
-        self.description = f'Radioss scalar evaluation of {self.args.get("quantity", "")} at step {self.args.get("step", "")}'
+        self.description = f'Radioss scalar evaluation of {self.args.get("quantity", "")} at step {self.step}'
 
     def solve( self,  val_dict=None ):
         h = super().solve( val_dict )
-        return h[1][ self.args['step'] ]
+        return h[1][ self.step ]
 
     def _dump(self,  val_dict=None ):
         pass
@@ -234,7 +276,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         assert starter_input_path is not None, 'No input OpenRadioss file specified. Specify the path.'
         assert engine_input_path is not None, 'No engine input OpenRadioss file specified. Specify the path.'
 
-        super().__init__(name, starter_cmd, copy_paths=[], keep=keep )
+        super().__init__(name, copy_paths=[], keep=keep )
         self.starter_input_path = starter_input_path
         self.starter_input_path = Path( self.starter_input_path ).name
         self.engine_input_path = engine_input_path

@@ -28,7 +28,7 @@ class d3plot_File(WorkFlow):
     """
 
     def __init__( self, name, d3plot_rootname='d3plot' ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.d3plot_rootname = d3plot_rootname
         self.description = f'D3plot file reader for {d3plot_rootname}'
 
@@ -158,7 +158,7 @@ class _d3plot_NodalFieldData(WorkAction):
     """
 
     def __init__( self, name, *args, **kwargs ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot nodal field {kwargs.get("component", "")} at state {kwargs.get("state", "")}'
@@ -191,7 +191,7 @@ class _d3plot_MultNodalFieldData(WorkAction):
     """
 
     def __init__( self, name, *args, **kwargs ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple nodal fields {kwargs.get("node_data_names", [])} at state {kwargs.get("state", "")}'
@@ -223,7 +223,7 @@ class _d3plot_MultElementNodalFieldData(WorkAction):
     """
 
     def __init__( self, name, *args, **kwargs ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple element-nodal fields {kwargs.get("element_nodal_data_names", [])} at state {kwargs.get("state", "")}'
@@ -258,7 +258,7 @@ class _d3plot_MultElementFieldData(WorkAction):
     """
 
     def __init__( self, name, *args, **kwargs ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple element fields {kwargs.get("element_data_names", [])} at state {kwargs.get("state", "")}'

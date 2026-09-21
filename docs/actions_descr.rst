@@ -140,7 +140,7 @@ waits for both:
 
     # Merge back: runs once both branches have finished
     dg.add_action( MathEvaluation( name='solver_diff',
-                                   cmd='abs( rad_n5 - dyna_n5 )' ),
+                                   expression='abs( rad_n5 - dyna_n5 )' ),
                    parents=[ rr, rs ] )
 
     ret = dg.solve( {'K': 100.} )

@@ -772,7 +772,7 @@ class SimulationIterator(WorkAction):
         assert isinstance( graph, WorkAction )
         #assert isinstance( graph, DirectedGraph ) # ? must be a graph
 
-        super().__init__( graph.name+'_Iter', "", copy_paths=( copy_paths or [] )+graph.copy_paths )
+        super().__init__( graph.name+'_Iter', copy_paths=( copy_paths or [] )+graph.copy_paths )
 
         self.graph = graph
         self.parameter_list = parameter_list

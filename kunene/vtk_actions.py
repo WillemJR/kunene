@@ -45,7 +45,7 @@ class VTK_FieldData(WorkAction):
     """
     def __init__( self, name, state=-1, *args, root_name=RADIOSS_ROOT_NAME, **kwargs ):
 
-        super().__init__(name, None )
+        super().__init__( name )
         self.state= state
         self.args= args
         self.kwargs= kwargs
@@ -144,7 +144,7 @@ class VTK_FieldDataHist(WorkAction):
 
     def __init__( self, name, *args, root_name=RADIOSS_ROOT_NAME, **kwargs ):
 
-        super().__init__(name, None )
+        super().__init__( name )
         self.args= args
         self.kwargs= kwargs
         self.root_name = root_name

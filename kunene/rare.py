@@ -21,8 +21,8 @@ class HistoryEvaluation(WorkAction):
     """
 
     @abstractmethod
-    def __init__( self, name, cmd ):
-        super().__init__(name, cmd )
+    def __init__( self, name ):
+        super().__init__( name )
 
     def _dump(self,  val_dict=None ):
         h = val_dict[ self.name ]
@@ -36,7 +36,7 @@ class FunctionEvaluation(WorkAction):
     """
 
     def __init__( self, name, func, *args, **kwargs  ):
-        super().__init__(name, None )
+        super().__init__( name )
         self.func= func
         self.args= args
         self.kwargs= kwargs

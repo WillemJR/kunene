@@ -55,7 +55,7 @@ class WorkArea(WorkAction):
     def __init__( self, graph, work_area_path=None, copy_paths=None, cleanup=None ):
 
         assert isinstance( graph, DirectedGraph )
-        super().__init__( graph.name+'_WorkArea', "", copy_paths=( copy_paths or [] )+graph.copy_paths )
+        super().__init__( graph.name+'_WorkArea', copy_paths=( copy_paths or [] )+graph.copy_paths )
         self.graph = graph
         self.cleanup = Cleanup.coerce( cleanup )
         if work_area_path is None:

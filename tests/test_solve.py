@@ -29,7 +29,7 @@ def test_seq( ):
 
     chain.add_action( JinjaReplace( name='SetVars', input_file_path='tests/par_tens.k', output_file_path='edited.k' ) )
     chain.add_action(  RadiossUsingDynaInput("RadiossRun", cmd="rad_dyna_inp", input_path='edited.k', create_vtk=True, create_csv=True ) )
-    chain.add_action( RadiossCSVHistory('hist_eval', '{"quantity":"EXTERNAL WORK" }' ) )
+    chain.add_action( RadiossCSVHistory('hist_eval', select={'quantity': 'EXTERNAL WORK'} ) )
 
     chain.add_action( VTK_MetaData( 'meta', state=2, required_part_id=3 ) )
     chain.add_action( VTK_NodalFieldData('field', state=2,

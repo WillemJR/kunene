@@ -1,5 +1,6 @@
 import os
 import keyword
+import warnings
 import inspect
 import functools
 from pathlib import Path
@@ -53,7 +54,7 @@ def validate_action_name( name ):
     Ensure an action name can be used safely as a variable in expressions.
 
     Action names become keys in the ``val_dict`` that is passed to
-    ``MathEvaluation``, whose ``solve()`` runs ``eval(cmd, None, val_dict)``.
+    ``MathEvaluation``, whose ``solve()`` runs ``eval(expression, None, val_dict)``.
     For a name to be referenceable there it must be a valid Python identifier
     (letters, digits and underscores, not starting with a digit) and must not
     be a Python keyword. A name such as ``'m__case_1__TE all'`` (embedded
@@ -189,7 +190,6 @@ class WorkAction(Subject):
 
     args:
         name (str) :
-        cmd (str) :
         copy_paths (list) : List of file and directories to be copied to work area.
         lower_bound (float) : Lower bound on output value during design
         upper_bound (float) : Lower bound on output value during design
@@ -240,13 +240,23 @@ class WorkAction(Subject):
         if init is not None and not getattr( init, '_kunene_captures_args', False ):
             cls.__init__ = _capture_init_args( init )
 
-    def __init__( self, name, cmd=None, copy_paths=None, lower_bound=None, upper_bound=None,
+    def __init__( self, name, copy_paths=None, lower_bound=None, upper_bound=None,
                   description=None, data_type = EvalType.NOT_SPECIFIED, keep=None ):
         """
         """
         super().__init__()
         self.name = validate_action_name( name )
-        self.cmd = cmd          # backward compatible with simulation
+        # 'cmd' used to sit in the second positional slot and meant three
+        # different things (a program, an expression, a JSON blob). It is gone:
+        # the actions that run a program keep their own cmd attribute. Catch a
+        # caller still passing it there, rather than silently taking it as a
+        # path to copy.
+        if isinstance( copy_paths, str ):
+            raise ParameterError(
+                f"Action '{name}': copy_paths must be a list of paths, got the string "
+                f"{copy_paths!r}. The second argument of WorkAction is no longer 'cmd'; "
+                f"a solver action takes cmd= of its own, MathEvaluation takes expression=, "
+                f"and the Radioss CSV readers take select=." )
         # copy into a fresh list: graphs extend copy_paths in add_action, so a
         # shared default (or a caller's list) must never be mutated in place
         self.copy_paths = list( copy_paths ) if copy_paths else []
@@ -289,7 +299,7 @@ class WorkAction(Subject):
         use variables as arguments constructing this class.
 
         The  arguments to a class can be declared to be variables,
-        e.g. Action( name=, cmd=, arg1=FloatVariable( 'E', 123.4 ) )
+        e.g. Action( name=, arg1=FloatVariable( 'E', 123.4 ) )
         to be used as action.solve( {'E':3.} )
         This requires that the subclass must used the decorators
         allow_variables_as_arguments and
@@ -297,7 +307,7 @@ class WorkAction(Subject):
 
         @WorkAction.allow_variables_as_arguments
 
-        def __init__( self, name, cmd=None, v=None ):
+        def __init__( self, name, v=None ):
             ...
 
         @WorkAction.assign_variables_values_to_members
@@ -867,18 +877,32 @@ class MathEvaluation(WorkAction):
 
     args:
         name (str) :
-        cmd (str) :
+        expression (str) : Python expression evaluated against the action
+            names in ``val_dict``, e.g. ``'abs( rad_n5 - dyna_n5 )'``.
+        cmd (str) : deprecated alias of expression.
     Returns:
         Any: outcome of operation
     """
 
-    #def __init__( self, name, cmd ):
-    #    super().__init__(name, cmd )
+    def __init__( self, name, expression=None, cmd=None, **kwargs ):
+        if cmd is not None:
+            if expression is not None:
+                raise ParameterError(
+                    f"MathEvaluation '{name}': pass either expression= or the "
+                    f"deprecated cmd=, not both" )
+            warnings.warn( f"MathEvaluation '{name}': the 'cmd' argument is deprecated, "
+                           f"use 'expression'", DeprecationWarning, stacklevel=2 )
+            expression = cmd
+        if expression is None:
+            raise ParameterError( f"MathEvaluation '{name}': expression= is required, "
+                                  f"e.g. expression='a + b'" )
+        super().__init__( name, **kwargs )
+        self.expression = expression
 
     def solve(self,  val_dict=None ):
         namespace = _flatten_namespace( val_dict )
         try:
-            v = eval( self.cmd, None, namespace )
+            v = eval( self.expression, None, namespace )
         except NameError as err:
             raise EvaluationError( f'Could not evaluate action \'{self.name}\'. Error is \'{err}\'. Either a named action was not defined or have not finished.' ) from err
         except Exception as err:

@@ -27,7 +27,7 @@ def make_graph():
 def test_leaf_action_records_its_arguments():
     m = MathEvaluation('m', 'a+b')
     assert m.to_spec() == {'type': 'MathEvaluation', 'name': 'm',
-                           'args': {'cmd': 'a+b'}}
+                           'args': {'expression': 'a+b'}}
 
 
 def test_leaf_action_roundtrip_solves_the_same():
@@ -322,7 +322,7 @@ class SelfBounded(MathEvaluation):
 
 def test_bounds_are_not_written_when_there_are_none():
     spec = MathEvaluation('m', 'x').to_spec()
-    assert spec['args'] == {'cmd': 'x'}
+    assert spec['args'] == {'expression': 'x'}
     assert 'state' not in spec
 
 

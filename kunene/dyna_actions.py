@@ -39,7 +39,8 @@ class DynaAnalysis(WorkAction):
 
         assert input_path is not None, 'No input LS-DYNA file specified.'
 
-        super().__init__(name, cmd, copy_paths=[], keep=keep )
+        super().__init__(name, copy_paths=[], keep=keep )
+        self.cmd = cmd
         self.input_file_path = input_path
         self.description = f'LS-DYNA analysis using input file {input_path}'
         self.root_name= kunene.args.DYNA_BASE_FILE_NAME
