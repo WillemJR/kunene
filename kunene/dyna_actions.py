@@ -2,7 +2,6 @@
 import os
 import numpy as np
 import json
-import subprocess
 from pathlib import Path
 
 import kunene.args
@@ -11,7 +10,7 @@ from kunene.actions import WorkAction
 from kunene.errors import MissingPathError, SolverError
 from kunene.graph_actions import WorkFlow
 from kunene.progress import FileProgressTail
-from kunene.util import solver_progress
+from kunene.util import solver_progress, command
 
 import logging
 logger = logging.getLogger(__name__)
@@ -27,7 +26,9 @@ class DynaAnalysis(WorkAction):
 
         Args:
             name (str):
-            cmd (str): path to ls-dyna executable or command
+            cmd (str or list): path to ls-dyna executable or command, possibly
+                with arguments: 'ls-dyna ncpu=4' or ['ls-dyna', 'ncpu=4'].
+                See :mod:`kunene.util.command`.
             input_path (str): parameterized keyword file
             keep (list): glob patterns of this run's files that a work
                 area's cleanup must never delete, e.g. ``keep=['d3plot']``
@@ -100,7 +101,7 @@ class DynaAnalysis(WorkAction):
     def _describe_returncode(self, returncode):
         """Human-readable interpretation of a subprocess return code."""
         # A process killed by a signal is reported as a negative code by
-        # subprocess, or as 128+signum by the shell (shell=True).
+        # subprocess, or as 128+signum by a wrapper shell script.
         signum = None
         if returncode < 0:
             signum = -returncode
@@ -130,18 +131,17 @@ class DynaAnalysis(WorkAction):
         err_file = open( 'run_file.stderr' , 'w')
 
         # LS-DYNA command syntax: ls-dyna i=input.k
-        run_cmd = f"{self.cmd} i={base_file_name}"
+        run_cmd = command.as_argv( self.cmd ) + [ f"i={base_file_name}" ]
 
         tail = FileProgressTail( self._progress_reporter, self.name, 'run_file.stdout',
                                  solver_progress.dyna_run_time, t_end )
         tail.start()
         try:
-            flag = subprocess.run( run_cmd, shell=True, stdout=out_file, stderr=err_file )
+            flag = command.run( run_cmd, stdout=out_file, stderr=err_file )
         finally:
             tail.stop()
-
-        out_file.close()
-        err_file.close()
+            out_file.close()
+            err_file.close()
         
         if flag.returncode != 0:
             logger.error( f"LS-DYNA run in {os.getcwd()} failed: {self._describe_returncode(flag.returncode)}" )

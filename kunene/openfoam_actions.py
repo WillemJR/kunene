@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 from kunene.args import Location, JobType, EvalType
 from kunene.actions import WorkAction
 from kunene.progress import FileProgressTail
-from kunene.util import solver_progress
+from kunene.util import solver_progress, command
 import kunene.variables as simvars
 from kunene.util.openfoam_reader import OpenFOAMFieldReader
 
@@ -145,7 +145,7 @@ class OpenFOAMAnalysis( WorkAction ):
         logger.info(f"Running command: {cmd} in {run_dir}")
         with open(run_dir / 'openfoam.stdout', 'a') as out, \
              open(run_dir / 'openfoam.stderr', 'a') as err_file:
-            result = subprocess.run(cmd, shell=True, cwd=run_dir, stdout=out, stderr=subprocess.PIPE)
+            result = command.run(cmd, cwd=run_dir, stdout=out, stderr=subprocess.PIPE)
             stderr_output = result.stderr.decode('utf-8', errors='replace')
             if stderr_output:
                 err_file.write(stderr_output)

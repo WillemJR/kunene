@@ -4,7 +4,6 @@ import contextlib
 import json
 import warnings
 import glob
-import subprocess
 import numpy as np
 import pandas
 import shutil
@@ -14,7 +13,7 @@ from pathlib import Path
 from kunene.actions import WorkAction
 from kunene.errors import KuneneError, MissingPathError, ParameterError, SolverError
 from kunene.progress import FileProgressTail
-from kunene.util import solver_progress
+from kunene.util import solver_progress, command
 from kunene.rare import HistoryEvaluation
 from kunene.util.openradios_reader import OpenRadiosKeywordReader
 import kunene.variables as simvars
@@ -250,9 +249,10 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
 
         Args:
             name (str): A name for this action.
-            starter_cmd (str): path to OpenRadioss executable or command. Command may include arguments 'runradios -np 1 -nt 4' 
+            starter_cmd (str or list): path to OpenRadioss executable or command. Command may include arguments 'runradios -np 1 -nt 4'
+                or ['runradios', '-np', '1', '-nt', '4']. See :mod:`kunene.util.command`.
             starter_input_path (str): OpenRadioss keyword file. Possibly parameterized.
-            engine_cmd (str): path to OpenRadioss executable or command. Command may include arguments 'runradios -np 1 -nt 4' 
+            engine_cmd (str or list): as starter_cmd, for the engine.
             engine_input_path (str): OpenRadioss input file. 
             create_d3plot (bool): Creates a d3plot files using
                             vortex_radioss.animtod3plot.Anim_to_D3plot
@@ -295,7 +295,9 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
 
 
     def  _clean_dir( self, base_file ):
-        r = subprocess.run( [f'rm  {base_file}*.vtk {base_file}*.csv'], shell=True )
+        for pattern in ( f'{base_file}*.vtk', f'{base_file}*.csv' ):
+            for p in glob.glob( pattern ):
+                Path( p ).unlink( missing_ok=True )
 
 
     def _create_vtk_file( self ):
@@ -311,8 +313,8 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         for af in anim_files:
             #idx = '_' + af.split( RADIOSS_BASE_F_NAME )[1][1:] +'.vtk'
             idx = '_' + af.split( RADIOSS_ROOT_NAME )[1][1:] +'.vtk'
-            cmd = ' ' + af + ' > ' + RADIOSS_ROOT_NAME + idx
-            subprocess.run( args=[self.to_vtk_cmd+  cmd], shell=True, stdout=out_file, stderr=err_file )
+            with open( RADIOSS_ROOT_NAME + idx, 'w' ) as vtk_file:
+                command.run( self.to_vtk_cmd, af, stdout=vtk_file, stderr=err_file )
 
         out_file.close()
         err_file.close()
@@ -327,7 +329,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         hist_files = glob.glob(RADIOSS_ROOT_NAME+'T*')
         for tf in hist_files:
             logger.info( f'Converting {tf}' )
-            subprocess.run( args=['th_to_csv_linux64_gf '+ tf], shell=True, stdout=out_file, stderr=err_file )
+            command.run( self.to_csv_cmd, tf, stdout=out_file, stderr=err_file )
 
         out_file.close()
         err_file.close()
@@ -450,7 +452,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
     def _describe_returncode(self, returncode, cmd):
         """Human-readable interpretation of a subprocess return code."""
         # A process killed by a signal is reported as a negative code by
-        # subprocess, or as 128+signum by the shell (shell=True).
+        # subprocess, or as 128+signum by a wrapper shell script.
         signum = None
         if returncode < 0:
             signum = -returncode
@@ -481,10 +483,11 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         out_file = open( RADIOSS_BASE_F_NAME+'.starter.stdout' , 'w' )
         err_file = open( RADIOSS_BASE_F_NAME+'.starter.stderr' , 'w')
 
-        flag = subprocess.run( self.starter_cmd + ' -i ' + start_file_name, shell=True, stdout=out_file, stderr=err_file )
-
-        out_file.close()
-        err_file.close()
+        try:
+            flag = command.run( self.starter_cmd, '-i', start_file_name, stdout=out_file, stderr=err_file )
+        finally:
+            out_file.close()
+            err_file.close()
 
         if flag.returncode != 0:
             logger.error( f"OpenRadioss run in {os.getcwd()} failed: {self._describe_returncode(flag.returncode,self.starter_cmd)}" )
@@ -515,12 +518,11 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
                                  solver_progress.radioss_run_time, t_end )
         tail.start()
         try:
-            flag = subprocess.run( self.engine_cmd + ' -i ' + engine_file_name, shell=True, stdout=out_file, stderr=err_file )
+            flag = command.run( self.engine_cmd, '-i', engine_file_name, stdout=out_file, stderr=err_file )
         finally:
             tail.stop()
-
-        out_file.close()
-        err_file.close()
+            out_file.close()
+            err_file.close()
 
         if flag.returncode != 0:
             logger.error( f"OpenRadioss run in {os.getcwd()} failed: {self._describe_returncode(flag.returncode,self.engine_cmd)}" )

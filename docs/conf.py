@@ -9,7 +9,7 @@
 project = 'kunene'
 copyright = '2026, Willem Roux'
 author = 'Willem Roux'
-release = '1.3.0'
+release = '1.4.0'
 
 # ---
 import sys, os

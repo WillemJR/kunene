@@ -101,7 +101,7 @@ def test_openfoam_job_flags(mock_run, tmp_path):
     assert success is True
     assert mock_run.call_count == 2
 
-    commands = [args[0][0] for args in mock_run.call_args_list]
+    commands = [' '.join(args[0][0]) for args in mock_run.call_args_list]
     assert "mySolver" in commands
     assert "foamToVtk" in commands
     assert "blockMesh" not in commands

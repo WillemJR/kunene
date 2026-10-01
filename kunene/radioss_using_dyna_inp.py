@@ -4,11 +4,10 @@ logger = logging.getLogger(__name__)
 
 import json
 from pathlib import Path
-import subprocess
 
 from kunene.errors import MissingPathError, SolverError
 from kunene.progress import FileProgressTail
-from kunene.util import solver_progress
+from kunene.util import solver_progress, command
 from kunene.radioss_actions import RadiossAnalysis
 from kunene.dyna_actions import DynaAnalysis
 
@@ -26,7 +25,8 @@ class RadiossUsingDynaInput(RadiossAnalysis):
 
         Args:
             name (str): A name for this action.
-            cmd (str): path to the script executing OpenRadioss.
+            cmd (str or list): path to the script executing OpenRadioss.
+                See :mod:`kunene.util.command`.
             input_path (str): LS-DYNA keyword file. (Possibly parameterized?)
             create_d3plot (bool): Creates a d3plot files using
                             vortex_radioss.animtod3plot.Anim_to_D3plot
@@ -41,7 +41,7 @@ class RadiossUsingDynaInput(RadiossAnalysis):
         RadiossAnalysis.__init__( self, name, 
                                   starter_cmd=cmd,
                                   starter_input_path=input_path,
-                                  engine_cmd=cmd+'_DUMMY_ENGINE',
+                                  engine_cmd='_DUMMY_ENGINE',  # the engine is never run
                                   engine_input_path=input_path+'_DUMMY',
                                   create_d3plot=create_d3plot,
                                   create_vtk=create_vtk,
@@ -104,12 +104,11 @@ class RadiossUsingDynaInput(RadiossAnalysis):
         tail.start()
         try:
             #subprocess.run( self.starter_cmd + ' -i ' + start_file_name, shell=True, stdout=out_file, stderr=err_file )
-            subprocess.run( self.starter_cmd + ' ' + start_file_name + ' 1', shell=True, stdout=out_file, stderr=err_file )
+            command.run( self.starter_cmd, start_file_name, '1', stdout=out_file, stderr=err_file )
         finally:
             tail.stop()
-
-        out_file.close()
-        err_file.close()
+            out_file.close()
+            err_file.close()
 
         have_error_termination = False
         with open( RADIOSS_BASE_F_NAME+'.starter.stdout',  'r' ) as outfile:
