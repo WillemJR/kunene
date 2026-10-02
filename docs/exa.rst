@@ -45,13 +45,13 @@ The study is parameterized using the \*PARAMETER keyword.
     print(f"Displacement at node 5: {results['d3p']['disp_n5']}")
 
 
-OpenRadioss 
+OpenCourant/OpenRadioss 
 ----------------------------------
 
 The example does an analysis, substitute parameter values, and extracts results. 
 
 The study is parameterized using the /PARAMETER cards in
-the OpenRadioss input deck.
+the OpenCourant/OpenRadioss input deck.
 
 .. code-block:: python
 
@@ -137,7 +137,7 @@ value of ``None`` — unlike the parameter cards of a deck, which carry both.
 
 ``examples/jinja_dyna.py`` chains the same two actions for an LS-DYNA
 keyword deck, with ``RadiossUsingDynaInput`` as the solver action so the
-substituted deck is run by OpenRadioss:
+substituted deck is run by OpenCourant/OpenRadioss:
 
 .. code-block:: python
 

@@ -30,7 +30,7 @@ kunene/
 │   ├── dyna_actions.py     # execution of ls-dyna
 │   ├── d3plot_actions.py   # read ls-dyna data from a d3plot file
 │   ├── jinja_actions.py    # substition of variables in a file with jinja markup
-│   ├── radioss_actions.py  #  execution of Radioss and openRadioss
+│   ├── radioss_actions.py  #  execution of Radioss and OpenCourant/OpenRadioss
 │   ├── vtk_actions.py      #  read solver field/history data from VTK files
 │   ├── openfoam_actions.py #  execution of OpenFOAM
 │   ├── remote_actions.py   # remote execution

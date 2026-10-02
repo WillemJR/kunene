@@ -78,7 +78,7 @@ value outside its own set.  The checks on assignment are ``assert``
 statements, which Python removes when run with ``-O``.
 
 ``parameters()`` returns an ``UnknownVariable`` when the deck gives neither
-a type nor a default — a jinja ``{{ }}`` name, or an OpenRadioss expression
+a type nor a default — a jinja ``{{ }}`` name, or an OpenCourant/OpenRadioss expression
 parameter.  It has ``name``, ``value`` and ``description`` but its ``type``
 is ``None``, and its ``value`` is read-only.
 

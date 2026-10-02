@@ -320,7 +320,7 @@ Cleaning up bulk solver output
 ------------------------------
 
 It is easy to fill up a disk by keeping all the solver output in every job directory.
-The solver output being the plot databases, the OpenRadioss animation files, the converted VTK, etc.
+The solver output being the plot databases, the OpenCourant/OpenRadioss animation files, the converted VTK, etc.
 Pass a ``Cleanup`` policy to have them removed once a run has finished:
 
 .. code-block:: python
@@ -343,7 +343,7 @@ policy normally names no files at all:
     The default.  The field output the actions declare as disposable:
     ``d3plot*``, ``d3thdt*``, ``d3dump*``, ``runrsf*``, ``binout*`` for
     LS-DYNA; the animation and restart files (plus the d3plot and VTK
-    conversions, when those are enabled) for OpenRadioss; ``VTK/`` and
+    conversions, when those are enabled) for OpenCourant/OpenRadioss; ``VTK/`` and
     ``processor*`` for OpenFOAM.  Input decks, solver logs and small
     time-history files are never in this set — they are what a finished
     run is read back with.

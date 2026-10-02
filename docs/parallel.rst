@@ -31,7 +31,7 @@ job, and a solver may itself use several cores.
 Solvers used in a graph: ``asynch``
 -----------------------------------
 
-A design is often evaluated by more than one solver run — OpenRadioss and
+A design is often evaluated by more than one solver run — OpenCourant/OpenRadioss and
 LS-DYNA on the same model, a structural analysis alongside a CFD one, the
 same deck under several load cases — and those runs do not depend on one
 another, only the step that combines their results does.  Run sequentially

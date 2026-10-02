@@ -2,7 +2,7 @@
 # Kunene
 
 A Python module for orchestrating complex simulations 
-with native support for LS-DYNA, OpenRadioss, and OpenFOAM.
+with native support for LS-DYNA, OpenCourant/OpenRadioss, and OpenFOAM.
 
 ## Overview
 
@@ -27,13 +27,13 @@ Within a single graph, independent branches can likewise run at the same time,
 each in its own process.
 
 
-`Kunene` has a native support for solvers like LS-DYNA, OpenRadioss, and OpenFOAM. In addition OpenRadioss using LS-DYNA input is supported as a special case.
+`Kunene` has a native support for solvers like LS-DYNA, OpenCourant/OpenRadioss, and OpenFOAM. In addition OpenCourant/OpenRadioss using LS-DYNA input is supported as a special case.
 
 ## Key Features
 
 - **Workflow Management**: Define simulation workflows as directed acyclic graphs (DAGs) where actions are executed based on dependency relationships and completion status of prerequisite tasks
-- **Native Solver Support**: Specify input parameter values and the results to extract for a supported solver.  Currently implemented are LS-DYNA and OpenRadioss for structural analysis, and OpenFOAM for computational fluid dynamics
-- **Results Extraction**: Read from the solvers' result databases in the graph. Supported are: LS-DYNA d3plot, OpenRadioss VTK and time-history CSV, and OpenFOAM fields and histories.
+- **Native Solver Support**: Specify input parameter values and the results to extract for a supported solver.  Currently implemented are LS-DYNA and OpenCourant/OpenRadioss for structural analysis, and OpenFOAM for computational fluid dynamics
+- **Results Extraction**: Read from the solvers' result databases in the graph. Supported are: LS-DYNA d3plot, OpenCourant/OpenRadioss VTK and time-history CSV, and OpenFOAM fields and histories.
 - **Parallel Execution**: Evaluate several design points of a study concurrently, each job in its own directory with its own progress bar; within one graph, independent branches run at the same time
 - **Remote Execution**: Submit computational subgraphs to remote computing resources while maintaining local workflow coordination
 - **Custom Actions**: Add an operation of your own by subclassing `WorkAction` and writing `solve(val_dict)`; it then behaves like any built-in action.
@@ -80,10 +80,10 @@ and grpc for remote execution.
 ## Usage
 See also the documentation and the examples directory.
 
-Note that OpenFOAM, LS-DYNA and OpenRadioss workflows follow the same pattern.
+Note that OpenFOAM, LS-DYNA and OpenCourant/OpenRadioss workflows follow the same pattern.
 
-### OpenRadioss
-An example for OpenRadioss is given below.
+### OpenCourant/OpenRadioss
+An example for OpenCourant/OpenRadioss is given below.
 An example using LS-DYNA input is given the examples directory.
 
 ```
@@ -214,7 +214,7 @@ Pass `describe=True` to add each action's description:
 ```
 SimulationIterator 'Radioss_WorkFlow_Iter'  — Simulation iterator for graph Radioss_WorkFlow
 └── WorkFlow 'Radioss_WorkFlow'  — Workflow Radioss_WorkFlow
-    ├── RadiossAnalysis 'rad'  — OpenRadioss analysis using input file models/cube_TYPE7_0000.rad
+    ├── RadiossAnalysis 'rad'  — OpenCourant/OpenRadioss analysis using input file models/cube_TYPE7_0000.rad
     └── d3plot_File 'd3plot'  — D3plot file reader for d3plot
         └── _d3plot_NodalValue 'n5'  — D3plot nodal field node_displacement at state 1
 ```
@@ -260,7 +260,7 @@ for name, (data_type, description) in itr.outputs().items():
 ```
  - Variable Name: E, Data Type: float, Value: 210000.0, Description: 'From 'cube_TYPE7_0000.rad''
 
- - rad: EvalType.NOT_SPECIFIED — OpenRadioss analysis using input file models/cube_TYPE7_0000.rad
+ - rad: EvalType.NOT_SPECIFIED — OpenCourant/OpenRadioss analysis using input file models/cube_TYPE7_0000.rad
  - n5: EvalType.NOT_SPECIFIED — D3plot nodal field node_displacement at state 1
 ```
 
@@ -347,20 +347,20 @@ the workflow. Run them from the project root.
    set from the variables, the job is submitted, and nodal displacements and
    coordinates are read back from the d3plot.
  - `jinja_dyna.py` — an LS-DYNA deck parameterised with Jinja markup
-   (`JinjaReplace`) instead of `*PARAMETER` cards, run through OpenRadioss with
+   (`JinjaReplace`) instead of `*PARAMETER` cards, run through OpenCourant/OpenRadioss with
    `RadiossUsingDynaInput`.
- - `radioss.py` — an OpenRadioss workflow: starter and engine decks, job
+ - `radioss.py` — an OpenCourant/OpenRadioss workflow: starter and engine decks, job
    submission, and results extraction from the d3plot it writes.
  - `openfoam_example.py` — an OpenFOAM workflow: mesh creation and solve
    (`blockMesh`, `icoFoam`), then extraction of a pressure field.
  - `discover_graph.py` — inspecting a graph before running it, with
    `parameters()` and `outputs()`. No solver needed.
  - `radioss_progress.py`, `radioss_progress_workarea.py`,
-   `radioss_progress_nested.py` — the same OpenRadioss run, which solves and
+   `radioss_progress_nested.py` — the same OpenCourant/OpenRadioss run, which solves and
    then reads its results back from VTK, in three shapes: as the progress bars
    of a parallel study, as one run in a `WorkArea` followed from its
    `status.json` with `StatusWatcher`, and as a study whose jobs each hold a
-   `WorkArea` in a subdirectory. Needs OpenRadioss.
+   `WorkArea` in a subdirectory. Needs OpenCourant/OpenRadioss.
  - `parallel_jobs.py` — a design study run with `solve_parallel`: the same six
    design points one at a time and then three at a time, with the timings, the
    job bar, and the `job_N` directories it leaves behind. No solver needed.
@@ -369,7 +369,7 @@ the workflow. Run them from the project root.
    (`openfoam_remote_server.py`, `openfoam_remote_example.py`,
    `Dockerfile.openfoam`). See `remote/README.md`.
 
-The LS-DYNA, OpenRadioss and OpenFOAM examples follow the same pattern, so an
+The LS-DYNA, OpenCourant/OpenRadioss and OpenFOAM examples follow the same pattern, so an
 example written for one solver is easy to move to another. The decks they use
 are in `tests` and `models`; the solver itself has to be installed and on the
 path.

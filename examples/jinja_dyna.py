@@ -32,7 +32,7 @@ def main():
     # 2. Use RadiossUsingDynaInput to run the LS-DYNA deck with OpenRadioss.
     # It takes the substituted file 'edited.k' as input; 'rad_dyna_inp' is the
     # script that runs an LS-DYNA keyword file through OpenRadioss.
-    run_radioss = RadiossUsingDynaInput("RADIOSS", cmd='rad_dyna_inp', input_path='edited.k')
+    run_radioss = RadiossUsingDynaInput("RADIOSS", cmd='rad_dyna_inp', input_path='edited.k',create_d3plot=True)
 
 
     # 3. Create a workflow and add actions

@@ -7,7 +7,7 @@ extracting results from an analysis.
 
 Some actions are used for control e.g. to set up the simulation as a graph where some actions depend on other actions.
 
-The diagram below illustrates a workflow where a single geometry creation step leads to two parallel analysis branches: one for OpenRadioss and another for LS-DYNA. Each branch includes meshing and parameterization steps, and finally, the results from both solvers are combined to compute the overall design performance.
+The diagram below illustrates a workflow where a single geometry creation step leads to two parallel analysis branches: one for OpenCourant/OpenRadioss and another for LS-DYNA. Each branch includes meshing and parameterization steps, and finally, the results from both solvers are combined to compute the overall design performance.
 
 .. image:: _static/workflow_graph.svg
    :align: center
@@ -103,7 +103,7 @@ To use a WorkFlow to evaluate actions sequentially:
     print( 'Displacement of node 5', ret['d3p']['n5'] )
 
 To use a DirectedGraph.  The example below runs the same spring deck
-through two solvers and compares the answers — an OpenRadioss branch and
+through two solvers and compares the answers — an OpenCourant/OpenRadioss branch and
 an LS-DYNA branch that execute independently, and a merge action that
 waits for both:
 
@@ -117,7 +117,7 @@ waits for both:
 
     dg = DirectedGraph( name='MDO', asynch=True )
 
-    # OpenRadioss branch: the LS-DYNA deck run by OpenRadioss
+    # OpenCourant/OpenRadioss branch: the LS-DYNA deck run by OpenCourant/OpenRadioss
     rad_wf = WorkFlow( name='RadiossBranch' )
     rad_wf.add_action( RadiossUsingDynaInput( name='rad',
                                               cmd='rad_dyna_inp',

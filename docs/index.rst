@@ -9,7 +9,7 @@ Kunene
 =========
 
 A Python module for orchestrating complex simulations 
-with native support for LS-DYNA, OpenRadioss, and OpenFOAM.
+with native support for LS-DYNA, OpenCourant/OpenRadioss, and OpenFOAM.
 
 .. include:: intro.rst
 
