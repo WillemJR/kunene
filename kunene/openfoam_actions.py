@@ -53,7 +53,7 @@ class OpenFOAMAnalysis( WorkAction ):
         self.description = f'OpenFOAM analysis using solver {solve_cmd}'
 
     def _produced_files( self ):
-        files = [ 'system/parameters', 'openfoam.stdout', 'openfoam.stderr' ]
+        files = [ 'system/parameters', self._cmd_file(), 'openfoam.stdout', 'openfoam.stderr' ]
         if self.job_flag & JobType.EXTRACT_VTK:
             files.append( 'VTK/' )
         return files
@@ -145,7 +145,8 @@ class OpenFOAMAnalysis( WorkAction ):
         logger.info(f"Running command: {cmd} in {run_dir}")
         with open(run_dir / 'openfoam.stdout', 'a') as out, \
              open(run_dir / 'openfoam.stderr', 'a') as err_file:
-            result = command.run(cmd, cwd=run_dir, stdout=out, stderr=subprocess.PIPE)
+            result = command.run(cmd, cwd=run_dir, stdout=out, stderr=subprocess.PIPE,
+                                 cmd_file=run_dir / self._cmd_file())
             stderr_output = result.stderr.decode('utf-8', errors='replace')
             if stderr_output:
                 err_file.write(stderr_output)
@@ -173,6 +174,7 @@ class OpenFOAMAnalysis( WorkAction ):
             self._update_parameters(val_dict)
 
         run_dir = Path.cwd()
+        self._start_cmd_file(run_dir)
         success = True
 
         if self.job_flag & JobType.CREATE_MESH:

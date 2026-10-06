@@ -314,7 +314,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
             #idx = '_' + af.split( RADIOSS_BASE_F_NAME )[1][1:] +'.vtk'
             idx = '_' + af.split( RADIOSS_ROOT_NAME )[1][1:] +'.vtk'
             with open( RADIOSS_ROOT_NAME + idx, 'w' ) as vtk_file:
-                command.run( self.to_vtk_cmd, af, stdout=vtk_file, stderr=err_file )
+                command.run( self.to_vtk_cmd, af, stdout=vtk_file, stderr=err_file, cmd_file=self._cmd_file() )
 
         out_file.close()
         err_file.close()
@@ -329,7 +329,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         hist_files = glob.glob(RADIOSS_ROOT_NAME+'T*')
         for tf in hist_files:
             logger.info( f'Converting {tf}' )
-            command.run( self.to_csv_cmd, tf, stdout=out_file, stderr=err_file )
+            command.run( self.to_csv_cmd, tf, stdout=out_file, stderr=err_file, cmd_file=self._cmd_file() )
 
         out_file.close()
         err_file.close()
@@ -362,6 +362,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         except OSError:
             t_end = None
 
+        self._start_cmd_file()
         self._run_starter_in_dir( start_file_name )
         self._run_engine_in_dir( RADIOSS_ENGINE_F_NAME+'.rad', t_end )
 
@@ -377,6 +378,7 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
             'radioss_variables.json',
             RADIOSS_BASE_F_NAME + '.rad',
             RADIOSS_ENGINE_F_NAME + '.rad',
+            self._cmd_file(),
             RADIOSS_BASE_F_NAME + '.starter.stdout',
             RADIOSS_BASE_F_NAME + '.starter.stderr',
             RADIOSS_ENGINE_F_NAME + '.engine.stdout',
@@ -484,7 +486,8 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
         err_file = open( RADIOSS_BASE_F_NAME+'.starter.stderr' , 'w')
 
         try:
-            flag = command.run( self.starter_cmd, '-i', start_file_name, stdout=out_file, stderr=err_file )
+            flag = command.run( self.starter_cmd, '-i', start_file_name, stdout=out_file, stderr=err_file,
+                                cmd_file=self._cmd_file() )
         finally:
             out_file.close()
             err_file.close()
@@ -518,7 +521,8 @@ class RadiossAnalysis(WorkAction,RadiossAnalysisBase):
                                  solver_progress.radioss_run_time, t_end )
         tail.start()
         try:
-            flag = command.run( self.engine_cmd, '-i', engine_file_name, stdout=out_file, stderr=err_file )
+            flag = command.run( self.engine_cmd, '-i', engine_file_name, stdout=out_file, stderr=err_file,
+                                cmd_file=self._cmd_file() )
         finally:
             tail.stop()
             out_file.close()

@@ -755,6 +755,19 @@ class WorkAction(Subject):
         """
         return []
 
+    def _cmd_file( self ):
+        """
+        Name of the file in the run directory recording the command lines
+        this action ran its external programs with (``<name>.cmd.txt``).
+        Solver actions start it afresh in ``solve`` and pass it as
+        ``cmd_file`` to :func:`kunene.util.command.run`.
+        """
+        return f'{self.name}.cmd.txt'
+
+    def _start_cmd_file( self, run_dir='.' ):
+        """Remove the command file left by an earlier run in ``run_dir``."""
+        Path( run_dir, self._cmd_file() ).unlink( missing_ok=True )
+
     def _disposable_files( self ):
         """
         Names of the bulk output files this action writes that a work

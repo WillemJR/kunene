@@ -81,6 +81,7 @@ class RadiossUsingDynaInput(RadiossAnalysis):
 
         #shutil.copy( self.engine_input_path, RADIOSS_ENGINE_F_NAME+'.rad' )
 
+        self._start_cmd_file()
         self._run_in_dir( start_file_name, t_end )
 
         if self.create_d3plot : self._create_d3plot_file(RADIOSS_ROOT_NAME)
@@ -104,7 +105,8 @@ class RadiossUsingDynaInput(RadiossAnalysis):
         tail.start()
         try:
             #subprocess.run( self.starter_cmd + ' -i ' + start_file_name, shell=True, stdout=out_file, stderr=err_file )
-            command.run( self.starter_cmd, start_file_name, '1', stdout=out_file, stderr=err_file )
+            command.run( self.starter_cmd, start_file_name, '1', stdout=out_file, stderr=err_file,
+                         cmd_file=self._cmd_file() )
         finally:
             tail.stop()
             out_file.close()

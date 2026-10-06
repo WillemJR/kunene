@@ -174,3 +174,14 @@ if __name__ == '__main__':
     test_d3p( )
 
 
+
+
+def test_command_run_writes_cmd_file(tmp_path):
+    import sys
+    from kunene.util import command
+    cmd_file = tmp_path / 'a.cmd.txt'
+    command.run( [sys.executable, '-c', 'pass'], 'i=in put.k', cmd_file=cmd_file )
+    command.run( [sys.executable, '-c', 'pass'], cmd_file=cmd_file )
+    lines = cmd_file.read_text().splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith( "'i=in put.k'" ) or lines[0].endswith( '"i=in put.k"' )

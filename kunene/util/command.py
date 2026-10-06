@@ -14,6 +14,10 @@ The program is started with ``shell=False``, so nothing in a file name is
 interpreted by ``cmd.exe`` or ``sh``: redirect output with ``stdout=`` rather
 than ``>``. A command needing a shell (``module load ...; ls-dyna``) belongs in
 a wrapper script, whose path is then the command.
+
+Passing ``cmd_file=`` to :func:`run` appends the command line to that file
+before the program starts, so a run directory records how its solver was
+invoked (``ls-dyna-double i=inp.k``) and the run can be repeated by hand.
 """
 
 import os
@@ -52,15 +56,29 @@ def _unquote( token ):
     return token
 
 
-def run( cmd, *args, **kwargs ):
+def as_command_line( argv ):
+    """``argv`` as one line that the platform's shell runs as the same command."""
+    if os.name == 'nt':
+        return subprocess.list2cmdline( argv )
+    return shlex.join( argv )
+
+
+def run( cmd, *args, cmd_file=None, **kwargs ):
     """Run ``cmd`` followed by ``args`` without a shell.
 
     Keyword arguments go to :func:`subprocess.run`. Returns the
     ``CompletedProcess``; a non-zero return code is left to the caller. A
     program that cannot be found or started raises :class:`SolverError`.
+
+    ``cmd_file`` (str or Path), when given, is a text file the command line
+    is appended to, one line per command, before the program is started --
+    so it is there to debug with even when the program is not found.
     """
     argv = as_argv( cmd ) + [ os.fspath(a) if isinstance(a, os.PathLike) else str(a) for a in args ]
     logger.debug( f'running {argv}' )
+    if cmd_file is not None:
+        with open( cmd_file, 'a' ) as f:
+            f.write( as_command_line( argv ) + '\n' )
     try:
         return subprocess.run( argv, **kwargs )
     except FileNotFoundError as e:

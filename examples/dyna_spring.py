@@ -40,7 +40,6 @@ def run_example():
     
     # Edit parameters values and run
     try:
-        #results = wrk_area.solve(params)
         results = wrk_area.solve(params)
         print("Results:", results.keys() )
         print("Results:", results)

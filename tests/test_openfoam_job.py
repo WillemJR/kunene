@@ -78,6 +78,18 @@ def test_openfoam_job_solve(mock_run, tmp_path):
     assert "icoFoam" in mock_run.call_args_list[1][0][0] or \
            "laplacianFoam" in mock_run.call_args_list[1][0][0]
 
+    # the commands run are recorded in <name>.cmd.txt, one per line
+    cmd_lines = (tmp_path / "test_job.cmd.txt").read_text().splitlines()
+    assert cmd_lines == ["blockMesh", "laplacianFoam"]
+
+    # a second solve starts the file afresh rather than appending to it
+    os.chdir(tmp_path)
+    try:
+        job.solve({})
+    finally:
+        os.chdir(original_dir)
+    assert (tmp_path / "test_job.cmd.txt").read_text().splitlines() == cmd_lines
+
 
 @patch('subprocess.run')
 def test_openfoam_job_flags(mock_run, tmp_path):

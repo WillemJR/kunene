@@ -93,6 +93,7 @@ class DynaAnalysis(WorkAction):
         except OSError:
             t_end = None
 
+        self._start_cmd_file()
         have_normal_termination = self._run_solver_in_dir( base_file_name, t_end )
 
         return have_normal_termination
@@ -137,7 +138,7 @@ class DynaAnalysis(WorkAction):
                                  solver_progress.dyna_run_time, t_end )
         tail.start()
         try:
-            flag = command.run( run_cmd, stdout=out_file, stderr=err_file )
+            flag = command.run( run_cmd, stdout=out_file, stderr=err_file, cmd_file=self._cmd_file() )
         finally:
             tail.stop()
             out_file.close()
@@ -187,6 +188,7 @@ class DynaAnalysis(WorkAction):
         return [
             'dyna_variables.json',
             self.root_name + '.k',
+            self._cmd_file(),
             'run_file.stdout',
             'run_file.stderr',
             'd3plot*',
