@@ -15,6 +15,20 @@ logger = logging.getLogger(__name__)
 from lasso.dyna import D3plot, ArrayType, FilterType
 
 
+def _missing_data_error( action, d3p, names ):
+    """ DataNotFoundError saying which of `names` is not in the d3plot, or which state is out of range. """
+    state = action.kwargs.get( 'state' )
+    missing = [ n for n in names if n not in d3p.arrays ]
+    if missing:
+        msg = f'{missing} not in d3plot. Available: {sorted( d3p.arrays.keys() )}'
+    else:
+        n_states = min( d3p.arrays[n].shape[0] for n in names )
+        msg = f'State {state} requested. Data has {n_states} states. Note that first state has index 0.'
+    msg = f"Requested data not available in d3plot for '{action.name}': {msg}"
+    logger.error( msg )
+    return DataNotFoundError( msg )
+
+
 class d3plot_File(WorkFlow):
     """
     This opens the d3plot file for data extractions.
@@ -168,13 +182,8 @@ class _d3plot_NodalFieldData(WorkAction):
         d3p = self.parent.d3plot
         try:
             data = d3p.arrays[self.kwargs['component']][self.kwargs['state']] if d3p.arrays[self.kwargs['component']].ndim > 2 else d3p.arrays[self.kwargs['component']] 
-        except:
-            if self.kwargs['component'] not in d3p.arrays.keys():
-                logger.error( 'Not all requested data in d3plot. Missing:', self.kwargs['component'] )
-                logger.error( 'Data available in d3plot:', d3p.arrays.keys() )
-            elif d3p.arrays[self.kwargs['component']].shape[0] < self.kwargs['state']+1 :
-                logger.error( f'State {self.kwargs["state"]} requested. Data has {d3p.arrays[self.kwargs["component"]].shape[0]} states. Note that first state has index 0.' )
-            raise DataNotFoundError( f'Requested component data not available in d3plot for \'{self.name}\'')
+        except (KeyError, IndexError) as e:
+            raise _missing_data_error( self, d3p, [self.kwargs['component']] ) from e
         if 'required_part_id' in self.kwargs:
             data = self.parent._part_only_nodal( self.kwargs['required_part_id'], data ) 
         return data
@@ -201,13 +210,8 @@ class _d3plot_MultNodalFieldData(WorkAction):
         d3p = self.parent.d3plot
         try:
             data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 2 else d3p.arrays[k] for k in self.kwargs['node_data_names'] }
-        except:
-            if self.kwargs['component'] not in d3p.arrays.keys():
-                logger.error( 'Not all requested data in d3plot. Missing:', self.kwargs['component'] )
-                logger.error( 'Data available in d3plot:', d3p.arrays.keys() )
-            elif d3p.arrays[self.kwargs['component']].shape[0] < self.kwargs['state']+1 :
-                logger.error( f'State {self.kwargs["state"]} requested. Data has {d3p.arrays[self.kwargs["component"]].shape[0]} states. Note that first state has index 0.' )
-            raise DataNotFoundError( f'Requested component data not available in d3plot for \'{self.name}\'')
+        except (KeyError, IndexError) as e:
+            raise _missing_data_error( self, d3p, self.kwargs['node_data_names'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_nodal( self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         return data
@@ -233,13 +237,8 @@ class _d3plot_MultElementNodalFieldData(WorkAction):
         d3p = self.parent.d3plot
         try:
             data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['element_nodal_data_names'] }
-        except:
-            if self.kwargs['component'] not in d3p.arrays.keys():
-                logger.error( 'Not all requested data in d3plot. Missing:', self.kwargs['component'] )
-                logger.error( 'Data available in d3plot:', d3p.arrays.keys() )
-            elif d3p.arrays[self.kwargs['component']].shape[0] < self.kwargs['state']+1 :
-                logger.error( f'State {self.kwargs["state"]} requested. Data has {d3p.arrays[self.kwargs["component"]].shape[0]} states. Note that first state has index 0.' )
-            raise DataNotFoundError( f'Requested component data not available in d3plot for \'{self.name}\'')
+        except (KeyError, IndexError) as e:
+            raise _missing_data_error( self, d3p, self.kwargs['element_nodal_data_names'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_element( self.kwargs['element_type'], self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         # convert to element nodal
@@ -268,13 +267,8 @@ class _d3plot_MultElementFieldData(WorkAction):
         d3p = self.parent.d3plot
         try:
             data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['element_data_names'] }
-        except:
-            if self.kwargs['component'] not in d3p.arrays.keys():
-                logger.error( 'Not all requested data in d3plot. Missing:', self.kwargs['component'] )
-                logger.error( 'Data available in d3plot:', d3p.arrays.keys() )
-            elif d3p.arrays[self.kwargs['component']].shape[0] < self.kwargs['state']+1 :
-                logger.error( f'State {self.kwargs["state"]} requested. Data has {d3p.arrays[self.kwargs["component"]].shape[0]} states. Note that first state has index 0.' )
-            raise DataNotFoundError( f'Requested component data not available in d3plot for \'{self.name}\'')
+        except (KeyError, IndexError) as e:
+            raise _missing_data_error( self, d3p, self.kwargs['element_data_names'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_element( self.kwargs['element_type'], self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         return data
