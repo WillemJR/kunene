@@ -14,6 +14,58 @@ logger = logging.getLogger(__name__)
 
 from lasso.dyna import D3plot, ArrayType, FilterType
 
+# possible incomplete? Where is solid_stress tshell_stress?
+lasso_candidate_names = ['element_beam_axial_force',
+                         'element_beam_bending_moment',
+                         'element_beam_ids',
+                         'element_beam_is_alive',
+                         'element_beam_node_indexes',
+                         'element_beam_part_indexes',
+                         'element_beam_shear_force',
+                         'element_beam_torsion_moment',
+
+                         'element_shell_effective_plastic_strain',
+                         'element_shell_ids',
+                         'element_shell_internal_energy',
+                         'element_shell_is_alive',
+                         'element_shell_node_indexes',
+                         'element_shell_part_indexes',
+                         'element_shell_stress',
+                         'element_shell_thickness',
+                         'element_shell_unknown_variables',
+
+                         'element_solid_ids',
+                         'element_solid_node_indexes',
+                         'element_solid_part_indexes',
+
+                         'element_tshell_ids',
+                         'element_tshell_node_indexes',
+                         'element_tshell_part_indexes',
+
+                         'global_internal_energy',
+                         'global_kinetic_energy',
+                         'global_total_energy',
+                         'global_velocity',
+
+                         'node_acceleration',
+                         'node_coordinates',
+                         'node_displacement',
+                         'node_ids',
+                         'node_velocity',
+
+                         'part_hourglass_energy',
+                         'part_ids',
+                         'part_ids_cross_references',
+                         'part_ids_unordered',
+                         'part_internal_energy',
+                         'part_kinetic_energy',
+                         'part_mass',
+                         'part_titles',
+                         'part_titles_ids',
+                         'part_velocity',
+
+                         'timesteps']
+
 
 def _missing_data_error( action, d3p, names ):
     """ DataNotFoundError saying which of `names` is not in the d3plot, or which state is out of range. """
@@ -53,9 +105,8 @@ class d3plot_File(WorkFlow):
             logger.error( msg )
             raise MissingPathError( msg )
 
-        d3plot = D3plot( fname )
-        self.d3plot = d3plot
-        return super().solve( val_dict ) # graph method
+        self.d3plot =  D3plot( fname )
+        return super().solve( val_dict ) # returns results for children
         
     def _node_idx_for_part( self, pid ):
         #f1 =  self._node_idx_for_shells_in_part(pid) # TODO maybe cache?
@@ -284,6 +335,9 @@ class _d3plot_NodalValue( _d3plot_NodalFieldData):
         assert 'required_part_id' not in self.kwargs, '\'required_part_id\' is not allowed for d3plot_NodalValue.' 
 
         nids = self.parent.meta_data()['node_ids']
+        if len( data ) != len( nids ):
+            raise DataNotFoundError( f"'Is {self.kwargs['component']}' extracted for '{self.name}' nodal data?: "
+                                     f'it has {len( data )} entries, but the d3plot has {len( nids )} nodes.' )
         w = np.where( nids == self.kwargs['nid'] )[0]
 
         if len(w) == 0:
