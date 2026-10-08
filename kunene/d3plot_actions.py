@@ -6,14 +6,15 @@ from pathlib import Path
 
 import kunene.args
 from kunene.actions import WorkAction
-from kunene.errors import MissingPathError, DataNotFoundError
+from kunene.errors import MissingPathError, DataNotFoundError, ParameterError
 from kunene.graph_actions import WorkFlow
 
 import logging
 logger = logging.getLogger(__name__)
 
-from lasso.dyna import D3plot, ArrayType, FilterType
+# WHY NOT USE lsreader; still supported? VTK better for OpenCourant
 
+from lasso.dyna import D3plot, ArrayType, FilterType
 # possible incomplete? Where is solid_stress tshell_stress?
 lasso_candidate_names = ['element_beam_axial_force',
                          'element_beam_bending_moment',
@@ -66,6 +67,16 @@ lasso_candidate_names = ['element_beam_axial_force',
 
                          'timesteps']
 
+
+
+def _check_field_kwargs( name, kwargs ):
+    """ Raise ParameterError when 'state' is given but is not an integer, or 'component' is not a string. """
+    state = kwargs.get( 'state' )
+    if 'state' in kwargs and ( isinstance( state, bool ) or not isinstance( state, (int, np.integer) ) ):
+        raise ParameterError( f"'state' of '{name}' must be an integer (-1 is the last state), not {state!r}." )
+    component = kwargs.get( 'component' )
+    if 'component' in kwargs and not isinstance( component, str ):
+        raise ParameterError( f"'component' of '{name}' must be a string, not {component!r}." )
 
 def _missing_data_error( action, d3p, names ):
     """ DataNotFoundError saying which of `names` is not in the d3plot, or which state is out of range. """
@@ -224,6 +235,7 @@ class _d3plot_NodalFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
+        _check_field_kwargs( name, kwargs )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot nodal field {kwargs.get("component", "")} at state {kwargs.get("state", "")}'
@@ -252,6 +264,7 @@ class _d3plot_MultNodalFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
+        _check_field_kwargs( name, kwargs )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple nodal fields {kwargs.get("node_data_names", [])} at state {kwargs.get("state", "")}'
@@ -279,6 +292,7 @@ class _d3plot_MultElementNodalFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
+        _check_field_kwargs( name, kwargs )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple element-nodal fields {kwargs.get("element_nodal_data_names", [])} at state {kwargs.get("state", "")}'
@@ -309,6 +323,7 @@ class _d3plot_MultElementFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
+        _check_field_kwargs( name, kwargs )
         self.args= args
         self.kwargs= kwargs
         self.description = f'D3plot multiple element fields {kwargs.get("element_data_names", [])} at state {kwargs.get("state", "")}'
