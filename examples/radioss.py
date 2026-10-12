@@ -34,7 +34,7 @@ def main():
     wf.add_action( run_rad )
 
     d3p = d3plot_File( name='d3plot' )
-    d3p.NodalValue(name='n5', state=1, nid=5, component= 'node_displacement'  )
+    d3p.NodalValue(name='n5', state=1, nid=5, quantity='node_displacement'  )
     wf.add_action( d3p )
 
     wrk_area = WorkArea( wf, copy_paths=[starter_deck,engine_deck] )

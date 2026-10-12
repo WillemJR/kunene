@@ -34,13 +34,13 @@ def test_seq( ):
     chain.add_action( VTK_MetaData( 'meta', state=2, required_part_id=3 ) )
     chain.add_action( VTK_NodalFieldData('field', state=2,
                                         required_part_id=3, 
-                                        node_data_names=[ 'NODE_ID', 'Displacement' ] ) )
+                                        node_quantities=[ 'NODE_ID', 'Displacement' ] ) )
 
     chain.add_action( VTK_FieldDataHist('field_hist', 
                                      required_part_id=3,
-                                     node_data_names=[ 'NODE_ID', 'Displacement' ],
-                                     el_data_names=['2DELEM_Specific_Energy', 'ELEMENT_ID'],
-                                     el_nodal_data_names=['2DELEM_Specific_Energy'] ) )
+                                     node_quantities=[ 'NODE_ID', 'Displacement' ],
+                                     element_quantities=['2DELEM_Specific_Energy', 'ELEMENT_ID'],
+                                     element_nodal_quantities=['2DELEM_Specific_Energy'] ) )
 
     # iterator can runs different directories
     simu_iter = SimulationIterator( chain, copy_paths=['tests/par_tens.k'] )
@@ -102,11 +102,11 @@ def test_exp_des( ):
 
     chain.add_action( VTK_NodalFieldData('field_eval_node',
                                         required_part_id=3, # NYI, bug if multiple parts?
-                                        node_data_names=[ 'NODE_ID', 'Displacement' ] ) )
+                                        node_quantities=[ 'NODE_ID', 'Displacement' ] ) )
 
     chain.add_action( VTK_ElementNodalFieldData('field_eval_element_node',
                                         required_part_id=3, # NYI, bug if multiple parts?
-                                        el_nodal_data_names=[ 'NODE_ID', '2DELEM_Specific_Energy' ],) )
+                                        element_nodal_quantities=[ 'NODE_ID', '2DELEM_Specific_Energy' ],) )
 
     simu_iter = SimulationIterator( chain, copy_paths=['tests/par_tens_1p.k'] )
 
@@ -141,9 +141,9 @@ def test_d3p( ):
 
     d3p = d3plot_File( 'field' )
     d3p.MultNodalField('nfield', state=2, required_part_id=3,
-                              node_data_names=[ 'node_ids', 'node_displacement' ] )
+                              quantities=[ 'node_ids', 'node_displacement' ] )
     d3p.MultElementField('efield', state=2, required_part_id=3, element_type=FilterType.SHELL,
-                             element_data_names=[ 'element_shell_stress', 'element_shell_internal_energy' ] )
+                             quantities=[ 'element_shell_stress', 'element_shell_internal_energy' ] )
     chain.add_action( d3p )
 
 

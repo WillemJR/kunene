@@ -20,8 +20,8 @@ def test_radioss_using_dyna_input():
     wf.add_action(run_rad)
 
     d3p = d3plot_File("field")
-    d3p.NodalValue("n5_disp",  state=1, nid=5, component="node_displacement")
-    d3p.NodalValue("n5_coord", state=1, nid=5, component="node_coordinates")
+    d3p.NodalValue("n5_disp",  state=1, nid=5, quantity="node_displacement")
+    d3p.NodalValue("n5_coord", state=1, nid=5, quantity="node_coordinates")
     wf.add_action(d3p)
 
     wrk_area = WorkArea(wf, copy_paths=[str(fe_path)])

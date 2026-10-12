@@ -45,7 +45,7 @@ def create_wa( wa_id='' ):
     wf.add_action( run_rad )
 
     d3p = d3plot_File( name='d3plot'+str(wa_id) )
-    d3p.NodalValue(name='n5'+str(wa_id), state=1, nid=5, component= 'node_displacement'  )
+    d3p.NodalValue(name='n5'+str(wa_id), state=1, nid=5, quantity='node_displacement'  )
     wf.add_action( d3p )
 
     wrk_area = WorkArea( wf, copy_paths=[starter_deck,engine_deck] )

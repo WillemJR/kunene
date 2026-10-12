@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 import kunene.args
-from kunene.actions import WorkAction
+from kunene.actions import WorkAction, rename_deprecated_kwarg
 from kunene.errors import MissingPathError, DataNotFoundError, ParameterError
 from kunene.graph_actions import WorkFlow
 
@@ -15,68 +15,27 @@ logger = logging.getLogger(__name__)
 # WHY NOT USE lsreader; still supported? VTK better for OpenCourant
 
 from lasso.dyna import D3plot, ArrayType, FilterType
-# possible incomplete? Where is solid_stress tshell_stress?
-lasso_candidate_names = ['element_beam_axial_force',
-                         'element_beam_bending_moment',
-                         'element_beam_ids',
-                         'element_beam_is_alive',
-                         'element_beam_node_indexes',
-                         'element_beam_part_indexes',
-                         'element_beam_shear_force',
-                         'element_beam_torsion_moment',
-
-                         'element_shell_effective_plastic_strain',
-                         'element_shell_ids',
-                         'element_shell_internal_energy',
-                         'element_shell_is_alive',
-                         'element_shell_node_indexes',
-                         'element_shell_part_indexes',
-                         'element_shell_stress',
-                         'element_shell_thickness',
-                         'element_shell_unknown_variables',
-
-                         'element_solid_ids',
-                         'element_solid_node_indexes',
-                         'element_solid_part_indexes',
-
-                         'element_tshell_ids',
-                         'element_tshell_node_indexes',
-                         'element_tshell_part_indexes',
-
-                         'global_internal_energy',
-                         'global_kinetic_energy',
-                         'global_total_energy',
-                         'global_velocity',
-
-                         'node_acceleration',
-                         'node_coordinates',
-                         'node_displacement',
-                         'node_ids',
-                         'node_velocity',
-
-                         'part_hourglass_energy',
-                         'part_ids',
-                         'part_ids_cross_references',
-                         'part_ids_unordered',
-                         'part_internal_energy',
-                         'part_kinetic_energy',
-                         'part_mass',
-                         'part_titles',
-                         'part_titles_ids',
-                         'part_velocity',
-
-                         'timesteps']
 
 
 
-def _check_field_kwargs( name, kwargs ):
-    """ Raise ParameterError when 'state' is given but is not an integer, or 'component' is not a string. """
+def _check_field_kwargs( name, kwargs, old_name ):
+    """
+    Rename the deprecated argument `old_name` to 'quantity' (a str) or 'quantities' (a list of str),
+    whichever the action takes, and raise ParameterError when 'state' is given but is not an integer,
+    'quantity' is not a string, or 'quantities' is not a list of strings.
+    """
+    new_name = 'quantity' if old_name == 'component' else 'quantities'
+    rename_deprecated_kwarg( f"d3plot action '{name}'", kwargs, old_name, new_name )
     state = kwargs.get( 'state' )
     if 'state' in kwargs and ( isinstance( state, bool ) or not isinstance( state, (int, np.integer) ) ):
         raise ParameterError( f"'state' of '{name}' must be an integer (-1 is the last state), not {state!r}." )
-    component = kwargs.get( 'component' )
-    if 'component' in kwargs and not isinstance( component, str ):
-        raise ParameterError( f"'component' of '{name}' must be a string, not {component!r}." )
+    quantity = kwargs.get( 'quantity' )
+    if 'quantity' in kwargs and not isinstance( quantity, str ):
+        raise ParameterError( f"'quantity' of '{name}' must be a string, not {quantity!r}." )
+    quantities = kwargs.get( 'quantities' )
+    if 'quantities' in kwargs and ( isinstance( quantities, str ) or
+                                    not all( isinstance( q, str ) for q in quantities ) ):
+        raise ParameterError( f"'quantities' of '{name}' must be a list of strings, not {quantities!r}." )
 
 def _missing_data_error( action, d3p, names ):
     """ DataNotFoundError saying which of `names` is not in the d3plot, or which state is out of range. """
@@ -164,7 +123,7 @@ class d3plot_File(WorkFlow):
         """
         Arguments:
             state (int): -1 is last
-            component (str):
+            quantity (str): e.g. 'node_displacement'
             required_part_id (int): optional
         Returns:
             Nodal field data
@@ -185,7 +144,7 @@ class d3plot_File(WorkFlow):
         Arguments:
             nid (int) :
             state (int) :
-            component (str) :
+            quantity (str) : e.g. 'node_displacement'
         Returns:
             value at node
         """
@@ -195,7 +154,7 @@ class d3plot_File(WorkFlow):
         """
         Arguments:
             nid (int) :
-            component (str) :
+            quantity (str) : e.g. 'node_displacement'
         Returns:
             history at node
         """
@@ -227,7 +186,7 @@ class _d3plot_NodalFieldData(WorkAction):
     """
     Arguments:
         state (int): -1 is last
-        component (str):
+        quantity (str): e.g. 'node_displacement'
         required_part_id (int): optional
     Returns:
         Nodal field data
@@ -235,18 +194,18 @@ class _d3plot_NodalFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
-        _check_field_kwargs( name, kwargs )
+        _check_field_kwargs( name, kwargs, 'component' )
         self.args= args
         self.kwargs= kwargs
-        self.description = f'D3plot nodal field {kwargs.get("component", "")} at state {kwargs.get("state", "")}'
+        self.description = f'D3plot nodal field {kwargs.get("quantity", "")} at state {kwargs.get("state", "")}'
 
     def solve( self,  val_dict=None ):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = d3p.arrays[self.kwargs['component']][self.kwargs['state']] if d3p.arrays[self.kwargs['component']].ndim > 2 else d3p.arrays[self.kwargs['component']] 
+            data = d3p.arrays[self.kwargs['quantity']][self.kwargs['state']] if d3p.arrays[self.kwargs['quantity']].ndim > 2 else d3p.arrays[self.kwargs['quantity']] 
         except (KeyError, IndexError) as e:
-            raise _missing_data_error( self, d3p, [self.kwargs['component']] ) from e
+            raise _missing_data_error( self, d3p, [self.kwargs['quantity']] ) from e
         if 'required_part_id' in self.kwargs:
             data = self.parent._part_only_nodal( self.kwargs['required_part_id'], data ) 
         return data
@@ -256,7 +215,7 @@ class _d3plot_MultNodalFieldData(WorkAction):
     """
     Arguments:
         state (int): -1 is last
-        node_data_names (list):
+        quantities (list of str):
         required_part_id (int): optional
     Returns:
         nodal field data
@@ -264,18 +223,18 @@ class _d3plot_MultNodalFieldData(WorkAction):
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
-        _check_field_kwargs( name, kwargs )
+        _check_field_kwargs( name, kwargs, 'node_data_names' )
         self.args= args
         self.kwargs= kwargs
-        self.description = f'D3plot multiple nodal fields {kwargs.get("node_data_names", [])} at state {kwargs.get("state", "")}'
+        self.description = f'D3plot multiple nodal fields {kwargs.get("quantities", [])} at state {kwargs.get("state", "")}'
 
     def solve( self,  val_dict=None ):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 2 else d3p.arrays[k] for k in self.kwargs['node_data_names'] }
+            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 2 else d3p.arrays[k] for k in self.kwargs['quantities'] }
         except (KeyError, IndexError) as e:
-            raise _missing_data_error( self, d3p, self.kwargs['node_data_names'] ) from e
+            raise _missing_data_error( self, d3p, self.kwargs['quantities'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_nodal( self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         return data
@@ -285,25 +244,25 @@ class _d3plot_MultElementNodalFieldData(WorkAction):
     Arguments:
         state (int): -1 is last
         required_part_id (int):
-        element_nodal_data_names (list):
+        quantities (list of str):
     Returns:
         nodal field data
     """
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
-        _check_field_kwargs( name, kwargs )
+        _check_field_kwargs( name, kwargs, 'element_nodal_data_names' )
         self.args= args
         self.kwargs= kwargs
-        self.description = f'D3plot multiple element-nodal fields {kwargs.get("element_nodal_data_names", [])} at state {kwargs.get("state", "")}'
+        self.description = f'D3plot multiple element-nodal fields {kwargs.get("quantities", [])} at state {kwargs.get("state", "")}'
 
     def solve( self,  val_dict=None ):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['element_nodal_data_names'] }
+            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['quantities'] }
         except (KeyError, IndexError) as e:
-            raise _missing_data_error( self, d3p, self.kwargs['element_nodal_data_names'] ) from e
+            raise _missing_data_error( self, d3p, self.kwargs['quantities'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_element( self.kwargs['element_type'], self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         # convert to element nodal
@@ -316,25 +275,25 @@ class _d3plot_MultElementFieldData(WorkAction):
     Arguments:
         state (int): -1 is last
         required_part_id (int):
-        element_data_names (list):
+        quantities (list of str):
     Returns:
         element field data
     """
 
     def __init__( self, name, *args, **kwargs ):
         super().__init__( name )
-        _check_field_kwargs( name, kwargs )
+        _check_field_kwargs( name, kwargs, 'element_data_names' )
         self.args= args
         self.kwargs= kwargs
-        self.description = f'D3plot multiple element fields {kwargs.get("element_data_names", [])} at state {kwargs.get("state", "")}'
+        self.description = f'D3plot multiple element fields {kwargs.get("quantities", [])} at state {kwargs.get("state", "")}'
 
     def solve( self,  val_dict=None ):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['element_data_names'] }
+            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 1 else d3p.arrays[k] for k in self.kwargs['quantities'] }
         except (KeyError, IndexError) as e:
-            raise _missing_data_error( self, d3p, self.kwargs['element_data_names'] ) from e
+            raise _missing_data_error( self, d3p, self.kwargs['quantities'] ) from e
         if 'required_part_id' in self.kwargs:
             data = {k: self.parent._part_only_element( self.kwargs['element_type'], self.kwargs['required_part_id'], dat ) for k,dat in data.items()}
         return data
@@ -351,7 +310,7 @@ class _d3plot_NodalValue( _d3plot_NodalFieldData):
 
         nids = self.parent.meta_data()['node_ids']
         if len( data ) != len( nids ):
-            raise DataNotFoundError( f"'Is {self.kwargs['component']}' extracted for '{self.name}' nodal data?: "
+            raise DataNotFoundError( f"'Is {self.kwargs['quantity']}' extracted for '{self.name}' nodal data?: "
                                      f'it has {len( data )} entries, but the d3plot has {len( nids )} nodes.' )
         w = np.where( nids == self.kwargs['nid'] )[0]
 

@@ -94,7 +94,7 @@ To use a WorkFlow to evaluate actions sequentially:
     wf = WorkFlow(name="SpringWorkFlow")
     wf.add_action( DynaAnalysis(name="RunSpring", input_path="spring.k") )
     d3p = d3plot_File( name='d3p' )
-    d3p.NodalValue(name='n5', state=1, nid=5, component= 'node_displacement'  )
+    d3p.NodalValue(name='n5', state=1, nid=5, quantity='node_displacement'  )
     wf.add_action( d3p )
 
     ret = wf.solve( {'K': 100.} )
@@ -124,7 +124,7 @@ waits for both:
                                               input_path='spring.k',
                                               create_d3plot=True ) )
     rad_d3p = d3plot_File( name='d3p' )
-    rad_d3p.NodalValue( name='rad_n5', state=1, nid=5, component='node_displacement' )
+    rad_d3p.NodalValue( name='rad_n5', state=1, nid=5, quantity='node_displacement' )
     rad_wf.add_action( rad_d3p )
 
     rr = dg.add_action( WorkArea( rad_wf, copy_paths=['path/to/spring.k'] ) )
@@ -133,7 +133,7 @@ waits for both:
     dyna_wf = WorkFlow( name='DynaBranch' )
     dyna_wf.add_action( DynaAnalysis( name='RunSpring', input_path='spring.k' ) )
     dyna_d3p = d3plot_File( name='dyna_field' )
-    dyna_d3p.NodalValue( name='dyna_n5', state=1, nid=5, component='node_displacement' )
+    dyna_d3p.NodalValue( name='dyna_n5', state=1, nid=5, quantity='node_displacement' )
     dyna_wf.add_action( dyna_d3p )
 
     rs = dg.add_action( WorkArea( dyna_wf, copy_paths=['path/to/spring.k'] ) )

@@ -103,7 +103,7 @@ wf = WorkFlow( 'Radioss_WorkFlow' )
 wf.add_action( run_rad )
 
 d3p = d3plot_File( name='d3plot' )
-d3p.NodalValue(name='n5', state=1, nid=5, component= 'node_displacement'  )
+d3p.NodalValue(name='n5', state=1, nid=5, quantity='node_displacement'  )
 wf.add_action( d3p )
 
 wrk_area = WorkArea( wf, copy_paths=[starter_deck,engine_deck] )
@@ -159,7 +159,7 @@ def create_openfoam_graph():
 
     wf.add_action(  OpenFOAM_Field(  # Extract field of pressure values
         name='pressure',
-        field_variable='p',
+        quantity='p',
         time=0.5 ) )
 
     wa = WorkArea(wf, copy_paths=case_paths)

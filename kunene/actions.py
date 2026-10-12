@@ -49,6 +49,18 @@ def _async_eval_worker( action, val_dict, result_dict ):
     result_dict[action.name] = e
 
 
+def rename_deprecated_kwarg( who, kwargs, old, new ):
+    """ Move ``kwargs[old]`` to ``kwargs[new]`` with a DeprecationWarning, for an
+    argument that has been renamed. Raises ParameterError when both are given. """
+    if old not in kwargs:
+        return
+    if new in kwargs:
+        raise ParameterError( f"{who}: pass either {new}= or the deprecated {old}=, not both" )
+    warnings.warn( f"{who}: the '{old}' argument is deprecated, use '{new}'",
+                   DeprecationWarning, stacklevel=3 )
+    kwargs[new] = kwargs.pop( old )
+
+
 def validate_action_name( name ):
     """
     Ensure an action name can be used safely as a variable in expressions.

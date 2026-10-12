@@ -123,7 +123,7 @@ First, you have to define the variable, then you can use it to control actions.
         etime = FloatVariable( 'ET', 40. )
         # The variable can be used to construct an action
         # Below it is used to control an extraction time
-        f = OpenFOAM_Field( name='TF', field_variable='T',
+        f = OpenFOAM_Field( name='TF', quantity='T',
                             time=etime, location=Location.NODAL)
 
         # the value given to solve() replaces the variable

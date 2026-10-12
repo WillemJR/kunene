@@ -27,7 +27,7 @@ def build_workflow():
     ))
     wf.add_action(OpenFOAM_Field(
         name='p',
-        field_variable='p',
+        quantity='p',
         time=0.5,
     ))
     return wf

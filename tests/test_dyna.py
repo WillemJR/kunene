@@ -18,8 +18,8 @@ def test_dyna_run_extract():
     
     # Results are extracted from the d3plot file.
     d3p = d3plot_File( 'field' )
-    d3p.NodalValue('n5', state=1, nid=5, component= 'node_displacement'  )
-    d3p.NodalValue('c5', state=1, nid=5, component= 'node_coordinates'  )
+    d3p.NodalValue('n5', state=1, nid=5, quantity='node_displacement'  )
+    d3p.NodalValue('c5', state=1, nid=5, quantity='node_coordinates'  )
     wf.add_action( d3p )
 
     # Create WorkArea. We copy the spring.k file to the run directory

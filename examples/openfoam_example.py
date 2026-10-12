@@ -28,7 +28,7 @@ def create_openfoam_graph():
 
     wf.add_action(  OpenFOAM_Field(  # Extract field of pressure values
         name='pressure',
-        field_variable='p',
+        quantity='p',
         time=0.5 ) )
 
     wa = WorkArea(wf, copy_paths=case_paths)

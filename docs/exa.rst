@@ -26,7 +26,7 @@ The study is parameterized using the \*PARAMETER keyword.
 
     # 3. Add an action to extract results from d3plot
     d3p = d3plot_File('d3p')
-    d3p.NodalValue('disp_n5', state=-1, nid=5, component='node_displacement')
+    d3p.NodalValue('disp_n5', state=-1, nid=5, quantity='node_displacement')
     wf.add_action(d3p)
 
     # 4. Create a WorkArea; supply the source file via copy_paths.
@@ -78,7 +78,7 @@ the OpenCourant/OpenRadioss input deck.
         wf.add_action( run_rad )
 
         d3p = d3plot_File( name='d3plot' )
-        d3p.NodalValue(name='n5', state=1, nid=5, component= 'node_displacement'  )
+        d3p.NodalValue(name='n5', state=1, nid=5, quantity='node_displacement'  )
         wf.add_action( d3p )
 
         wrk_area = WorkArea( wf, copy_paths=[starter_deck,engine_deck] )
@@ -178,7 +178,7 @@ via ``copy_paths`` and are copied to the work directory before the solver runs.
 
     wf = WorkFlow('OpenFOAM_WorkFlow')
     wf.add_action(OpenFOAMAnalysis(name='run', solve_cmd='icoFoam'))
-    wf.add_action(OpenFOAM_Field(name='p', field_variable='p', time=0.5))
+    wf.add_action(OpenFOAM_Field(name='p', quantity='p', time=0.5))
 
     wa = WorkArea(wf, copy_paths=case_paths)
 
@@ -200,7 +200,7 @@ Extraction of field data and histories from OpenFOAM cases.
     # 1. Extract a field at a specific time
     field_ext = OpenFOAM_Field(
         name='temp_field',
-        field_variable='T',
+        quantity='T',
         time=50
     )
     wf.add_action(field_ext)
@@ -208,7 +208,7 @@ Extraction of field data and histories from OpenFOAM cases.
     # 2. Extract history for a specific point index
     hist_ext = OpenFOAM_History(
         name='temp_history',
-        field_variable='T',
+        quantity='T',
         point_idx=10
     )
     wf.add_action(hist_ext)

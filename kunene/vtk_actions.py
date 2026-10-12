@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from kunene.actions import WorkAction
+from kunene.actions import WorkAction, rename_deprecated_kwarg
 from kunene.args import RADIOSS_ROOT_NAME
 
 import kunene.VTK.read_vtk as read_vtk # pulls in pyvista
@@ -27,6 +27,20 @@ def get_last_run_name(root_name=RADIOSS_ROOT_NAME):
     max_idx = get_last_run_idx(root_name)
     return root_name+'_%03d.vtk'%(max_idx)
 
+# argument name of the actions -> argument name of read_vtk.read_part_mesh
+_READER_ARG_NAMES = { 'node_quantities': 'node_data_names',
+                      'element_quantities': 'el_data_names',
+                      'element_nodal_quantities': 'el_nodal_data_names' }
+
+def _rename_quantity_kwargs( name, kwargs ):
+    """ Accept the old *_data_names arguments as deprecated aliases of the *_quantities ones. """
+    for new, old in _READER_ARG_NAMES.items():
+        rename_deprecated_kwarg( f"VTK action '{name}'", kwargs, old, new )
+
+def _reader_kwargs( kwargs ):
+    """ The action's arguments as read_vtk.read_part_mesh names them. """
+    return { _READER_ARG_NAMES.get( k, k ): v for k, v in kwargs.items() }
+
 #
 # end utilities
 #
@@ -39,13 +53,14 @@ class VTK_FieldData(WorkAction):
 
     Args:
         state (int): -1 is last
-        args, kwargs: required_part_id, node_data_names=None, el_data_names=None, el_nodal_data_names
+        args, kwargs: required_part_id, node_quantities=None, element_quantities=None, element_nodal_quantities=None
     Returns:
         ndict, edict # ndict={coords,data}, edict={..., data}
     """
     def __init__( self, name, state=-1, *args, root_name=RADIOSS_ROOT_NAME, **kwargs ):
 
         super().__init__( name )
+        _rename_quantity_kwargs( name, kwargs )
         self.state= state
         self.args= args
         self.kwargs= kwargs
@@ -64,7 +79,7 @@ class VTK_FieldData(WorkAction):
         if not Path(vtk_file_name).exists():
             logger.error(f"Cannot open VTK file. Did you set \'create_vtk=True\' ")
             raise FileNotFoundError(f'VTK file not found: {vtk_file_name}')
-        v = read_vtk.read_part_mesh( vtk_file_name, *self.args, **self.kwargs )
+        v = read_vtk.read_part_mesh( vtk_file_name, *self.args, **_reader_kwargs( self.kwargs ) )
         return v
 
     def _dump(self,  val_dict=None ):
@@ -97,7 +112,7 @@ class VTK_NodalFieldData(VTK_FieldData):
     Arguments:
         state (int): -1 is last
         required_part_id (int):
-        node_data_names (list):
+        node_quantities (list of str):
     Returns:
         node data
     """
@@ -113,7 +128,7 @@ class VTK_ElementNodalFieldData(VTK_FieldData):
     Arguments:
         state (int): -1 is last
         required_part_id (int):
-        element_nodal_data_names (list):
+        element_nodal_quantities (list of str):
     Returns:
         node data
     """
@@ -130,9 +145,9 @@ class VTK_ElementFieldData(VTK_FieldData):
     Arguments:
         state (int): -1 is last
         required_part_id (int):
-        element_nodal_data_names (list):
+        element_quantities (list of str):
     Returns:
-        node data
+        element data
     """
     def solve( self,  val_dict=None ):
         assert 0, 'not tested'
@@ -145,6 +160,7 @@ class VTK_FieldDataHist(WorkAction):
     def __init__( self, name, *args, root_name=RADIOSS_ROOT_NAME, **kwargs ):
 
         super().__init__( name )
+        _rename_quantity_kwargs( name, kwargs )
         self.args= args
         self.kwargs= kwargs
         self.root_name = root_name
@@ -153,13 +169,13 @@ class VTK_FieldDataHist(WorkAction):
 
     def solve( self,  val_dict=None ):
         coords = []
-        #data =  # node_data_names
-        # el_nodal_data_names becomes node data
-        ndata = {name:[] for name in self.kwargs['node_data_names']+self.kwargs['el_nodal_data_names'] }
-        edata = {name:[] for name in self.kwargs['el_data_names'] }
+        # element_nodal_quantities becomes node data
+        ndata = {name:[] for name in ( self.kwargs.get('node_quantities') or [] )
+                                     + ( self.kwargs.get('element_nodal_quantities') or [] ) }
+        edata = {name:[] for name in ( self.kwargs.get('element_quantities') or [] ) }
         for run_idx in range( 1, get_last_run_idx(self.root_name)+1 ):
             vtk_file_name = self.root_name+'_%03d.vtk'%(run_idx)
-            nv, ev = read_vtk.read_part_mesh( vtk_file_name, *self.args, **self.kwargs )
+            nv, ev = read_vtk.read_part_mesh( vtk_file_name, *self.args, **_reader_kwargs( self.kwargs ) )
             coords.append( nv['coords'] )
 
             for key,value in ndata.items():

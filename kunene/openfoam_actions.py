@@ -9,7 +9,9 @@ from typing import List, Tuple, Optional
 import logging
 logger = logging.getLogger(__name__)
 
+import warnings
 from kunene.args import Location, JobType, EvalType
+from kunene.errors import ParameterError
 from kunene.actions import WorkAction
 from kunene.progress import FileProgressTail
 from kunene.util import solver_progress, command
@@ -198,32 +200,48 @@ class OpenFOAMAnalysis( WorkAction ):
         return success
 
 
+def _quantity_arg( who, quantity, field_variable ):
+    """ The quantity to extract; ``field_variable`` is its old name, kept as a deprecated alias. """
+    if field_variable is not None:
+        if quantity is not None:
+            raise ParameterError( f"{who}: pass either quantity= or the deprecated field_variable=, not both" )
+        warnings.warn( f"{who}: the 'field_variable' argument is deprecated, use 'quantity'",
+                       DeprecationWarning, stacklevel=4 )
+        quantity = field_variable
+    if quantity is None:
+        raise ParameterError( f"{who}: quantity= is required, e.g. quantity='p'" )
+    return quantity
+
+
 class OpenFOAM_Field( WorkAction ):
     """
     Action that extracts a field from an OpenFOAM case at a given time step.
 
     Args:
         name (str): Name of the action.
-        field_variable (str): Name of the OpenFOAM field to extract (e.g. 'U', 'p').
+        quantity (str): Name of the OpenFOAM field to extract (e.g. 'U', 'p').
         time (float or Variable): Time step directory to read the field from.
         location (Location, optional): Cell location (e.g. CELL_CENTRE, FACE).
             Defaults to Location.UNKNOWN.
+        field_variable (str): deprecated alias of quantity.
     """
 
     @WorkAction.allow_variables_as_arguments
-    def __init__( self, name, field_variable, time, location=Location.UNKNOWN ):
+    def __init__( self, name, quantity=None, time=None, location=Location.UNKNOWN, field_variable=None ):
         super().__init__( name )
+        if time is None:
+            raise ParameterError( f"OpenFOAM_Field '{name}': time= is required" )
         self.time = time
         self.location = location
-        self.field_var = field_variable
+        self.quantity = _quantity_arg( f"OpenFOAM_Field '{name}'", quantity, field_variable )
         self.data_type = EvalType.NUMERICAL
-        self.description = f'OpenFOAM field of variable {field_variable} at time {time} at location {location}'
+        self.description = f'OpenFOAM field of {self.quantity} at time {time} at location {location}'
 
     @WorkAction.assign_variables_values_to_members
     def solve( self, val_dict ):
         time_dir = str(self.time)
         reader = OpenFOAMFieldReader( case_dir='.' )
-        field_type, field_data = reader.field( self.field_var, time_dir=time_dir, location=self.location )
+        field_type, field_data = reader.field( self.quantity, time_dir=time_dir, location=self.location )
         if field_type is None and field_data is None:
            logger.error(f"Could not extract OpenFOAM_Field \'{self.name}\'")
 
@@ -237,22 +255,25 @@ class OpenFOAM_History( WorkAction ):
 
     Args:
         name (str): Name of the action.
-        field_variable (str): Name of the OpenFOAM field to extract (e.g. 'U', 'p').
+        quantity (str): Name of the OpenFOAM field to extract (e.g. 'U', 'p').
         point_idx (int or Variable): Index of the point in the mesh to sample.
+        field_variable (str): deprecated alias of quantity.
     """
 
     @WorkAction.allow_variables_as_arguments
-    def __init__( self, name, field_variable, point_idx ):
+    def __init__( self, name, quantity=None, point_idx=None, field_variable=None ):
         super().__init__( name )
+        if point_idx is None:
+            raise ParameterError( f"OpenFOAM_History '{name}': point_idx= is required" )
         self.point_idx = point_idx
-        self.field_var = field_variable
+        self.quantity = _quantity_arg( f"OpenFOAM_History '{name}'", quantity, field_variable )
         self.data_type = EvalType.NUMERICAL
-        self.description = f'OpenFOAM time history of variable {field_variable} at point index {point_idx}'
+        self.description = f'OpenFOAM time history of {self.quantity} at point index {point_idx}'
 
     @WorkAction.assign_variables_values_to_members
     def solve( self, val_dict ):
         reader = OpenFOAMFieldReader( case_dir='.' )
-        reslts = reader.point_history( field_name=self.field_var, point_idx=self.point_idx )
+        reslts = reader.point_history( field_name=self.quantity, point_idx=self.point_idx )
         return reslts
 
 
