@@ -18,6 +18,7 @@ from lasso.dyna import D3plot, ArrayType, FilterType
 
 
 
+# TODO: remove the deprecated argument names in 2.0.0 (see 'todo').
 def _check_field_kwargs( name, kwargs, old_name ):
     """
     Rename the deprecated argument `old_name` to 'quantity' (a str) or 'quantities' (a list of str),

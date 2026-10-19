@@ -28,6 +28,7 @@ from kunene.args import RADIOSS_BASE_F_NAME # _0000
 from kunene.args import RADIOSS_ENGINE_F_NAME # _0001
 
 
+# TODO: remove the deprecated 'cmd' argument in 2.0.0 (see 'todo').
 def _decode_select( select, cmd, who ):
     """ Settings of a CSV reader: which column to read, and for a scalar which
     point on it. Accepts a dict, or the JSON string the readers were originally

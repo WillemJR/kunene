@@ -200,6 +200,7 @@ class OpenFOAMAnalysis( WorkAction ):
         return success
 
 
+# TODO: remove the deprecated argument names in 2.0.0 (see 'todo').
 def _quantity_arg( who, quantity, field_variable ):
     """ The quantity to extract; ``field_variable`` is its old name, kept as a deprecated alias. """
     if field_variable is not None:

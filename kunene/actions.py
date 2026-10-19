@@ -49,6 +49,7 @@ def _async_eval_worker( action, val_dict, result_dict ):
     result_dict[action.name] = e
 
 
+# TODO: remove the deprecated argument names in 2.0.0 (see 'todo').
 def rename_deprecated_kwarg( who, kwargs, old, new ):
     """ Move ``kwargs[old]`` to ``kwargs[new]`` with a DeprecationWarning, for an
     argument that has been renamed. Raises ParameterError when both are given. """
@@ -909,6 +910,7 @@ class MathEvaluation(WorkAction):
         Any: outcome of operation
     """
 
+    # TODO: remove the deprecated 'cmd' argument in 2.0.0 (see 'todo').
     def __init__( self, name, expression=None, cmd=None, **kwargs ):
         if cmd is not None:
             if expression is not None:
