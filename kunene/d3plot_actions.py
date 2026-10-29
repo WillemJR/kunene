@@ -51,6 +51,23 @@ def _missing_data_error( action, d3p, names ):
     logger.error( msg )
     return DataNotFoundError( msg )
 
+def _varies_over_states( d3p, arr ):
+    """
+    True when the nodal array `arr` holds one entry per state, i.e. has shape (n_states, n_nodes, ...):
+    node_displacement (n_states, n_nodes, 3) or a scalar field (n_states, n_nodes). False for a static
+    array such as node_coordinates (n_nodes, 3) or node_ids (n_nodes,). The shape is checked rather than
+    ndim alone, since a scalar field and node_coordinates are both 2-D.
+    """
+    if 'node_ids' not in d3p.arrays:
+        return arr.ndim > 2
+    n_nodes = len( d3p.arrays['node_ids'] )
+    return arr.ndim >= 2 and arr.shape[0] == d3p.n_timesteps and arr.shape[1] == n_nodes
+
+def _nodal_state_data( d3p, quantity, state ):
+    """ The nodal array `quantity` at `state`, or the whole array when it does not vary over the states. """
+    arr = d3p.arrays[quantity]
+    return arr[state] if _varies_over_states( d3p, arr ) else arr
+
 
 class d3plot_File(WorkFlow):
     """
@@ -155,9 +172,9 @@ class d3plot_File(WorkFlow):
         """
         Arguments:
             nid (int) :
-            quantity (str) : e.g. 'node_displacement'
+            quantity (str) : e.g. 'node_displacement'; must vary over the states
         Returns:
-            history at node
+            (times, values): times (n_states,), values (n_states, ...), the history at the node
         """
 
         return self.add_action(_d3plot_NodalHistory(name, *args, **kwargs))
@@ -204,7 +221,7 @@ class _d3plot_NodalFieldData(WorkAction):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = d3p.arrays[self.kwargs['quantity']][self.kwargs['state']] if d3p.arrays[self.kwargs['quantity']].ndim > 2 else d3p.arrays[self.kwargs['quantity']] 
+            data = _nodal_state_data( d3p, self.kwargs['quantity'], self.kwargs['state'] )
         except (KeyError, IndexError) as e:
             raise _missing_data_error( self, d3p, [self.kwargs['quantity']] ) from e
         if 'required_part_id' in self.kwargs:
@@ -233,7 +250,7 @@ class _d3plot_MultNodalFieldData(WorkAction):
         d3plot_File.check_if_d3plot_child(self)
         d3p = self.parent.d3plot
         try:
-            data = { k:d3p.arrays[k][self.kwargs['state']] if d3p.arrays[k].ndim > 2 else d3p.arrays[k] for k in self.kwargs['quantities'] }
+            data = { k:_nodal_state_data( d3p, k, self.kwargs['state'] ) for k in self.kwargs['quantities'] }
         except (KeyError, IndexError) as e:
             raise _missing_data_error( self, d3p, self.kwargs['quantities'] ) from e
         if 'required_part_id' in self.kwargs:
@@ -324,14 +341,38 @@ class _d3plot_NodalValue( _d3plot_NodalFieldData):
 
 
 class _d3plot_NodalHistory( _d3plot_NodalValue):
+    """
+    Arguments:
+        nid (int) :
+        quantity (str) : e.g. 'node_displacement'; must vary over the states
+    Returns:
+        (times, values): times is an array (n_states,), values an array (n_states, ...), e.g.
+        (n_states, 3) for node_displacement and (n_states,) for a scalar field
+    """
+
+    def __init__( self, name, *args, **kwargs ):
+        super().__init__( name, *args, **kwargs )
+        self.description = f'D3plot nodal history {kwargs.get("quantity", "")} at node {kwargs.get("nid", "")}'
 
     def solve( self,  val_dict=None ):
+        d3plot_File.check_if_d3plot_child(self)
 
-        ns = self.parent.num_state()
+        assert 'nid' in self.kwargs, '\'nid\' is an required argument for d3plot_NodalHistory.'
+        assert 'required_part_id' not in self.kwargs, '\'required_part_id\' is not allowed for d3plot_NodalHistory.'
 
-        hist = []
-        for istate in range( ns ):
-            self.kwargs['state'] = istate
-            data = super().solve( val_dict )
-            hist.append( data )
-        return np.array( (self.parent.d3plot.arrays['timesteps'],hist) )
+        d3p = self.parent.d3plot
+        quantity = self.kwargs['quantity']
+        try:
+            arr = d3p.arrays[quantity]
+        except KeyError as e:
+            raise _missing_data_error( self, d3p, [quantity] ) from e
+        if not _varies_over_states( d3p, arr ):
+            raise DataNotFoundError( f"'{quantity}' requested for '{self.name}' does not vary over the states: "
+                                     f'it has shape {arr.shape}, the d3plot has {d3p.n_timesteps} states.' )
+
+        nids = self.parent.meta_data()['node_ids']
+        w = np.where( nids == self.kwargs['nid'] )[0]
+        if len(w) == 0:
+            raise DataNotFoundError( f'Node with id {self.kwargs["nid"]} not found in d3plot.' )
+
+        return d3p.arrays['timesteps'], arr[:, w[0]]
