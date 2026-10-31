@@ -29,6 +29,27 @@ class SolverError(KuneneError):
     """An external solver run (LS-DYNA, OpenRadioss, OpenFOAM) failed."""
 
 
+class SolverTerminationError(SolverError):
+    """A solver run did not end normally: its log reports an error, or no
+    success, or the solver exited non-zero.
+
+    Attributes:
+        termination : the ``Termination`` read from the log
+            (``kunene.util.solver_termination``), or None when only the exit
+            code was checked.
+        returncode : the solver's exit code, or None.
+    """
+
+    def __init__(self, message, termination=None, returncode=None):
+        super().__init__(message)
+        self.termination = termination
+        self.returncode = returncode
+
+    def __reduce__(self):
+        # the default rebuilds from self.args alone and would drop the fields
+        return (self.__class__, (self.args[0], self.termination, self.returncode))
+
+
 class MissingPathError(KuneneError, FileNotFoundError):
     """A required file or directory was not found."""
 

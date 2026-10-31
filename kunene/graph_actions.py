@@ -441,11 +441,15 @@ class DirectedGraph(WorkAction, Observer):
 
             for n,e in self.child_actions.items():
                 e._dump( val_dict )
-        except BaseException:
+        except BaseException as err:
             # actions that did complete before the failure still show as done
             _sweep_done()
             if current_name is not None and current_name not in self.finished:
-                self._report_action( report_to, current_name, 'failed' )
+                # the first line of the error -- for a solver, its reason --
+                # is what a GUI reading the status file can show
+                lines = str( err ).splitlines()
+                first_line = lines[0] if lines else type( err ).__name__
+                self._report_action( report_to, current_name, 'failed', message=first_line )
             reporter.finish( 'failed' )
             raise
 

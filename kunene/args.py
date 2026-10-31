@@ -27,6 +27,12 @@ STATUS_PATH = 'status.json'
 JOBS_INDEX_PATH = 'jobs_index.json'
 JOB_LOG_PATH = 'job.log'
 
+# What a solver action does when its run did not end normally (see
+# WorkAction._check_termination): 'raise' a SolverTerminationError (the
+# default), or 'warn' -- log the error and carry on, for a run stopped
+# deliberately or a solver version whose wording differs.
+ON_INCOMPLETE = ( 'raise', 'warn' )
+
 # Files that record a run's outcome. Cleanup never removes these: deleting
 # them would break reuse_existing/results_for (actions_output.pkl,
 # iter_variables.json), the job index, a GUI polling the progress file, or

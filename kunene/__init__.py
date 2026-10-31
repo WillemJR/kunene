@@ -6,6 +6,7 @@ from kunene.errors import (
     ParameterError,
     EvaluationError,
     SolverError,
+    SolverTerminationError,
     MissingPathError,
     DataNotFoundError,
     SerializationError,

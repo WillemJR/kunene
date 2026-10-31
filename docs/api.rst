@@ -35,6 +35,9 @@ API Reference
 .. automodule:: kunene.cleanup
    :members:
 
+.. automodule:: kunene.util.solver_termination
+   :members:
+
 .. automodule:: kunene.action_spec
    :members:
 

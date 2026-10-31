@@ -7,7 +7,7 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 import numpy as np
 
-from kunene.args import EvalType
+from kunene.args import EvalType, ON_INCOMPLETE
 from kunene.cleanup import marks_removed
 
 import logging
@@ -17,9 +17,11 @@ from abc import ABC, abstractmethod
 
 from kunene.util.observer import Subject, notify_observers
 from kunene.util import parallel
+from kunene.util import solver_termination
 
 from kunene.variables import Variable, UnknownVariable
-from kunene.errors import ActionNameError, ParameterError, EvaluationError, SpecError
+from kunene.errors import ActionNameError, ParameterError, EvaluationError, SpecError, \
+    SolverTerminationError
 
 
 # key under which a child process stores its traceback in the shared result
@@ -799,6 +801,60 @@ class WorkAction(Subject):
             list : list of glob patterns (str).
         """
         return []
+
+    def _termination_rule( self ):
+        """
+        How this action's solver reports finishing: a
+        :class:`~kunene.util.solver_termination.TerminationRule`, or
+        ``None`` for no check of the log (the exit code alone decides).
+        Solver actions override this; see :meth:`_check_termination`.
+        """
+        return None
+
+    def _check_termination( self, returncode, run_dir='.', solver=None ):
+        """
+        Call at the end of a solver run: did it end normally?
+
+        A run succeeded only if its log says so (:meth:`_termination_rule`)
+        *and* its exit code is 0 -- a log without a success line is a
+        failure even with exit code 0, and a non-zero exit code is one even
+        when the log claims success. Lines matching the rule's ``warnings``
+        are logged either way.
+
+        On failure, with ``self.on_incomplete`` 'raise' (the default, also
+        for an action without the attribute), raises
+        :class:`~kunene.errors.SolverTerminationError`; with 'warn' it logs
+        the error and returns.
+
+        Arguments:
+            returncode (int|None) : the solver's exit code.
+            run_dir (str|Path) : the directory it ran in.
+            solver (str) : name for the message; default the class name.
+        Returns:
+            Termination|None : None when there is no rule.
+        """
+        solver = solver or type( self ).__name__
+        policy = getattr( self, 'on_incomplete', 'raise' )
+        if policy not in ON_INCOMPLETE:
+            raise ParameterError( f"'on_incomplete' of '{self.name}' must be one of {ON_INCOMPLETE}, "
+                                  f'not {policy!r}.' )
+        rule = self._termination_rule()
+        termination = None
+        if rule is not None:
+            termination = solver_termination.check_termination( rule, run_dir )
+            for line in termination.warnings:
+                logger.warning( f"{solver} '{self.name}': {line}" )
+            if termination.normal and returncode in ( None, 0 ):
+                return termination
+        elif returncode in ( None, 0 ):
+            return None
+
+        message = solver_termination.failure_message( termination, solver, Path( run_dir ).resolve(),
+                                                      returncode )
+        logger.error( message )
+        if policy == 'warn':
+            return termination
+        raise SolverTerminationError( message, termination=termination, returncode=returncode )
 
     def _cleanup_run_dir( self, base_dir ):
         """

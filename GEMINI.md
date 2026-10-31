@@ -56,12 +56,13 @@ Key features:
 - **`report_progress(self, fraction=None, message=None)`**: called from inside `solve` by a long-running action to say where it is. The value reaches the graph's `status.json` (and from there a GUI, `watch_run`, or the per-job bars of a parallel study). Solver actions do this for you by tailing the solver output; a hand-written action calls it itself. A no-op outside a graph.
 - **`_cmd_file(self)`**: Name of the file, `<action_name>.cmd.txt`, in which a solver action records the command lines it ran (e.g. `ls-dyna-double i=inp.k`), one per line, so a run can be repeated by hand. The action clears it at the start of `solve` and passes it as `cmd_file=` to `kunene.util.command.run`, which appends each command before starting it. It is listed in `_produced_files()` and never disposable.
 - **`_disposable_files(self)`**: Companion to `_produced_files()` used by cleanup. It names the *bulk* output (plot/animation databases, VTK) that may be deleted once the graph has run; decks, logs and small history files are never in it. Solver actions override it; the default declares nothing disposable.
+- **`_termination_rule(self)`**: How the action's solver reports finishing: a `TerminationRule` (`kunene/util/solver_termination.py`) naming its logs and their success/failure lines, or `None` (the default) for no log check. A solver action calls `_check_termination(returncode)` after the run, which raises `SolverTerminationError` unless the log says the run ended normally and the exit code is 0 (see "Solver termination" below).
 
 Subclasses of `WorkAction` implement specific tasks, such as `MathEvaluation` (performing calculations), or `CurveSimilarity` (comparing simulation results to experimental data).
 
 **Action names** must be valid Python identifiers (letters, digits and underscores, not starting with a digit, and not a Python keyword). Names become keys in `val_dict`, and `MathEvaluation` evaluates its expression against those names, so a name containing a space or other punctuation (e.g. `'m__case_1__TE all'`) would break the expression. Names are validated in `WorkAction.__init__` via `validate_action_name()`; an invalid name raises `ActionNameError`.
 
-**Error handling.** All errors raised by kunene derive from `KuneneError` (defined in `kunene/errors.py`, re-exported from `kunene`): `ActionNameError` (invalid/duplicate names), `ParameterError` (missing/unresolvable parameter values), `EvaluationError` (a `MathEvaluation` expression failed), `SolverError` (an external solver run failed), `MissingPathError` (required file/directory not found; also a `FileNotFoundError`), and `DataNotFoundError` (requested result data not available, e.g. a d3plot component). Catch `KuneneError` to handle any workflow failure.
+**Error handling.** All errors raised by kunene derive from `KuneneError` (defined in `kunene/errors.py`, re-exported from `kunene`): `ActionNameError` (invalid/duplicate names), `ParameterError` (missing/unresolvable parameter values), `EvaluationError` (a `MathEvaluation` expression failed), `SolverError` (an external solver run failed; `SolverTerminationError` when its log does not report a normal termination), `MissingPathError` (required file/directory not found; also a `FileNotFoundError`), and `DataNotFoundError` (requested result data not available, e.g. a d3plot component). Catch `KuneneError` to handle any workflow failure.
 
 **Result structure and flattening.** A graph appends each action's output to `val_dict` under the action's name and returns it. Results are kept *structured*: a `WorkArea` (or a sub-graph) contributes its outputs as a nested dict stored under its own name, rather than flattening them into the parent. This preserves provenance and avoids name collisions between parallel branches (e.g. two solvers with same-named actions). Flattening is applied only where names must resolve textually: `MathEvaluation.solve` builds a flattened view of `val_dict` (via `_flatten_namespace`) for its `eval`, so an expression can reference an action nested inside a `WorkArea` directly by its name. Shallower names take precedence over deeper ones on a clash.
 
@@ -114,6 +115,33 @@ The plan walks the action tree tracking each action's run directory, so a
 inherits the enclosing policy unless it sets its own), and a nested
 `SimulationIterator` is left to clean its own jobs. `print_work_dir()` marks the
 entries cleanup removes.
+
+# Solver termination
+
+A solver can fail without a non-zero exit code: it writes the reason to its
+log and exits 0, and the first sign of trouble would otherwise be a reader
+downstream failing with `DataNotFoundError`. The rule is therefore that **a
+run succeeded only if its log says so**. An action declares how its solver
+says it (`_termination_rule()` returning a `TerminationRule`: the logs, the
+success and failure regexes, a `reason` group, the context lines, warning
+lines, run/termination-time parsers) and calls
+`_check_termination(returncode)` once the solver has run.
+`kunene/util/solver_termination.py` reads the end of each log (and its
+start, for warnings and the termination time), never raises on a missing or
+malformed one, and returns a `Termination`: `normal`, `error` (failure lines
+win over success lines, the last one is reported), `incomplete` (no marker)
+or `no_log`. Anything but `normal` with exit code 0 raises
+`SolverTerminationError` (a `SolverError`, carrying `.termination` and
+`.returncode`, picklable so it crosses an `asynch` boundary) whose first line
+names the reason, e.g. `Abstrao run in <dir> failed: License not found -- In
+*RUN section; Evaluation period has expired. (log: ...)`. Without a rule only
+the exit code decides. An action's `on_incomplete` attribute
+(`args.ON_INCOMPLETE`: `'raise'`, the default, or `'warn'`) turns the error
+into a logged one, for a run stopped deliberately. Raising is what makes the
+rest work: cleanup is skipped, the job is `failed` in `jobs_index.json` (so
+`reuse_existing` does not reuse it), and the first line of the error is the
+failed action's `message` in `status.json`. No solver action uses the hook
+yet; each adopts it with its own rule (see `todo.solver_termination`).
 
 # Saving a workflow
 
