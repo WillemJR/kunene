@@ -6,6 +6,8 @@ FoamFile
     object      blockMeshDict;
 }
 
+#include "parameters"
+
 scale 0.1;
 
 vertices
@@ -22,7 +24,7 @@ vertices
 
 blocks
 (
-    hex (0 1 2 3 4 5 6 7) (20 20 1)
+    hex (0 1 2 3 4 5 6 7) ($nCells $nCells 1)
     simpleGrading (1 1 1)
 );
 

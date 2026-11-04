@@ -6,12 +6,14 @@ FoamFile
     object      U;
 }
 
+#include "$FOAM_CASE/system/parameters"
+
 dimensions      [0 1 -1 0 0 0 0];
 internalField   uniform (0 0 0);
 
 boundaryField
 {
-    movingWall  { type fixedValue; value uniform (1 0 0); }
+    movingWall  { type fixedValue; value uniform ($lidVelocity 0 0); }
     fixedWalls  { type noSlip; }
     frontAndBack{ type empty; }
 }

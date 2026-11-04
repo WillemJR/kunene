@@ -119,6 +119,11 @@ class OpenFOAMAnalysis( WorkAction ):
             content = f.read()
 
         for name, value in val_dict.items():
+            # Whole numbers are written without a decimal point: OpenFOAM
+            # rejects '20.0' where it reads an integer, such as a cell count.
+            if isinstance(value, float) and value.is_integer():
+                value = int(value)
+
             # Match parameter name at start of line (optionally with whitespace)
             # followed by whitespace and current value
             pattern = rf'^(\s*{name})\s+[^;]+;'
