@@ -1717,22 +1717,23 @@ class SimulationIterator(WorkAction):
                 self._design_values( combination, var_names, dependent_pars ) )
 
         if self.max_workers > 1 and len( design_points ) > 1:
-            logger.debug( f'\n\tRunning {len(design_points)} evaluations, '
+            logger.info()
+            logger.info( f'Running {len(design_points)} evaluations, '
                           f'{self.max_workers} at a time' )
             list_of_evals = self.solve_parallel( design_points, groups,
                                                  progress_bar=progress_bar )
         else:
             list_of_evals = []
             for iexp, pars_vals in enumerate( design_points ):
-                logger.debug( f'\n\tRunning evaluation {iexp+1} of {len(exp_des)} {pars_vals}' )
-                logger.debug( f'\n\t Parameters: {pars_vals}' )
-                logger.debug(   f'\t Dependent parameters: {dependent_pars}' )
+                logger.info( f'Running evaluation {iexp+1} of {len(exp_des)}' )
+                logger.info( f' Parameters: {pars_vals}' )
+                logger.info( f' Dependent parameters: {dependent_pars}' )
                 evals = self.solve( pars_vals, groups=groups )
                 for k,v in evals.items():
                     if isinstance(v,numbers.Number):
-                        logger.debug( f'\t\t Result: {k},{v}' )
+                        logger.info( f'\t Result: {k},{v}' )
                     else:
-                        logger.debug( f'\t\t Result: {k},{type(v)}' )
+                        logger.info( f'\t Result: {k},{type(v)}' )
 
                 list_of_evals.append( evals )
 

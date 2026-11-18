@@ -275,24 +275,24 @@ class OpenFOAMPointsReader:
             logger.warning("No points loaded. Call read_points() first.")
             return
 
-        logger.info("=== OpenFOAM Points Summary ===")
-        logger.info(f"File: {self.file_path}")
-        logger.info(f"Number of points: {len(self.points)}")
+        logger.debug("=== OpenFOAM Points Summary ===")
+        logger.debug(f"File: {self.file_path}")
+        logger.debug(f"Number of points: {len(self.points)}")
 
         if self.header:
-            logger.info("\nHeader information:")
+            logger.debug("\nHeader information:")
             for key, value in self.header.items():
-                logger.info(f"  {key}: {value}")
+                logger.debug(f"  {key}: {value}")
 
         x_bounds, y_bounds, z_bounds = self.get_bounds()
-        logger.info(f"\nBounding box:")
-        logger.info(f"  X: [{x_bounds[0]:.6f}, {x_bounds[1]:.6f}]")
-        logger.info(f"  Y: [{y_bounds[0]:.6f}, {y_bounds[1]:.6f}]")
-        logger.info(f"  Z: [{z_bounds[0]:.6f}, {z_bounds[1]:.6f}]")
+        logger.debug(f"\nBounding box:")
+        logger.debug(f"  X: [{x_bounds[0]:.6f}, {x_bounds[1]:.6f}]")
+        logger.debug(f"  Y: [{y_bounds[0]:.6f}, {y_bounds[1]:.6f}]")
+        logger.debug(f"  Z: [{z_bounds[0]:.6f}, {z_bounds[1]:.6f}]")
 
-        logger.info(f"\nFirst 5 points:")
+        logger.debug(f"\nFirst 5 points:")
         for i, point in enumerate(self.points[:5]):
-            logger.info(f"  Point {i}: ({point[0]:.6f}, {point[1]:.6f}, {point[2]:.6f})")
+            logger.debug(f"  Point {i}: ({point[0]:.6f}, {point[1]:.6f}, {point[2]:.6f})")
 
 
 
@@ -334,7 +334,7 @@ class OpenFOAMFieldReader:
             with open(filepath, 'r') as f:
                 content = f.read()
             
-            logger.info(f"Reading field file: {filepath}")
+            logger.debug(f"Reading field file: {filepath}")
             
             # Extract basic file information
             self._extract_file_info(content)
@@ -384,13 +384,13 @@ class OpenFOAMFieldReader:
         dim_match = re.search(r'dimensions\s*\[(.*?)\]', content)
         if dim_match:
             dimensions = dim_match.group(1).strip()
-            logger.info(f"Field dimensions: [{dimensions}]")
+            logger.debug(f"Field dimensions: [{dimensions}]")
         
         # Extract object name
         obj_match = re.search(r'object\s+(\w+)', content)
         if obj_match:
             object_name = obj_match.group(1)
-            logger.info(f"Field object: {object_name}")
+            logger.debug(f"Field object: {object_name}")
     
     def _read_uniform_field(self, field_section):
         """Read uniform field data (scalar or vector)"""
@@ -400,7 +400,7 @@ class OpenFOAMFieldReader:
             try:
                 x, y, z = float(vector_match.group(1)), float(vector_match.group(2)), float(vector_match.group(3))
                 value = (x, y, z)
-                logger.info(f"Uniform field vector value: {value}")
+                logger.debug(f"Uniform field vector value: {value}")
                 return 'uniform', value
             except ValueError as e:
                 logger.warning(f"Warning: Could not parse uniform vector value: {e}")
@@ -411,7 +411,7 @@ class OpenFOAMFieldReader:
         if scalar_match:
             try:
                 value = float(scalar_match.group(1))
-                logger.info(f"Uniform field scalar value: {value}")
+                logger.debug(f"Uniform field scalar value: {value}")
                 return 'uniform', value
             except ValueError as e:
                 logger.warning(f"Warning: Could not parse uniform scalar value: {e}")
@@ -430,7 +430,7 @@ class OpenFOAMFieldReader:
         
         data_type = list_type_match.group(1) # 'scalar' or 'vector'
         expected_size = int(list_type_match.group(2))
-        logger.info(f"Nonuniform field type: {data_type}, expected size: {expected_size} values")
+        logger.debug(f"Nonuniform field type: {data_type}, expected size: {expected_size} values")
         
         # Find the data list
         list_start = field_section.find('(')
@@ -466,7 +466,7 @@ class OpenFOAMFieldReader:
         
         values_array = np.array(values)
         
-        logger.info(f"Read {len(values_array)} nonuniform {data_type} values")
+        logger.debug(f"Read {len(values_array)} nonuniform {data_type} values")
         if expected_size and len(values_array) != expected_size:
             logger.warning(f"Warning: Expected {expected_size} values, got {len(values_array)}")
         
@@ -481,7 +481,7 @@ class OpenFOAMFieldReader:
             logger.warning(f"Warning: polyMesh directory not found: {polymesh_dir}")
             return self.mesh_info
         
-        logger.info(f"Reading mesh information from: {polymesh_dir}")
+        logger.debug(f"Reading mesh information from: {polymesh_dir}")
         
         # Read points
         points_file = os.path.join(polymesh_dir, 'points')
@@ -515,16 +515,16 @@ class OpenFOAMFieldReader:
             self.mesh_info['boundary_patches'] = self._read_boundary_patches(boundary_file)
         
         # Print mesh summary
-        logger.info("Mesh Information:")
-        logger.info("-" * 30)
+        logger.debug("Mesh Information:")
+        logger.debug("-" * 30)
         for key, value in self.mesh_info.items():
             if key != 'boundary_patches':
-                logger.info(f"  {key}: {value}")
+                logger.debug(f"  {key}: {value}")
         
         if 'boundary_patches' in self.mesh_info:
-            logger.info("  Boundary patches:")
+            logger.debug("  Boundary patches:")
             for patch_name, patch_info in self.mesh_info['boundary_patches'].items():
-                logger.info(f"    {patch_name}: {patch_info['nFaces']} faces")
+                logger.debug(f"    {patch_name}: {patch_info['nFaces']} faces")
         
         return self.mesh_info
     
@@ -623,10 +623,10 @@ class OpenFOAMFieldReader:
             analysis['n_cells'] = mesh_info.get('n_cells', 'unknown') if mesh_info else 'unknown'
             
             if debug:
-                logger.info(f"Uniform temperature field:")
-                logger.info(f"  Temperature: {field_data:.6f} K")
+                logger.debug(f"Uniform temperature field:")
+                logger.debug(f"  Temperature: {field_data:.6f} K")
                 if mesh_info and 'n_cells' in mesh_info:
-                    logger.info(f"  Applied to {mesh_info['n_cells']} cells")
+                    logger.debug(f"  Applied to {mesh_info['n_cells']} cells")
             
         elif field_type == 'nonuniform':
             analysis['temperature'] = field_data
@@ -637,16 +637,16 @@ class OpenFOAMFieldReader:
             analysis['n_values'] = len(field_data)
             
             if debug:
-                logger.info(f"Nonuniform temperature field:")
-                logger.info(f"  Number of values: {len(field_data)}")
-                logger.info(f"  Temperature range: {analysis['min_temp']:.6f} to {analysis['max_temp']:.6f} K")
-                logger.info(f"  Average temperature: {analysis['avg_temp']:.6f} K")
-                logger.info(f"  Standard deviation: {analysis['std_temp']:.6f} K")
+                logger.debug(f"Nonuniform temperature field:")
+                logger.debug(f"  Number of values: {len(field_data)}")
+                logger.debug(f"  Temperature range: {analysis['min_temp']:.6f} to {analysis['max_temp']:.6f} K")
+                logger.debug(f"  Average temperature: {analysis['avg_temp']:.6f} K")
+                logger.debug(f"  Standard deviation: {analysis['std_temp']:.6f} K")
             
             # Check if field size matches mesh
                 if mesh_info and 'n_cells' in mesh_info:
                     if len(field_data) == mesh_info['n_cells']:
-                        logger.info(f"  ✓ Field size matches number of cells ({mesh_info['n_cells']})")
+                        logger.debug(f"  ✓ Field size matches number of cells ({mesh_info['n_cells']})")
                     else:
                         logger.error(f"  ⚠ Field size ({len(field_data)}) != number of cells ({mesh_info['n_cells']})")
         
@@ -675,7 +675,7 @@ class OpenFOAMFieldReader:
                     for i, temp in enumerate(field_data):
                         f.write(f"{i}, {temp:.10f}\\n")
             
-            logger.info(f"Field data saved to: {output_file}")
+            logger.debug(f"Field data saved to: {output_file}")
             
         except Exception as e:
             logger.error(f"Error saving field data: {e}")
@@ -689,13 +689,15 @@ class OpenFOAMFieldReader:
         It computes point values by averaging the values from all cells that share that point.
 
         Args:
-            field_data (np.ndarray): Cell-centered field values (length = n_cells)
+            field_data (np.ndarray): Cell-centered field values, shape (n_cells,) for
+                a scalar field and (n_cells, 3) for a vector field
             method (str): Interpolation method. Options:
                 - 'average': Simple arithmetic average of surrounding cells
                 - 'inverse_distance': Weighted by inverse distance (future enhancement)
 
         Returns:
-            np.ndarray: Point values (length = n_points)
+            np.ndarray: Point values, shape (n_points,) for a scalar field and
+                (n_points, 3) for a vector field
 
         Raises:
             ValueError: If mesh information is not loaded or field size doesn't match cells
@@ -709,7 +711,7 @@ class OpenFOAMFieldReader:
             polymesh_dir = os.path.join(self.case_dir, 'constant', 'polyMesh')
             faces_file = os.path.join(polymesh_dir, 'faces')
             if os.path.exists(faces_file):
-                logger.info("Loading faces for interpolation...")
+                logger.debug("Loading faces for interpolation...")
                 self.faces_reader = OpenFOAMFacesReader(self.case_dir, 'constant')
                 self.faces_reader.read_faces()
             else:
@@ -724,7 +726,7 @@ class OpenFOAMFieldReader:
         n_points = len(self.points_reader.points)
         n_cells = self.mesh_info['n_cells']
 
-        logger.info(f"Interpolating from {n_cells} cells to {n_points} points...")
+        logger.debug(f"Interpolating from {n_cells} cells to {n_points} points...")
 
         # Read owner file to get cell-face connectivity
         owner_file = os.path.join(self.case_dir, 'constant', 'polyMesh', 'owner')
@@ -778,14 +780,15 @@ class OpenFOAMFieldReader:
                         point_to_cells[point_idx].add(cell_neighbour)
 
         # Compute point values based on method
-        point_values = np.zeros(n_points)
+        field_data = np.asarray(field_data)
+        point_values = np.zeros((n_points,) + field_data.shape[1:])
 
         if method == 'average':
             for point_idx in range(n_points):
                 connected_cells = list(point_to_cells[point_idx])
                 if len(connected_cells) > 0:
                     # Simple average of all connected cell values
-                    point_values[point_idx] = np.mean([field_data[cell_idx] for cell_idx in connected_cells])
+                    point_values[point_idx] = field_data[connected_cells].mean(axis=0)
                 else:
                     logger.warning(f"Point {point_idx} has no connected cells")
                     point_values[point_idx] = 0.0
@@ -793,7 +796,7 @@ class OpenFOAMFieldReader:
         else:
             raise ValueError(f"Unknown interpolation method: {method}")
 
-        logger.info(f"Interpolation complete. Point value range: [{np.min(point_values):.6f}, {np.max(point_values):.6f}]")
+        logger.debug(f"Interpolation complete. Point value range: [{np.min(point_values):.6f}, {np.max(point_values):.6f}]")
 
         return point_values
 
@@ -802,18 +805,18 @@ class OpenFOAMFieldReader:
         """
         """
 
-        logger.info("OpenFOAM Temperature History Reader")
-        logger.info("=" * 40)
+        logger.debug("OpenFOAM Temperature History Reader")
+        logger.debug("=" * 40)
         
         # Example usage
         #reader = OpenFOAMFieldReader( case_dir )
         
         # Check if case exists
-        logger.info(f"\\nAnalyzing case: {self.case_dir}")
+        logger.debug(f"\\nAnalyzing case: {self.case_dir}")
         
         # Read mesh information
         mesh_info = self.read_mesh_info(self.case_dir)
-        logger.info('\n')
+        logger.debug('\n')
         
         subdirs = self._subdirectories()
 
@@ -824,7 +827,7 @@ class OpenFOAMFieldReader:
             of_file = os.path.join(self.case_dir, time_dir, field_name)
             
             if os.path.exists(of_file):
-                logger.info(f"Reading temperature field at t = {time_dir} s")
+                logger.debug(f"Reading temperature field at t = {time_dir} s")
                 
                 # Read the field
                 field_type, field_data = self._read_openfoam_field(of_file)
@@ -850,14 +853,14 @@ class OpenFOAMFieldReader:
         time_dir : Change this to the time you want to analyze
         """
 
-        logger.info("\nOpenFOAM Field Reader")
-        logger.info("=" * 40)
+        logger.debug("\nOpenFOAM Field Reader")
+        logger.debug("=" * 40)
 
         if time_dir == -1 or time_dir == "-1":
             subdirs = self._subdirectories()
             if subdirs:
                 time_dir = subdirs[-1]
-                logger.info(f"Using latest time directory: {time_dir}")
+                logger.debug(f"Using latest time directory: {time_dir}")
             else:
                 logger.error("No time directories found to determine the latest time.")
                 return None, None
@@ -873,18 +876,18 @@ class OpenFOAMFieldReader:
 
         # Check if case exists
         if os.path.exists(self.case_dir):
-            logger.info(f"\\nAnalyzing case: {self.case_dir}")
+            logger.debug(f"\\nAnalyzing case: {self.case_dir}")
             
             # Read mesh information
             mesh_info = self.read_mesh_info(self.case_dir)
-            logger.info('\n')
+            logger.debug('\n')
             
             # Read field at specific time
             of_file = os.path.join(self.case_dir, time_dir, field_name )
             
             if os.path.exists(of_file):
-                logger.info(f"Reading temperature field at t = {time_dir} s")
-                logger.info("-" * 50)
+                logger.debug(f"Reading temperature field at t = {time_dir} s")
+                logger.debug("-" * 50)
                 
                 # Read the field
                 field_type, field_data = self._read_openfoam_field(of_file)
@@ -1291,24 +1294,24 @@ class OpenFOAMBoundaryReader:
         """
         Print a summary of the boundary file contents.
         """
-        logger.info("=== OpenFOAM Boundary Summary ===")
-        logger.info(f"File: {self.file_path}")
-        logger.info(f"Number of patches: {len(self.boundaries)}")
+        logger.debug("=== OpenFOAM Boundary Summary ===")
+        logger.debug(f"File: {self.file_path}")
+        logger.debug(f"Number of patches: {len(self.boundaries)}")
 
         if self.header:
-            logger.info("\nHeader information:")
+            logger.debug("\nHeader information:")
             for key, value in self.header.items():
-                logger.info(f"  {key}: {value}")
+                logger.debug(f"  {key}: {value}")
 
-        logger.info(f"\nBoundary patches:")
+        logger.debug(f"\nBoundary patches:")
         for name, properties in self.boundaries.items():
             patch_type = properties.get('type', 'unknown')
             nFaces = properties.get('nFaces', 'N/A')
             startFace = properties.get('startFace', 'N/A')
-            logger.info(f"  {name}:")
-            logger.info(f"    type: {patch_type}")
-            logger.info(f"    nFaces: {nFaces}")
-            logger.info(f"    startFace: {startFace}")
+            logger.debug(f"  {name}:")
+            logger.debug(f"    type: {patch_type}")
+            logger.debug(f"    nFaces: {nFaces}")
+            logger.debug(f"    startFace: {startFace}")
 
         # Summary by type
         types = {}
@@ -1316,9 +1319,9 @@ class OpenFOAMBoundaryReader:
             patch_type = properties.get('type', 'unknown')
             types[patch_type] = types.get(patch_type, 0) + 1
 
-        logger.info(f"\nPatch types summary:")
+        logger.debug(f"\nPatch types summary:")
         for patch_type, count in types.items():
-            logger.info(f"  {patch_type}: {count}")
+            logger.debug(f"  {patch_type}: {count}")
 
 
 def test_OpenFOAMBoundaryReader():
@@ -1340,24 +1343,24 @@ def test_OpenFOAMBoundaryReader():
 
         # Access specific patch information
         patch_names = reader.get_patch_names()
-        logger.info(f"\nAll patch names: {patch_names}")
+        logger.debug(f"\nAll patch names: {patch_names}")
 
         # Get patch types
         patch_types = reader.get_patch_types()
-        logger.info(f"\nPatch types: {patch_types}")
+        logger.debug(f"\nPatch types: {patch_types}")
 
         # Get specific patch info
         if patch_names:
             first_patch = patch_names[0]
             patch_info = reader.get_patch_info(first_patch)
-            logger.info(f"\nInfo for patch '{first_patch}':")
+            logger.debug(f"\nInfo for patch '{first_patch}':")
             for key, value in patch_info.items():
-                logger.info(f"  {key}: {value}")
+                logger.debug(f"  {key}: {value}")
 
         # Get patches by type
         wall_patches = reader.get_patches_by_type('wall')
         if wall_patches:
-            logger.info(f"\nWall patches: {list(wall_patches.keys())}")
+            logger.debug(f"\nWall patches: {list(wall_patches.keys())}")
 
     except FileNotFoundError:
         logger.error(f"Boundary file not found: {boundary_file}")
@@ -1399,7 +1402,7 @@ class OpenFOAMFacesReader:
         if not os.path.exists(self.faces_file_path):
             raise FileNotFoundError(f"Faces file not found: {self.faces_file_path}")
 
-        logger.info(f"Reading faces from: {self.faces_file_path}")
+        logger.debug(f"Reading faces from: {self.faces_file_path}")
 
         with open(self.faces_file_path, 'r') as f:
             content = f.read()
@@ -1418,7 +1421,7 @@ class OpenFOAMFacesReader:
         num_faces = int(match.group(1))
         start_pos = match.end() - 1  # Position of opening parenthesis
 
-        logger.info(f"Number of faces: {num_faces}")
+        logger.debug(f"Number of faces: {num_faces}")
 
         # Extract the face data
         faces = self._parse_face_list(content, start_pos, num_faces)
@@ -1485,7 +1488,7 @@ class OpenFOAMFacesReader:
 
             faces.append(point_indices)
 
-        logger.info(f"Successfully parsed {len(faces)} faces")
+        logger.debug(f"Successfully parsed {len(faces)} faces")
 
         if len(faces) != num_faces:
             logger.warning(f"Face count mismatch. Expected {num_faces}, got {len(faces)}")
@@ -1599,7 +1602,7 @@ class OpenFOAMFacesReader:
             for i in range(min(10, len(self.faces))):
                 f.write(f"Face {i}: {self.faces[i]}\n")
 
-        logger.info(f"Face information exported to {output_file}")
+        logger.debug(f"Face information exported to {output_file}")
 
 def test_OpenFOAMFacesReader():
     """
@@ -1623,26 +1626,26 @@ def test_OpenFOAMFacesReader():
 
         # Get and display statistics
         stats = reader.get_face_statistics()
-        logger.info("\n=== Face Statistics ===")
-        logger.info(f"Total faces: {stats['total_faces']}")
-        logger.info(f"Face size range: {stats['min_face_size']} - {stats['max_face_size']}")
-        logger.info(f"Average face size: {stats['mean_face_size']:.2f}")
+        logger.debug("\n=== Face Statistics ===")
+        logger.debug(f"Total faces: {stats['total_faces']}")
+        logger.debug(f"Face size range: {stats['min_face_size']} - {stats['max_face_size']}")
+        logger.debug(f"Average face size: {stats['mean_face_size']:.2f}")
 
-        logger.info("\nFace size distribution:")
+        logger.debug("\nFace size distribution:")
         for size, count in sorted(stats['face_size_distribution'].items()):
             percentage = (count / stats['total_faces']) * 100
-            logger.info(f"  {size} points: {count} faces ({percentage:.1f}%)")
+            logger.debug(f"  {size} points: {count} faces ({percentage:.1f}%)")
 
         # Example: Show first few faces
-        logger.info(f"\nFirst 5 faces:")
+        logger.debug(f"\nFirst 5 faces:")
         for i in range(min(5, len(faces))):
             face = reader.get_face_by_index(i)
-            logger.info(f"Face {i}: {face} (size: {len(face)})")
+            logger.debug(f"Face {i}: {face} (size: {len(face)})")
 
         # Example: Find faces using point 0
         faces_using_point_0 = reader.find_faces_using_point(0)
-        logger.info(f"\nFaces using point 0: {len(faces_using_point_0)} faces")
-        logger.info(f"First few: {faces_using_point_0[:5]}")
+        logger.debug(f"\nFaces using point 0: {len(faces_using_point_0)} faces")
+        logger.debug(f"First few: {faces_using_point_0[:5]}")
 
         # Export information
         reader.export_faces_info()
@@ -1659,26 +1662,26 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
     time_dir : Change this to the time you want to analyze
     """
 
-    logger.info("OpenFOAM Temperature Field Reader")
-    logger.info("=" * 40)
+    logger.debug("OpenFOAM Temperature Field Reader")
+    logger.debug("=" * 40)
     
     # Example usage
     reader = OpenFOAMFieldReader( case_dir )
     
     # Check if case exists
     if os.path.exists(case_dir):
-        logger.info(f"\\nAnalyzing case: {case_dir}")
+        logger.debug(f"\\nAnalyzing case: {case_dir}")
         
         # Read mesh information
         mesh_info = reader.read_mesh_info(case_dir)
-        logger.info()
+        logger.debug()
         
         # Read temperature field at specific time
         T_file = os.path.join(case_dir, time_dir, "T")
         
         if os.path.exists(T_file):
-            logger.info(f"Reading temperature field at t = {time_dir} s")
-            logger.info("-" * 50)
+            logger.debug(f"Reading temperature field at t = {time_dir} s")
+            logger.debug("-" * 50)
             
             # Read the field
             field_type, field_data = reader._read_openfoam_field(T_file)
@@ -1689,7 +1692,7 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
                     field_type, field_data, float(time_dir), mesh_info, debug=True
                 )
                 
-                logger.info()
+                logger.debug()
                 
                 # Create plots for nonuniform fields
                 if field_type == 'nonuniform':
@@ -1703,17 +1706,17 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
                 reader.save_field_data(field_type, field_data, analysis, data_file)
                 
         else:
-            logger.info(f"Temperature file not found: {T_file}")
-            logger.info("\\nAvailable time directories:")
+            logger.debug(f"Temperature file not found: {T_file}")
+            logger.debug("\\nAvailable time directories:")
             case_path = Path(case_dir)
             if case_path.exists():
                 time_dirs = [d.name for d in case_path.iterdir() 
                            if d.is_dir() and d.name.replace('.','').replace('-','').isdigit()]
                 time_dirs.sort(key=float)
                 for t in time_dirs[:10]:  # Show first 10
-                    logger.info(f"  {t}")
+                    logger.debug(f"  {t}")
                 if len(time_dirs) > 10:
-                    logger.info(f"  ... and {len(time_dirs)-10} more")
+                    logger.debug(f"  ... and {len(time_dirs)-10} more")
 
     else:
         logger.error(f"Case directory '{case_dir}' not found.")
@@ -1722,8 +1725,8 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
         logger.error("2. Set time_dir to the time step you want to analyze")
         logger.error("3. Run the script")
 
-    logger.info("\\n" + "=" * 40)
-    logger.info("Analysis complete!")
+    logger.debug("\\n" + "=" * 40)
+    logger.debug("Analysis complete!")
 
 
 
@@ -1745,8 +1748,8 @@ def test_OpenFOAMPointsReader():
         reader.print_summary()
 
         # Access points data
-        logger.info(f"\nPoints shape: {points.shape}")
-        logger.info(f"Data type: {points.dtype}")
+        logger.debug(f"\nPoints shape: {points.shape}")
+        logger.debug(f"Data type: {points.dtype}")
 
         # Save to CSV (optional)
         # reader.save_to_csv("points.csv")
