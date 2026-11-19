@@ -1717,7 +1717,6 @@ class SimulationIterator(WorkAction):
                 self._design_values( combination, var_names, dependent_pars ) )
 
         if self.max_workers > 1 and len( design_points ) > 1:
-            logger.info()
             logger.info( f'Running {len(design_points)} evaluations, '
                           f'{self.max_workers} at a time' )
             list_of_evals = self.solve_parallel( design_points, groups,

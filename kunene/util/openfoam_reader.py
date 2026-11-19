@@ -1674,7 +1674,6 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
         
         # Read mesh information
         mesh_info = reader.read_mesh_info(case_dir)
-        logger.debug()
         
         # Read temperature field at specific time
         T_file = os.path.join(case_dir, time_dir, "T")
@@ -1692,7 +1691,6 @@ def test_OpenFOAMFieldReader( case_dir = "heatTransferBlock", time_dir = "50" ):
                     field_type, field_data, float(time_dir), mesh_info, debug=True
                 )
                 
-                logger.debug()
                 
                 # Create plots for nonuniform fields
                 if field_type == 'nonuniform':

@@ -218,4 +218,34 @@ Extraction of field data and histories from OpenFOAM cases.
     print(f"Field data: {results['temp_field']}")
     print(f"History data: {results['temp_history']}")
 
+The mesh with typed cells. ``OpenFOAM_Mesh`` reads the case in memory with
+VTK's OpenFOAM reader (install ``kunene[vtk]`` for pyvista), so ``foamToVTK``
+does not have to run. The cells are grouped by VTK cell type, as
+``VTK_MetaData`` returns them: 12 hexahedron, 13 wedge, 14 pyramid, 10 tetra,
+each an ``(n, k)`` connectivity array in VTK node order, and 42 polyhedron, a
+list holding the faces of each cell. ``cell_ids`` gives the OpenFOAM cell
+index of each row, so a cell field is picked per type.
+
+.. code-block:: python
+
+    from kunene.args import Location
+    from kunene.openfoam_actions import OpenFOAM_Mesh, OpenFOAM_Field
+    from kunene.graph_actions import WorkFlow
+
+    wf = WorkFlow('OpenFOAM_Mesh')
+    wf.add_action(OpenFOAM_Mesh(name='mesh', patches=True))
+    wf.add_action(OpenFOAM_Field(name='p', quantity='p', time=-1))   # -1: last time
+    wf.add_action(OpenFOAM_Field(name='U_nodes', quantity='U', time=-1,
+                                 location=Location.NODAL))
+    results = wf.solve({})
+
+    mesh = results['mesh']
+    hexes = mesh['cells'][12]                  # (n_hex, 8) point indices
+    p_hex = results['p'][mesh['cell_ids'][12]] # p of those cells
+    walls = mesh['patches']['movingWall']      # own coords/cells/cell_ids
+
+With pyvista installed ``OpenFOAM_Field`` reads through the same reader: any
+field, binary or compressed files, and nodal values interpolated by VTK.
+Without it, the built-in ASCII parser is used.
+
 

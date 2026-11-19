@@ -33,6 +33,7 @@ kunene/
 │   ├── radioss_actions.py  #  execution of Radioss and OpenCourant/OpenRadioss
 │   ├── vtk_actions.py      #  read solver field/history data from VTK files
 │   ├── openfoam_actions.py #  execution of OpenFOAM
+│   ├── util/openfoam_vtk.py #  OpenFOAM mesh (typed cells) and fields read in memory via pyvista
 │   ├── remote_actions.py   # remote execution
 │   ├── cleanup.py          # removing bulk solver output from run directories
 │   ├── variables.py        # variable definition

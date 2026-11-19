@@ -1,0 +1,14 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      parameters;
+}
+
+nCells      3;
+lidVelocity 1.0;
+nu          0.01;
+endTime     0.1;
+deltaT      0.005;

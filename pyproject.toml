@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kunene"
-version = "1.5.0"
+version = "1.6.0"
 description = "A Python module for modelling complex simulation workflows."
 readme = "README.md"
 license = "MIT"
@@ -45,6 +45,9 @@ plot = [
 ]
 progress = [
     "tqdm>=4.60",
+]
+vtk = [
+    "pyvista>=0.43",
 ]
 dev = [
     "pytest",

@@ -64,6 +64,49 @@ Workflow progress crosses the process boundary (to a GUI) through `status.json` 
 
 
 
+## OpenFOAM mesh and fields (`kunene/util/openfoam_vtk.py`)
+
+`OpenFOAM_Mesh` and, when pyvista imports, `OpenFOAM_Field` read the case in
+memory with VTK's OpenFOAM reader (`pyvista.OpenFOAMReader`, the `kunene[vtk]`
+extra) rather than from `foamToVTK` output or the hand-written ASCII parser of
+`util/openfoam_reader.py`. Reasons: typed cells in VTK node order with no
+converter run and no files written (the `VTK/` directory is disposable bulk
+output, and `foamToVTK` on every run is what this avoids); any field, not only
+the T/U/p the parser knows; binary and compressed files; time selection by time
+*value* (`foamToVTK` names its files by time *index*); and VTK's cell-to-point
+interpolation for NODAL values. The reader opens the case through an empty
+`<case>.foam` marker, the file `paraFoam -builtin -touch` creates; an existing
+`*.foam` is used, otherwise one is created.
+
+- **Cell order**: the internal mesh's cells come out in OpenFOAM cell order
+  (checked against the ASCII parser), so `cell_ids[type]` -- the row indices of
+  each type group -- index a cell field directly.
+- **Grouping** follows `VTK_MetaData`: `{vtk_type: (n, k) array}` for the fixed
+  size types, with *integer* keys. Those keys keep the mesh out of a
+  `RemoteAction` payload, whose JSON accepts string keys only.
+- **Polyhedra** stay polyhedra (type 42): VTK 9.6 removed the reader's
+  decomposition switch (pyvista's `decompose_polyhedra` raises
+  `AttributeError`), so each is a list of its faces, read through
+  `GetPolyhedronFaceLocations`/`GetPolyhedronFaces` (VTK >= 9.4; `get_cell` is the
+  fallback). A patch's polygons (type 7) are a list of point-id arrays.
+- **Patches** have their own point numbering (VTK returns each as its own
+  PolyData); there is no map to internal point ids.
+- **Fallback**: without pyvista `OpenFOAM_Field` uses the ASCII parser as before.
+  `openfoam_vtk.available()` decides; tests patch it to exercise both paths.
+- **Macros**: a field file that uses `$var` from `system/parameters` (an initial
+  `0/` before the solver has written anything) cannot be read by VTK; it logs an
+  error and the field is missing at that time.
+- Tests use small fixtures generated with OpenFOAM 13 (`tests/openfoam_vtk_exa`),
+  so they need pyvista but no OpenFOAM install. The node order is checked by
+  volume: every hexahedron positive *and* the total equal to the box (a twisted
+  top face keeps the five-tet volumes positive but changes the sum).
+
+`OpenFOAMAnalysis`'s `EXTRACT_VTK` step stays in the default `job_flag`; it now
+runs `foam_to_vtk_cmd()`, which picks `foamToVtk` (OpenFOAM.com) or `foamToVTK`
+(OpenFOAM.org) by what is on PATH -- the hard-coded `foamToVtk` failed with
+"command not found" on an OpenFOAM.org install.
+
+
 ## Workflow specs (`kunene/action_spec.py`)
 
 `save_workflow`/`load_workflow` write and rebuild a workflow as JSON. The

@@ -23,6 +23,12 @@ API Reference
 .. automodule:: kunene.jinja_actions
    :members:
 
+.. automodule:: kunene.openfoam_actions
+   :members:
+
+.. automodule:: kunene.util.openfoam_vtk
+   :members:
+
 .. automodule:: kunene.remote_actions
    :members:
 

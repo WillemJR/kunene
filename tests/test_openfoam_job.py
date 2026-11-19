@@ -1,11 +1,14 @@
 import os
 import shutil
+import numpy as np
 import pytest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
 from kunene.openfoam_actions import OpenFOAMAnalysis
 from kunene.args import JobType
 import kunene.variables as simvars
+from kunene.util.openfoam_reader import OpenFOAMFieldReader
 
 # Source case directory — used as copy_paths source; never mutated by tests.
 CASE_SOURCE = Path(__file__).parent / "openfoam_exa"
@@ -106,7 +109,9 @@ def test_openfoam_job_flags(mock_run, tmp_path):
     original_dir = os.getcwd()
     os.chdir(tmp_path)
     try:
-        success = job.solve({})
+        # the converter's name depends on the OpenFOAM on PATH: pin the .com one
+        with patch('kunene.openfoam_actions.foam_to_vtk_cmd', return_value='foamToVtk'):
+            success = job.solve({})
     finally:
         os.chdir(original_dir)
 
@@ -128,3 +133,29 @@ def test_openfoam_job_init_defaults():
                             JobType.RUN_SIMULATION |
                             JobType.POST_PRO |
                             JobType.EXTRACT_VTK)
+
+
+def _two_cell_reader(case_dir):
+    """Two cells sharing face 0. Points 0 and 1 touch both cells, point 2 only
+    cell 0 and point 3 only cell 1."""
+    poly_mesh = case_dir / 'constant' / 'polyMesh'
+    poly_mesh.mkdir(parents=True)
+    (poly_mesh / 'owner').write_text('3\n(\n0\n0\n1\n)\n')
+    (poly_mesh / 'neighbour').write_text('1\n(\n1\n)\n')
+
+    reader = OpenFOAMFieldReader(case_dir=str(case_dir))
+    reader.points_reader = SimpleNamespace(points=np.zeros((4, 3)))
+    reader.faces_reader = SimpleNamespace(faces=[[0, 1], [0, 2], [1, 3]])
+    reader.mesh_info = {'n_cells': 2}
+    return reader
+
+
+def test_cell_to_point_scalar_field(tmp_path):
+    values = _two_cell_reader(tmp_path)._cell_to_point_interpolation(np.array([1., 3.]))
+    assert values.tolist() == [2., 2., 1., 3.]
+
+
+def test_cell_to_point_vector_field_keeps_components(tmp_path):
+    cells = np.array([[1., 0., 10.], [3., 2., 20.]])
+    values = _two_cell_reader(tmp_path)._cell_to_point_interpolation(cells)
+    assert values.tolist() == [[2., 1., 15.], [2., 1., 15.], [1., 0., 10.], [3., 2., 20.]]

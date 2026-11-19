@@ -17,6 +17,20 @@ from kunene.progress import FileProgressTail
 from kunene.util import solver_progress, command
 import kunene.variables as simvars
 from kunene.util.openfoam_reader import OpenFOAMFieldReader
+from kunene.util import openfoam_vtk
+
+
+
+def foam_to_vtk_cmd():
+    """
+    The VTK converter of the OpenFOAM on PATH: OpenFOAM.com calls it
+    ``foamToVtk``, OpenFOAM.org (the Foundation release) ``foamToVTK``.
+    ``foamToVtk`` when neither is found, so the error names the usual one.
+    """
+    for cmd in ( 'foamToVtk', 'foamToVTK' ):
+        if shutil.which( cmd ):
+            return cmd
+    return 'foamToVtk'
 
 
 class OpenFOAMAnalysis( WorkAction ):
@@ -200,7 +214,7 @@ class OpenFOAMAnalysis( WorkAction ):
             success = success and self._run_command('paraFoam -builtin -touch', run_dir)
 
         if success and (self.job_flag & JobType.EXTRACT_VTK):
-            success = success and self._run_command('foamToVtk', run_dir)
+            success = success and self._run_command(foam_to_vtk_cmd(), run_dir)
 
         return success
 
@@ -226,10 +240,17 @@ class OpenFOAM_Field( WorkAction ):
     Args:
         name (str): Name of the action.
         quantity (str): Name of the OpenFOAM field to extract (e.g. 'U', 'p').
-        time (float or Variable): Time step directory to read the field from.
-        location (Location, optional): Cell location (e.g. CELL_CENTRE, FACE).
-            Defaults to Location.UNKNOWN.
+        time (float or Variable): Time step directory to read the field from;
+            -1 is the last time.
+        location (Location, optional): ``Location.CELL`` (or ``UNKNOWN``, the
+            default) for the cell values in OpenFOAM cell order,
+            ``Location.NODAL`` for values at the mesh points.
         field_variable (str): deprecated alias of quantity.
+
+    With pyvista installed (``kunene[vtk]``) the case is read by VTK's
+    OpenFOAM reader (:mod:`kunene.util.openfoam_vtk`): any field, binary
+    or compressed files, and nodal values interpolated by VTK. Without it the
+    built-in ASCII parser is used, which knows only T, U and p.
     """
 
     @WorkAction.allow_variables_as_arguments
@@ -245,6 +266,10 @@ class OpenFOAM_Field( WorkAction ):
 
     @WorkAction.assign_variables_values_to_members
     def solve( self, val_dict ):
+        if openfoam_vtk.available():
+            location = Location.NODAL if self.location == Location.NODAL else Location.CELL
+            return openfoam_vtk.read_field( '.', self.quantity, time=self.time, location=location )
+
         time_dir = str(self.time)
         reader = OpenFOAMFieldReader( case_dir='.' )
         field_type, field_data = reader.field( self.quantity, time_dir=time_dir, location=self.location )
@@ -252,6 +277,40 @@ class OpenFOAM_Field( WorkAction ):
            logger.error(f"Could not extract OpenFOAM_Field \'{self.name}\'")
 
         return field_data
+
+
+
+class OpenFOAM_Mesh( WorkAction ):
+    """
+    Action that returns the mesh of an OpenFOAM case with its cells grouped by
+    VTK cell type, as ``VTK_MetaData`` does: ``{'coords', 'cells', 'cell_ids',
+    'time'}``, with ``cells`` mapping a VTK type (12 hexahedron, 13 wedge, 14
+    pyramid, 10 tetra) to an ``(n, k)`` connectivity array and ``cell_ids``
+    giving the OpenFOAM cell index of each row. Polyhedra (42) are a list with,
+    per cell, the list of its faces. See :mod:`kunene.util.openfoam_vtk`.
+
+    The case is read in memory by VTK's OpenFOAM reader; ``foamToVTK`` need
+    not have run. Needs pyvista (``kunene[vtk]``).
+
+    Args:
+        name (str): Name of the action.
+        time (float or Variable, optional): time to read the mesh at, -1 (the
+            default) for the last. Matters only for a moving mesh.
+        patches (bool, optional): also return the boundary patches, under
+            ``'patches'``, each with its own ``coords``/``cells``/``cell_ids``.
+    """
+
+    @WorkAction.allow_variables_as_arguments
+    def __init__( self, name, time=-1, patches=False ):
+        super().__init__( name )
+        self.time = time
+        self.patches = patches
+        self.data_type = EvalType.NUMERICAL
+        self.description = 'OpenFOAM mesh, cells grouped by VTK cell type'
+
+    @WorkAction.assign_variables_values_to_members
+    def solve( self, val_dict ):
+        return openfoam_vtk.read_mesh( '.', time=self.time, patches=self.patches )
 
 
 
